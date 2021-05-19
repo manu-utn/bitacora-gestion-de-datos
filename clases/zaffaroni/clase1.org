@@ -1,0 +1,275 @@
+#+TITLE: Clase 01 - Parte 1
+
+* datos extra
+consultora del profe: dblanding
+horario 9:30 a 12:30
+* parciales
+1 parcial (lunes)  teorico lunes
+1 parcial (miecoles) practica
+
+
+* Edgar Codd
+  - Es quien dijo que una Relación se conforma por un cuerpo, cabecera, etc..
+  - definió dos reglas de integridad
+    1. integidad de las entidades 
+       (que la PK no puede ser null)
+    2. integridad referencial
+       (que una FK no nula, hace referencia a una PK)
+  - también la independencia de datos
+** independencia de datos
+*** independencia logica
+    que uno podria hacer cambios a nuestra db
+    no deberia afectar nuestra app 
+    (podria afectar, aunque no al 100%)
+
+    anteriormente antes de las RDB, las apps
+    debian tener cargadas las estructuras de la DB
+    y si algo cambiaba en la DB, la app fallaba
+
+    #+BEGIN_EXAMPLE
+    la app es un buscador de alumnos
+    
+    si en la DB agrego nuevos atributos (edad, fecha de nac)
+    en la entidad alumnos
+    eso no deberia afectar la app
+    #+END_EXAMPLE
+*** independencia fisica
+    (si modificamos el indice, etc...)
+    tampoco deberia afectar a la app
+** reglas de codd
+   - la infomacion debe esta en tablas (cuerpo, cabecera)
+     - los datos y la definicion de los datos
+       debe guardarse en la tabl
+   - integridad (??) no pude poner
+   - soportar valoes nulos (NULL)
+   - debia tener un lenguaje
+** Estructura
+   - Conjunto de objetos
+   - COnjunto de relación
+** Manipulación de datos
+   - Definirlos
+   - 
+** INtegridad
+   - Definir reglas para que los datos sean
+     1. integros
+     2. consistentes
+* Estructura
+  Se compone por una cabecera y un cuerpo
+** Cuerpo
+   - Conjunto de tuplas
+   - Tiene una instanciación de n tuplas (hablando de objetos)
+*** Concepto
+*** Dominio
+    - conjunto de valores posibles que puede tener un atributo
+    - cada atributo va a tener un dominio de valores
+    - las RDB no manejan tan bien este concepto, xq es un concepto semántico
+
+*** Relación
+*** Cardinalidad
+    cantidad de tuplas
+*** Propiedades de relación
+    - según el modelo relacional (por edgar codd)
+    - las tuplas no son ordenados, no se repiten
+    - los atributos no están ordenados
+    - los valoes de os atributos son atómicos
+*** Tipos de Relación
+*** Tupla
+    es una fila
+** Cabecera
+   - COnjunto de atributos (que dfinen las tuplas)
+* Integridad
+** Clave primaria
+   - identifican unequivocamente a una tupla
+   - según la *regla de integridad de las entidades*
+     - ninguno de sus componentes puede aceptar nulos
+     - componente porque la clave puede ser compuesta
+** clave candidata
+   - todos los atributos que pueden definir
+     unequivocamente a una relación (tabla)
+** clave alterna 
+   - son las candidatas que no fueron elegidas
+     como primarias
+** clave foranea
+   - se relaciona con la PK de otra tabla
+   - conjunto de atributos (1 o mas)
+   - con valores no nulos que deben coincidir
+     con los valores de la PK
+   - aunque pueden ser nulos (Excepciones)
+     -
+   - la FK y PK estan definidas en el mismo dominio 
+   - la clave puede ser compuesta
+     Ej. (cod_prov, cod_localidad)
+     y ambos deben ser no nulos, o nulos (uno u otro)
+     si alguno es nulo => rompe la regla de integridad ref.
+** Reglas de integridad
+*** integridad de las entidades
+    - ninguno de los componentes de la PK
+      puede aceptar nulos
+      - componente porque la clave puede ser compuesta
+        Ej. (cod_prov, cod_localidad)
+        Ambos deben tener valo
+*** integidad referencial
+    - implementa la FK
+**** las acciones
+     - la regla por default es *Restrict* ( q no te deje borrar)
+***** Cascade
+***** set null
+      quizas esta bueno si una regional desaparece
+      y todos los alumnos que tenian ese
+      ahora tienen null la referencia
+***** restrict
+      es el default
+    
+* Ejemplos
+  Una tabla 
+  |----------------|
+  | alumno         |
+  |----------------|
+  | (PK) nroLegajo |
+  | (FK) cod_regional |
+  |----------------|
+
+  |---------------------|
+  | regional            |
+  |---------------------|
+  | (PK) cod_regional   |
+  |---------------------|
+
+  - el dominio de cod_regional sería todos los 
+    posibles valores de codigo de regionales
+  - el dominio de nroLegajo
+
+* Algebra relacional
+** Conceptos
+  - Lo definió Edgar Codd
+  - Permite operar Distintas relaciones entre ellas
+
+   
+   |---------+----------|
+   | TABLA   | relacion |
+   | fila    | tupla    |
+   | columna | atributo |
+   |---------+----------|
+
+    - atributo
+      - clave: primaria ó foranea
+** Opeaciones tradicionales
+*** Union
+    - va a tener la cabecera de la primera
+    - sin tuplas(filas) repetidas
+      - tienen q exactamente igual
+    - R1 y R2 son compatibles si
+      - si tienen misma cabecera (cant. de atributos)
+*** Interseccion
+*** Diferencia
+    es el complemento de la intersección
+*** Division
+    A % B
+    son los valores que no están en B
+    y que se relacionan con todos los
+    valores de A
+*** Producto cartesiano
+    - es costosa para la db
+    - el grado de A X B, es la suma de los grados de A y B
+      (siendo A, B relaciones)
+    - la cardinalidad será el producto 
+    - la PK quizas sería una *clave compuesta*
+      (formada por la PK de A y de B)
+** operaciones especiales
+*** operador select
+    - no tiene que ver con el operador select de sql
+    - evalúa un conjunto de tuplas que cumplan cierta condición
+    - nos devuelve una nueva relación 
+    - filtra tuplas
+
+    #+BEGIN_EXAMPLE
+    SELECT (A) Ciudad ='Paris'
+
+    nos trae un conjunto de tuplas
+    que cumpla con una condición específica
+    #+END_eXAMPLE
+
+*** operador project
+    - nos devuelve una nueva relación
+    - elige un conjunto de atributos que queramos
+    - filtra atributos
+
+    #+BEGIN_EXAMPLE
+    Project  (A) nombA, CiudadA
+    #+END_EXAMPLE
+
+
+    #+BEGIN_EXAMPLE
+    PROJECT (SELECT (A) Ciudad='Paris') nombA
+
+    Ej. filtramos las tuplas por las cumplan esa condicion
+    (que ciudad sea paris)
+    y de ese resultado hacemos un project
+
+    projectamos 
+    #+END_EXAMPLE
+
+*** operador join
+    - machea tuplas a patir de una igualdad (del atributo)
+    - hace como un producto cartesiano, 
+      pero solo para los atributos que matche
+    - es una operacion costosa
+      (por lo del producto cartesiano)
+
+    #+BEGIN_EXAMPLE
+    JOIN ... (?)
+
+    El resultado es 
+    #+END_EXAMPLE
+
+*** Ejemplos  combinadios
+**** Ejemplo
+     PROJECT (SELECT (SPJ) J#='J1') S#
+
+     agarra todas las tuplas de SPJ que cumplan con esa condicion
+     y muestra solo el atributo S#
+
+     | S# |
+     | S1 |
+     | S2 |
+**** Ejemplo 2
+     se puede usar los operadores tradicionales
+
+     POJECT ( SELECT (SPJ) J#='J1' )
+**** Ejemplo 3
+     PROJECT JNAME (JOIN (SELECT (SPJ) S#='S1') J#)
+     
+     Obs:
+     se recomienda hacer primero el select,
+     y luego hacer el join.
+     porque el join puede ser mas costoso,
+     por el tema del producto cartesiano
+     evaluaria demasiadas tuplas
+
+     1. agarramos todas las tuplas que cumplan con 
+        la condición donde S# tenga como valor S1
+     2. hacemos un producto cartesiano el resultado anterior
+        con J, y devuelve los datos de J 
+        donde los datos sean similares
+     3. mostramos solo el atributo JNAME 
+**** Ej 4
+     Valores S# para proveedores que suministren a 
+     proyectos de London o Paris con una parte roja.
+
+     Quedó incompleto
+
+     (PROJECT S#
+       (JOIN COLOR='ROJO'
+         (SELECT ciudad='paris' OR ciudad='paris')
+       )
+     )
+**** EJ 5
+     Valores S# para proveedores que suministren 
+     la misma parte a todos los proyectos.
+
+     
+        
+
+
+
+

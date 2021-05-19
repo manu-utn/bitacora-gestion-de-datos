@@ -1,0 +1,200 @@
+#+TITLE: Clase 03 - SQL
+* Dudas
+  [[DUDA 1]]
+* Sublenguajes
+** DDL
+   - Es el *Data Definition Language*
+** DML
+   - Es el *Data Manipulation Language*
+
+   Algunos de estos son
+   - SQL,
+* Dominio
+** Concepto
+   Es el *conjunto de valores posibles* que puede tener una columna de una tabla
+   (con columna decimos un campo/atributo)
+** Implementación
+   El *dominio* en una base de datos se implementa con
+   - Nombres (de columna)
+   - Tipos (de datos de las columnas/atributos/campo)
+   - Constraints (restricciones)
+
+*** Tipo de datos
+    |-----------------------------|
+    | Tipo de dato                |
+    |-----------------------------|
+    | int                         |
+    | date                        |
+    | smallint                    |
+    | varchar(unEntero)           |
+    | decimal(unEntero, unEntero) |
+    |-----------------------------|
+*** Constraints
+   |------------+-----------------------------------------------------------------|
+   | Constraint | Descripción                                                     |
+   |------------+-----------------------------------------------------------------|
+   | NULL       | Verifica que la columna pueda tener valor nulo (no tener valor) |
+   | NOT NULL   | Verifica que la columna debe tener datos (osea no nulo)         |
+   | CHECK      | Verifica que se cumpla una condición en una columna             |
+   | DEFAULT    |                                                                 |
+   |------------+-----------------------------------------------------------------|
+
+   #+BEGIN_SRC sql
+     /*
+     * Si NO se cumplen los CHECK,
+     * entonces no se puede ingresar ese registro a la tabla
+     */
+     CREATE TABLE pedidos(
+     numero int PRIMARY KEY,
+     numeroB int UNIQUE,
+     -- el atributo 'sexo' puede ser nulo
+     -- pero si NO es nulo, entonces solo puede ser el caracter F ó M
+     sexo char null CHECK (estado in ('F', 'M')),
+     -- el valor de la edad debe ser mayor a 18
+     edad int CHECK( edad > 18)
+     );
+   #+END_SRC
+* Operador SELECT
+** Estructura
+   #+BEGIN_SRC sql
+     SELECT * -- lista de columnas
+     FROM tabla -- tabla o lista de tablas
+     WHERE condiciones_filtros
+     GROUP BY columnas_de_agrupamiento
+     HAVING condiciones_sobre_lo_agrupado
+     ORDER BY columnas_clave_de_ordenamiento
+   #+END_SRC
+** Alias de Columnas
+   - También se conocen como *etiquetas*
+
+   #+BEGIN_SRC sql
+     -- precioConIva es el alias
+     -- en el resultado de la consulta aparecerá esa columna
+     SELECT num_prod, precio*0.21 as precioConIva
+     FROM products
+   #+END_SRC
+** Concatenar columnas
+   Utilizamos el operador ~+~ (suma)
+
+   #+BEGIN_SRC sql
+     SELECT c.dni, c.nombre+ ', ' +c.apellido
+     FROM clientes as c
+   #+END_SRC
+** WHERE - Condiciones
+   Se agregan en el WHERE
+
+   |-------------------------+------------------------------------------|
+   | Condiciones             | Descripcion                              |
+   |-------------------------+------------------------------------------|
+   | =, !=, <>, <, <=, >, >= | operadores relacionales, de igualdad, .. |
+   |-------------------------+------------------------------------------|
+   | AND, OR, NOT            | Operadores lógicos                       |
+   |-------------------------+------------------------------------------|
+   | [NOT] LIKE              | Para validar cadenas                     |
+   | [NOT] BETWEEN           | Para rangos                              |
+   | [NOT] IN                | Saber si está una lista de valores       |
+   | IS [NOT] NULL           |                                          |
+   |-------------------------+------------------------------------------|
+*** Operadores Logicos/Relaciones/Otros
+   #+BEGIN_SRC sql
+     SELECT * FROM products as p
+     WHERE p.price >= 100 AND p.price < 500;
+
+     SELECT * FROM products as p
+     WHERE p.price BETWEEN 100 AND 500;
+
+     SELECT * FROM products as p
+     WHERE p.category IN (1,4,9)
+   #+END_SRC
+*** Operador LIKE
+    Validar cadenas de caracteres, conceptualmente similar a las regexp
+    aunque sintáticamente diferente
+
+    |-------------------------------+------------------------------------------------------|
+    |                               | Descripción                                          |
+    |-------------------------------+------------------------------------------------------|
+    | apellidoColumna LIKE 'A%'     | Apellidos que empiecen con A                         |
+    | apellidoColumna LIKE '%sh%'   | Apellidos que contengan la palabra sh                |
+    | apellidoColumna LIKE 'A_ _ _' | Apellidos que empiecen con A seguido de 3 caracteres |
+    |                               | (sin los espacios, se agregan a modo de ejemplo)     |
+    | apellidoColumna LIKE '[AEO]%' | Apellidos que empiecen con A ó con E ó con O         |
+    | apellidoColumna LIKE '[A-O]%' | Apellidos que empiecen entre la A y la O             |
+    |-------------------------------+------------------------------------------------------|
+
+    *Observación:*
+    El símbolo ~%~ (porcentaje) actúa como el comodín de las regexp osea como la
+    *clausula de kleene*. Es decir % representa cero o más caracteres
+** ORDER BY - Ordenamiento
+   - Podemos ordenar de manera
+     - ascendente (por default) {1,2,3,4...}
+     - ó descendente {10,9,8,...}
+   - Podemos ordenar por
+     - nombre de columna
+     - número de columna
+
+   #+BEGIN_SRC sql
+     -- Ordenamos por nombre de columna
+     SELECT dni, nombre, apellido
+     FROM clientes
+     ORDER BY nombre, apellido;
+
+     -- Ordenamos por la columna 2 y 3
+     SELECT dni, nombre, apellido
+     FROM clientes
+     ORDER BY 2, 3;
+   #+END_SRC
+** DISTINCT - Registros Repetidos
+   - Utilizamos el operador *distinct* para evitar repetición de registros
+   - Es útil cuando hacemos un ...
+
+   #+BEGIN_SRC sql
+     -- no repite los registros que tengan la columna "numero" repetida
+     SELECT DISTINCT p.numero, p.nombre
+     FROM productos as p
+     ORDER BY 1; -- ordena por la primera columna (osea columna llamada numero)
+   #+END_SRC
+** Funciones Agregadas
+   - Son funciones que dado un conjunto de datos (uno o más registros)
+     realizan *operaciones agregadas*
+   - Se utilizan bastante en conjunto con operador *GROUP BY* y *HAVING*
+
+   |-------------------------+-----------------------------------------------------------------------|
+   | Funcion Agregada        | Descripción                                                           |
+   |-------------------------+-----------------------------------------------------------------------|
+   | SUM(columna)            | Suma el valor de esa columna (de cada registro)                       |
+   | COUNT(*)                | Cuenta la cantidad total de registros                                 |
+   | MIN(columna)            | Encuentra el valor mínimo de la columna                               |
+   | MAX(columna)            | Encuentra el valor máximo de la columna                               |
+   | AVG(columna)            | Calcula un valor promedio de la columna por el valor de cada registro |
+   |-------------------------+-----------------------------------------------------------------------|
+   | COUNT(columna)          | Cuenta la cantidad de registros de esa columna (no nulos)             |
+   |-------------------------+-----------------------------------------------------------------------|
+   | COUNT(DISTINCT columna) | Cuenta la cantidad de registros (no cuenta los que se repitan)        |
+   |-------------------------+-----------------------------------------------------------------------|
+** Cláusula GROUP BY
+   - Se suelen complementar con las [[Funciones Agregadas][funciones agregadas]]
+   - La [[Cláusula Having][cláusula HAVING]] actúa como el where con el select
+
+   #+BEGIN_SRC sql
+     SELECT p.numero_pedido, count(*) as cantidad
+     GROUP BY p.numero_pedido -- los agrupa por el numero pedido
+     ORDER BY 1; -- ordena de forma ascendente por la primera columna (osea numero_pedido)
+
+     SELECT p.numero_pedido, YEAR(p.fecha_pedido), MONTH(p.fecha_pedido)
+     FROM pedidos as p
+     GROUP BY YEAR(p.fecha_pedido), MONTH(p.fecha_pedido);
+   #+END_SRC
+** Cláusula HAVING
+   - Actúa en la cláusula [[Cláusula GROUP BY][GROUP BY]] como el where con el select
+   - Requiere de condiciones con [[Funciones Agregadas][funciones agregadas]]
+
+   #+BEGIN_SRC sql
+     SELECT p.numero_pedido, count(*) as cantidad
+     GROUP BY p.numero_pedido
+     HAVING count(*) >= 5 -- filtra por los que se repitan 5 ó mas veces
+     ORDER BY 1;
+
+     SELECT p.numero_pedido, YEAR(p.fecha_pedido), MONTH(p.fecha_pedido)
+     FROM pedidos as p
+     GROUP BY YEAR(p.fecha_pedido), MONTH(p.fecha_pedido);
+   #+END_SRC

@@ -1,0 +1,303 @@
+#+TITLE: Clase 1 - Grafos - Prof. Reinosa
+#+STARTUP: inlineimages
+
+* Grafos
+** Conceptos
+   - Se usan para modelar datos
+   - En la actualidad se utilizan para las redes sociales
+   - Son estructuras *abstractas*, son una idea de solución,es un concepto
+     (como las matemáticas son abstractas, los números no son tangibles)
+   - Son una representación computacional, para existir dentro de 
+     una computadora (ocupar un espacio)
+   - Pueden modelar solo una relación
+     (Ej. los que tienen edad mayor a 10, 
+     pero no los que tengan mayor 10 y menor de 5)
+** Nodos
+*** Conceptos en Teoria de Grafos
+    - Eran los que se conocian como *vértices* como un punto
+*** Conceptos en Teoría de Datos
+    - Es un nodo de información
+    - Puede tener un valor, o conjunto de valores
+   
+    #+BEGIN_EXAMPLE
+    En las redes sociales, cada persona sería un nodo
+    la información puede ser datos personales
+    #+END_EXAMPLE
+** Relaciones
+*** Conceptos en Teoria de Grafos
+   - Son las aristas que unen los *vértices*
+*** Conceptos en Teoría de Datos
+   - Se usan para relcionar los nodos
+   - Tiene un conjunto de valores (nodos)
+** Grado
+*** Conceptos en Teoria de Grafos
+   - Cantidad de aristas que salen/llegan a un vértice
+     (grado positivo/negativo)
+*** Conceptos en Teoría de Datos
+** Abstracción 
+   - Algo *abstracto* es opuesto a algo *tangible* o concreto
+   - ALgo *tangible* es algo que podemos tocar
+** Formas de representar
+   Las formas de representar los grafos
+*** Estática
+    - Significa que *no cambia*
+    - La estructura estática NO va a cambiar
+
+    #+BEGIN_EXAMPLE
+    Por ejemplo en física, un cuerpo tiene comportamiento estático
+    si este no cambia osea que no se mueve
+    #+END_EXAMPLE
+**** Conceptos de Teoría de grafos
+     Los grafos se podían representar con matrices
+***** Matriz de Adyacencia
+      - matriz cuadrada de NxN
+      - las filas y columnas repesentaban vértices
+      - la intersección de fila/columna era la cant. de aristas
+***** Matriz de incidencia
+      - matriz rectangular de NxM
+      - las filas representaban los vértices
+        y las columnas las aristas
+      - la intersección de fila/columna es la cant. de vertices
+        que participan en cada arista 
+*** Dinámica
+    - Significa que tiende a cambiar, que no es fijo
+    - La estructura dinámica va a cambiar según sus elementos
+    - Se representa con una *lista de adyacencia*
+**** Conceptos de Teoría de grafos
+     Es como se mueven los elementos (entran/salen)
+**** Lista de Adyacencia
+     - Es una lista de nodos
+     - Cada nodo tiene asociada una lista de las flechas que salen de él
+**** Lista de adyacencia
+       - es una lista de nodos
+       - donde cada lista tiene
+         una lista de los nodos que salen de el
+
+      Ej. un comportamiento dinámico va a cambiar 
+** Caracterización
+**** Conceptos de Teoría de Grafos
+***** Grafo libre
+    - Se conocia como *grafo libre*
+    - Ningún vertice se relaciona con ningun otro,
+      (osea NO hay relaciones)
+***** Grafo Completo
+     - es lo opuesto a un *grafico libre*
+     - tiene la mayor cantidad de relaciones posibles
+
+     #+BEGIN_EXAMPLE
+     En una matriz, todas las celdas tendrían un valor distinto de cero
+     #+END_EXAMPLE
+***** Grafo Regular
+      - está relacionado con el *grado*
+      - un grafo de grado X es regular si todos los vértices tienen grado X
+***** Grafo Simple y complejo
+      - *Gráfico simple:* si al menos una arista une dos vertices
+      - *Grafo complejo:* si existe más de una arista que vincule 
+        2 vértices (es la inversa de un grafo simple)
+***** Grafo Conexo y NO conexo
+       - *Grafo conexo:* si todo par de vertces está conectado 
+         por un camino, pudiendo llegar desde cualquier vertice
+         a cualquier otro vértice
+       - *Grafo NO conexo* lo opuesto a un grafo conexo,
+         no está conectado por un camino, hay grafos separados
+         que no se juntan.
+
+       *Obsevación:*
+       Algo es conexo cuando se une
+***** Grafo complementario
+      Tiene las aristas que le falta al grafo original
+      para ser un *grafo completo*
+** Clasificación
+**** Conceptos de Teoría de Grafos
+***** Grafos dirigidos
+      - Los que tienen una flecha (tienen un sentido/dirección)
+      - Identifica un sentido de la relación
+***** Grafos NO dirigidos
+      - EL sentido de las relaciones son *bidirecciones*
+      - NO se identifica el sentido de las relaciones
+***** Grafos restrictos
+      - Tienen *restricciones*
+      - Se modela tal que NO deben cumplir las propiedades de reflexividad, simetría
+        y transitividad (si cumple las tres, cumple con ser Anti-equivalentes)
+
+      #+BEGIN_EXAMPLE
+      (A) es Reflexivo si relaciona con si mismo
+      (A) es Anti-Reflexivo si NO se relaciona con ninguno
+      (A) es areflexivo si se relaciona con algunos, y con otros no
+      #+END_EXAMPLE
+***** Grafos irrestrictos
+      - NO se aplica ninguna restricción
+        Pudiendo o no modelar relaciones reflexivas,
+        simetricas, ó transitivas
+***** Transitividad
+     - convierte una relación *indirecta* en *directa*
+
+     #+BEGIN_EXAMPLE
+     las redes sociales como facebook, te sugiere amigos de amigos,
+     esas son relaciones indirectas
+     y se convierten en directa cuando creamos una relación de amistad con ellos
+     #+END_EXAMPLE
+**** Ejemplos base de datos 
+     Si usamos el concepto de *grafo restricto* para aplicar restricciones.
+
+     Cuanto más *acotamos* el modelo de datos es más fácil de manejar/mantener,
+     achicamos el problema, para que el problema sea más fácil de manejar.
+
+     Si aplicaramos el *grafo irrestricto*,
+     tendriamos muchos problemas por resolver, sería muy dificil de mantener los datos
+**** Ejemplos relaciones bidireccionales
+     En los sistemas se suele usar *grafos dirigidos* porque
+     NO todas las relaciones son *bidireccionales*.
+
+     Ej. En facebook cada relación(arista) de amistad es bidireccional.
+
+     Ej. En instagram una relación puede NO ser bidireccional,
+         yo puedo seguir a A, y él puede querer no seguirme.
+
+
+
+
+
+
+
+
+
+
+
+** Caminos y Pasos
+**** [TODO] Conceptos de discreta
+***** Camino
+      - Puede no haber *paso*
+      - Es *bidireccional*
+***** Paso
+      - Es un *camino con sentido*
+      - Es más *restricto* que el *camino*
+      - Sólo es aplicable para un *grafo dirigido*
+***** Ciclo
+** Busqueda
+   Cual usar? depende del destino
+*** Búsqueda en profundidad (DFS, Depth first search)
+    - Es un *algoritmo recursivo*
+    - Va siempre para adelante, busca el primero
+    - Puede haber muchos pasos (porque puede haber muchas relaciones)
+   
+    #+BEGIN_EXAMPLE
+    Busca si la relación que tenía delante era la que buscaba,
+    si NO era, le dice al siguiente que le pregunte si el que tiene delante era el que se buscaba,
+    y asi se repite.. hasta llegar al final de ese camino elegido.
+    Si ninguno del camino cumple, vuelve al principio y repite la búsqueda con otro cercano.
+
+    le pasa siempre el problema al siguiente,
+    si el siguiente no, vuelve atras y busca otro
+    #+END_EXAMPLE
+    
+    #+BEGIN_SRC plantuml :file img/dfs.png
+      @startuml
+      digraph foo{
+              B,C,D [fillcolor=red, style="filled"]
+              A -> B -> C -> D
+              A -> F -> G -> H 
+      }
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/dfs.png]]
+*** Búsqueda en anchura (BFS, Breath first search)
+    - Evalúa todos los destinos (relaciones) directas,
+      si alguna no lo es, busca otra
+    - Primero busca las de menor longitud,
+      Ej. las de longitud 1, luego las de longitud 2, y asi..
+    - El primero es el más corto
+    - Busca el camino más corto
+
+    #+BEGIN_SRC plantuml :file img/bfs.png
+      @startuml
+      digraph foo{
+              B,F,I [fillcolor=red, style="filled"]
+              A -> B -> C -> D
+              A -> F -> G -> H 
+              A -> I -> J -> K
+      }
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/bfs.png]]
+*** Breath First Vs Depth First
+    - Ninguno es más rapido que el otro
+    - Depende de donde está destino (el elemento que estamos buscando)
+*** Ejemplos
+    Google maps, se puede modelar con grafos donde cada lugar es un nodo
+
+    Si queremos usar un GPS para llegar a un lugar
+    - si vamos a pie, nos dirá el camino más corto (BFS, Breath first search)
+    - si vamos en auto, nos dirá el camino más rápido 
+*** Grafo Ponderado
+    El concepto que podria usarse
+    Antes sólo los vértices (nodos) tenian datos,
+    pero las aristas (relaciones) también pueden tener datos
+
+    #+BEGIN_EXAMPLE
+    Suponiendo el ejemplo de google maps
+    para saber la distancia que hay entre dos destinos, usamos un grafo ponderado
+
+    donde la distancia la tiene la relación (arista) entre los nodos (vértices)
+    
+    y para saber cuál es el trayecto más rápido ó más corto
+    utiliza la información de esas relaciones
+    #+END_EXAMPLE
+* Estructuras de datos
+** Concepto
+   - Para ser un Estructura de Dato debe ser
+     - grafo restricto y dirigido (dígrafo)
+     - bíunívoca ó unívoca (uno sin equívoco, que solo hay uno, una imagen)
+   - Las únicas estructuras de datos son 
+     1. pilas (anula la prioridad, LIFO Last in First out)
+     2. colas (hay prioridad, FIFO First In First Out)
+     3. listas  (listas linkeadas, pueden entrar/salir por cualquier lado)
+     4. árboles
+   - Las estructuas de datos pueden ser
+     1. unívocas
+     2. ó biunívoca
+
+   #+BEGIN_EXAMPLE
+    Una estructura unívoca, pueden ser los árboles
+    todos los elementos les llega una flecha, 
+    pero de él puede salir más de una
+         
+    Una estructura biunívoca puede ser 
+    estructuras que tienen elemento uno atrás del otro
+   #+END_EXAMPLE
+  
+   #+BEGIN_QUOTE
+   un grafo puede cumplir o no la *ley de unicidad*
+   
+   u grafo *restricto* no puede haber ciclos (anti-reflexivo)
+   y es anti-simetrico, ..)
+   #+END_QUOTE
+** Tipos de listas
+*** Lista lineal
+*** Lista circular
+*** Lista doblemente enlazada
+** Pilas/Colas/Listas
+   - El sentido de las flechas(referencia al siguiente) es opuesto
+     al como van a salir de la estructura
+   
+   #+BEGIN_QUOTE
+   Lo que se veía en AyED con pilas, colas, listas, ..
+   en realidad eran *estructuras enlazadas* 
+   porque un elemento guarda la referencia de otro
+   #+END_QUOTE
+** [TODO] (TAD) Tipo Abstracto de Dato
+   Los *vectores* (ó arreglos) son un TAD
+   porque sólo sirven para implementar una idea 
+
+   Las únicas estructuras recordemos que son las pilas,colas,listas y árboles
+   los vectores son *abstractos* 
+** Conceptos de sisop
+   - pila de procesos ()
+   - cola de impresión (para manejar la prioridad)
+   - lista de interrupciones ()
+   - arbol de directorios ()
+** Arboles

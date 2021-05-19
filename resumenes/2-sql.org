@@ -1,0 +1,300 @@
+#+TITLE: SQL - Structured Query Language
+
+* Tablas
+** Concepto
+   - Es la unidad básica de almacenamiento de datos
+   - Son de existencia *permanente*
+   - Los datos se guarda en filas/columnas
+   - Cada columna puede tener
+     - nombre
+     - tipo de dato
+     - un ancho (varía según el tipo de dato)
+** Sintáxis en SQL
+   #+BEGIN_SRC sql
+     CREATE TABLE clientes(
+            dni INT NULL,
+            nombre VARCHAR(20) NULL,
+            edad SMALLINT NULL,
+            alta DATETIME NULL
+     );
+   #+END_SRC
+
+* Constraints
+** Conceptos
+   - EN español significa *restricciones*
+** Primary Key Constraint
+*** Conceptos
+   - Puede estar formada por 1 o más columnas
+   - Representa de forma unívoca a cada fila
+   - NO puede aceptar valores nulos
+   - Se utiliza el concepto de [[Integridad de Entidad][Integidad de Entidad]]
+*** Sintáxis en SQL
+    Supongamos que tenemos una entidad Pedidos,
+    que tiene varios items.
+
+    *Observación:*
+    Recorda que la Clave Foránea va en la entidad
+    que tiene el modalidad Muchos
+
+    #+BEGIN_SRC sql
+      /*
+      * Restricción a nivel de Columna
+      */
+      CREATE TABLE pedidos(
+             cod_pedido        INT PRIMARY KEY, -- ACA!!!
+             descripcion       VARCHAR(20),
+             fecha_realizado   DATE
+      );
+
+      /*
+      * Restricción a nivel de Tabla
+      */
+
+      CREATE TABLE items_pedidos(
+             cod_item      INT,
+             cod_pedido    INT REFERENCES pedidos,
+             descripcion   varchar(20),
+             precio        SMALLINT,
+             alta          DATE,
+             PRIMARY KEY(cod_item, cod_pedido) -- ACA!!!
+      );
+    #+END_SRC
+** Foreign Key Constraint
+*** Conceptos
+   - Puede estar formada por 1 o más columnas
+   - Está referenciada a una *primary key* de otra tabla
+   - Se utiliza el concepto de [[Integridad Referencial][Integridad Referencial]]
+*** Sintáxis en SQL
+    #+NAME: restricciones-a-nivel-tabla
+    #+BEGIN_SRC sql
+      CREATE TABLE facturas(
+             numero         INTEGER,
+             letra          VARCHAR(1),
+             cliente        SMALLINT,
+             fecha_generada DATE,
+             FOREIGN KEY (cliente) REFERENCES clientes (id_cliente),
+             PRIMARY KEY (numero, letra)
+      );
+    #+END_SRC
+
+    #+NAME: restricciones-a-nivel-columna
+    #+BEGIN_SRC sql
+      CREATE TABLE facturas(
+             numero         INTEGER,
+             letra          VARCHAR(1),
+             cliente        SMALLINT REFERENCES clientes,
+             fecha_generada DATE,
+             PRIMARY KEY (numero, letra)
+      );
+    #+END_SRC
+** Reglas de Integridad
+*** Integridad de Entidad
+    - Cada tabla debe tener una *primary key*
+      que haga única a cada fila
+    - La *primay key* NO puede ser nula
+*** Integridad Referencial
+    - El valor de la *foreign key* debe existir en 
+      como valor en la *primary key*
+
+
+
+** Tipos de Constraints Referenciales
+*** Conceptos
+     #+NAME: tipo-constraints
+     |---------------+-------------------------|
+     | TIPO          | RELACION                |
+     |---------------+-------------------------|
+     | Ciclic        | padre-hijo entre tablas |
+     | Self          | padre-hijo misma tabla  |
+     | Multiple path | PK con varias FK        |
+     |---------------+-------------------------|
+*** Ejemplos
+    #+BEGIN_EXAMPLE
+    Un ejemplo de ciclic referential constraint, sería:
+    Cliente -> Facturas
+    Pedido -> Productos
+    Factua -> Renglones
+
+    Ejemplos con una self referential constraint, serían:
+    Empleados->Empleados (por la subordinados)
+    Categoria->Categoria (para subcategorias, ej. mercadolibre)
+    Color->Color (colores secundarios compuestos por primarios) 
+
+    Ejemplos de multiple path constraint
+    Cliente->Facturas, Cliente->Reclamos
+    #+END_EXAMPLE
+*** Sintáxis en SQL
+    OJO..!
+    El motor NO nos dejará ingresar un empleado
+    que tenga una referencia de jefe que NO exista.
+    Pero..
+    Si nos dejará ingresar un empleado
+    que tenga una referencia de jefe NULA
+    porque? porque el default es NULL
+
+    #+NAME: restricciones-a-nivel-tabla
+    #+BEGIN_SRC sql
+      CREATE TABLE empleados(
+             empleado INTEGER PRIMARY KEY,
+             nombre VARCHAR(20),
+             apellido VARCHAR(20),
+             jefe     INTEGER,
+             -- ACA TENEMOS LA AUTOREFERENCIA
+             FOREIGN KEY (jefe) REFERENCES empleados (empleado)
+      );
+    #+END_SRC
+** Integridad Semántica
+*** Conceptos
+    Para que los datos que guardemos respeten 
+    las restricciones
+    - sobre los *dominios*
+      <<DUDA 9>>: Se refiere al dominio cuando definimos 
+      el tipo de dato en la tabla, antes de definir el campo?
+    - sobre los *atributos*
+
+     #+NAME: 
+     |------------+------------------------------------------|
+     | Data type  | Especificar tipo de dato de una columna  |
+     |------------+------------------------------------------|
+     | Default    | Especificar un valor por defecto a una   |
+     | Constraint | columna                                  |
+     |            |                                          |
+     |            | Aplica solo para =INSERT=                |
+     |------------+------------------------------------------|
+     | Unique     | Cada fila de una columa/s será única     |
+     | Constraint |                                          |
+     |            | Aplica para =INSERT/UPDATE=              |
+     |------------+------------------------------------------|
+     | Not Null   | Una columna/as no puede tener valor NULL |
+     | Constraint |                                          |
+     |            | Aplica para =INSERT/UPDATE=              |
+     |------------+------------------------------------------|
+*** Data Type
+**** Conceptos
+    - Define el tipo de valor que se puede almacenar
+      en una columna
+**** Ejemplos
+*** Default Constraint
+**** Conceptos
+    - Para fijar un valor predeterminado en una columna
+      al hacer un ~INSERT~ con un atributo sin valor
+    - Si no se asigna un valor, el valor predeterminado es NULL
+    - Aplica sólo para ~INSERT~, NO para ~UPDATE~
+
+    *Obsevación:*
+    Si no agregamos un valor en la columna del insert,
+    y tiene fijado un valor predeterminado, tendrá ese valor
+**** Sintáxis en SQL
+     #+BEGIN_SRC sql
+       CREATE TABLE cliente(
+              dni       INT PRIMARY KEY,
+              puntos    NUMBER DEFAULT 0,
+              alta      DATE DEFAULT CURRENT_DATE
+       );
+     #+END_SRC
+*** [#A] Unique Constraint
+**** Conceptos
+    - Para indicar que el valor sobre una columna (ó columnas)
+      será único para cada fila
+    - Aplica tanto para INSERT como UPDATE
+    - Podemos usarlo en [[Claves Alternas][claves alternas]]
+
+    *Observaciones:*
+    Recordemos que las claves candidatas son aquellas
+    que representan de forma únivoca a cada fila/registro
+    de una entidad/tabla.
+    Si el diseñador elije una o un conjunto de ellas como
+    clave primaria, el resto se consideran claves alternas
+**** Sintáxis en SQL
+     En este caso tenemos dos claves candidatas,
+     los atributos *legajo* y *cuil*.
+     Como el diseñador prefirió elegir la primera
+     como *clave primaria*, la segunda se considera
+     como *clave altena* por tanto usaremos 
+     UNIQUE para decir que posee valores únicos para
+     cada fila de clientes
+
+     #+NAME: entidad-clientes
+     #+BEGIN_SRC sql
+       -- cuil: es clave alterna
+       CREATE TABLE clientes(
+              legajo     NUMERIC PRIMARY KEY,
+              cuil       NUMERIC(10,0) UNIQUE,
+              nombre     VARCHAR(20),
+              nacimiento DATE,
+              ingreso    DATE
+       );
+     #+END_SRC
+
+     #+NAME: entidad-empleados
+     #+BEGIN_SRC sql
+       -- dni+tipo_documento representan una clave candidata
+       -- pero al no ser elegida como PK es una clave alterna
+       -- pero siguen representando de forma unica a cada ocurrencia
+       -- de empleados
+       CREATE TABLE empleados(
+              legajo           NUMERIC PRIMARY KEY,
+              dni              NUMERIC(10,0),
+              tipo_documento   NUMERIC(10,0),
+              nombre           VARCHAR(20),
+              nacimiento       DATE,
+              ingreso          DATE,
+              UNIQUE (dni, tipo_documento)
+       );
+     #+END_SRC
+*** Not null Constraint
+    - Para indicar que el valor sobre una columna (ó columnas)
+      NO pueda tener NULL (ausencia de valor)
+**** Sintáxis en SQL
+     #+BEGIN_SRC sql
+       CREATE TABLE cliente(
+       dni       INT PRIMARY KEY,
+       nombre    VARCHAR(20) NOT NULL,
+       apellido   VARCHAR(20) NOT NULL,
+       puntos    NUMBER DEFAULT 0,
+       alta      DATE DEFAULT CURRENT_DATE
+       );
+     #+END_SRC
+*** [TODO] Check Constraint
+**** Conceptos
+     - Para indicar que condiciones debe cumplir una columna 
+       al momento de un INSERT o UPDATE una fila
+     - Devuelve un valor booleano TRUE/FALSE
+     - NO se puede agregar queries
+**** Ejemplos
+*** Tipos de Constraints
+    Los constraints se pueden definir de dos maneras
+    1. Restricciones a nivel de *columna*
+    2. Restricciones a nivel de *tabla*
+
+    La restricción a nivel columna,
+    se agrega al lado del tipo de dato,
+    se utiliza cuando la restricción es sólo
+    para una columna específica
+    #+NAME: restriccion-columna
+    #+BEGIN_SRC sql
+      CREATE TABLE cliente(
+             dni    INT PRIMARY KEY,
+             nombre VARCHAR(20),
+             edad   SMALLINT,
+             alta   DATE
+      );
+    #+END_SRC
+
+    La restricción a nivel de tabla,
+    cuando aplica a varias columnas
+    #+NAME: restriccion-tabla
+    #+BEGIN_SRC sql
+      CREATE TABLE cliente(
+             dni      INT,
+             tipo_dni INT,
+             nombre VARCHAR(20),
+             edad   SMALLINT,
+             alta   DATE,
+             PRIMARY KEY (dni, tipo_dni)
+      );
+    #+END_SRC
+
+
+    
+

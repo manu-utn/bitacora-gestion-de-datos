@@ -1,0 +1,27 @@
+#+TITLE: Clase 04 - Indices - Prof. Reinosa
+
+* [TODO] Indices
+** conceptos
+  - tener índices, NO quiere decir que los datos estén ordenados
+  - por lo general los archivos se guardan de forma secuencial
+  - es otra estructura, para acceder más rapido a los datos
+    (similar a un acceso directo)
+  - para no tener que evaluar dato por dato de manera secuencial
+  - 
+** almacenamiento
+** tipos de acceso
+*** secuencial
+    - es recorrer un conjunto de datos uno atrás del otro 1,2,3...
+    - los indices evitaran esto, porque es lento
+*** secuencial indexada
+    - 
+*** directo o random
+    - acceder de forma directa, sin pasar por los elementos anteriores
+    - Ej. cuando usamos fseek en C, para acceder a una parte
+      específica
+** métodos para crear índices
+*** hashing
+*** árbol b
+** [TODO] ???
+** hashing
+*** hashing doble

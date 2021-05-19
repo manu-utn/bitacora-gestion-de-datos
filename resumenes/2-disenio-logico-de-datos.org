@@ -1,0 +1,257 @@
+#+TITLE: Diseño Lógico de Datos
+
+*DUDAS*:
+ - [[DUDA 1][DUDA 1]]
+ - [[DUDA 2][DUDA 2]]
+
+* Diseño de datos
+   - Entender mejor los *requerimientos*
+   - Evitar *redundancia* de datos
+* Que es Diseñar
+  Es encontrar *componentes*
+    - Darles *responsabilidad*
+    - Encontrar las *relaciones* con otras partes/componentes
+* Modelo Conceptual
+  - Define las entidades y sus relaciones en base a las *reglas del negocio*
+  - Es independiente de la tecnología
+  - Es fácil de validar por el usuario
+* Diseño Lógico de datos
+  - Definimos el *esquema* a utilizar
+  - Definimos las *entidades*, sus *relaciones* y sus *responsabilidades*
+ 
+  Recordemos que una *entidad* representa una parte del sistema
+* Diseño Físico de datos
+  - Es la implementación en un *motor de base de datos* (Ej. SQL)
+  - El motor
+    - debe soportar el *esquema* que se definió
+    - impone ciertas restricciones del fabricante
+      - el (DML) lenguaje de manipulación de datos
+      - el (DDL) lenguaje que nos permite crear
+        las entidades
+* Base de datos
+  - Conjunto de datos del sistema
+  - Almacenado en un medio físico de almacenamiento
+    (Ej. Disco rigido, etc...)
+* Sistema que administra la Base de Datos
+  - Es un conjunto de programas que ofrecen
+    distintos servicios
+    - seguridad
+    - interfaz interactiva para ejecutar consultas,
+      manipular datos, ...
+    - administrar las entidades
+
+* Esquemas para guardar datos
+  - jerárquico
+  - de objetos
+  - documentales, par clave-valor
+  - relacional
+
+* (DER) Diagrama Entidad-Relación
+** Entidad
+   - Datos que queremos persistir
+** Atributos
+   - Propiedades ó características de las
+     entidades
+** Atributos multivaluados
+   - NO aparecen en el *modelo relacional*
+   - Atributos que pueden tomar más de un valor
+   
+   #+BEGIN_EXAMPLE
+   Algunos atributos multivaluados podrian ser 
+   una dirección de domicilio(Ej. Palermo Soho 1021 2D)
+   una lista de correos
+   #+END_EXAMPLE
+** Instancia de una entidad
+   - Es una *ocurrencia* particular de una entidad
+   
+   <<DUDA 1>>
+   En una base de datos sería cada uno de los registros?
+   Osea cada fila?
+** [TODO] Relaciones entre entidades
+   - Se pueden representar con un verbo o preposición
+     que conecta a las dos entidades
+** Características de las Relaciones
+   En el *modelo relacional* no se utiliza
+   - la *generalización* (supertipo-subtipo)
+   - ni los *atributos multivaluados*
+*** Grado
+    Representa la cantidad de entidades
+    que tiene asociada una relación
+**** Unarias ó Recursivas
+     Relaciones que asocian a una sola entidad
+**** Binarias
+     Relaciones que asocian a dos entidades
+**** N-arias
+     Relaciones que asocian a N entidades
+*** Cardinalidad
+    - Cantidad de *entidades* que participan
+      en una relación
+    - Es la cantidad de [[Instancia de una Entidad][instancias de entidad]]
+    que puede tener una relación entre
+    dos entidades
+
+    |--------------+------------------------------|
+    | Cardinalidad | Ejemplo                      |
+    |--------------+------------------------------|
+    | 1 a 1        | Un cliente y su domicilio    |
+    | 1 a n        | Una Empresa y sus sucursales |
+    | n a n        | Profesores y Alumnos         |
+    |--------------+------------------------------|
+*** Modalidad
+    Indica la *obligatoriedad* de existencia
+    o no de una [[Instancia de una Entidad][entidad]] en una [[Relación][relación]]
+
+    |-------------+------------------------------------------------|
+    | Modalidad   | Ejemplo                                        |
+    |-------------+------------------------------------------------|
+    | Obligatoria | Una factura debe tener al menos un renglón     |
+    | Opcional    | Un cliente puede tener o no facturas asociadas |
+    |-------------+------------------------------------------------|
+*** Especialización ó Generalización
+**** Entidad Supertipo
+     Es la Entidad Padre
+**** Entidad Subtipo
+     - Son las entidades hijas
+     - DEBEN TENER atributos *diferentes*
+
+* Modelo Relacional
+** Conceptos
+   - Las relaciones entre entidades se implementan
+     con *Claves foráneas* (FK)
+** Que NO puede tener
+  Si integramos el concepto de *diagrama entidad-relación*
+  debemos recordar que el *modelo relacional*
+  - NO puede tener [[Atributos Multivaluados][atributos multivaluados]]
+  - NO puede tener [[Especialización ó Generalización][entidades supertipo]] (generalización/especialización)
+
+* Modelo de Objetos
+** Conceptos
+   - Las relaciones entre entidades se pueden
+     implementar con *referencias*
+   - Si los *Strategies* son *Stateless*
+     no son candidatos a ser *Entidades*
+** Strategies y Stateless
+   <<DUDA 2>>
+* Clasificación de Entidades
+** Entidades Fuertes ó Independientes
+   - La clave primaria está compuesta
+     por atributos propios
+   - No tiene atributos de relación
+     (osea NO tiene clave foránea)
+** Entidades Débiles ó Dependientes
+   - También llamadas de *dependencia simple*
+   - Tienen al menos un atributo de relación
+     (osea tienen Clave foránea)
+** Asociativas
+   - La clave primaria está formada por
+     atributos de relación
+
+* Algebra Relacional
+  Juntando conceptos de las operaciones del *Algebra Relacional*
+** Restricción
+   Si queremos filtrar tareas que lleven más de 2 días
+
+   #+BEGIN_EXAMPLE
+   En Algebra Relacional sería
+
+   SELECT TAREAS WHERE TIEMPO > 2
+   #+END_EXAMPLE
+
+   #+BEGIN_SRC sql
+     SELECT *
+     FROM TAREAS
+     WHERE TIEMPO > 2
+   #+END_SRC
+** Proyección
+   Queremos un nuevo conjunto de las tareas,
+   con los atributos CODIGO y DESCRIPCION
+
+   #+BEGIN_EXAMPLE
+   En Algebra relacional sería
+   
+   PROJECT (SELECT TAREAS WHERE TIEMPO > 2) {CODIGO, DESCRIPCION}
+   #+END_EXAMPLE
+
+   #+BEGIN_SRC sql
+     SELECT codigo, descripcion
+     FROM tareas
+
+     -- Suponiendo que "tareas" representa
+     -- la siguiente query
+     -- SELECT * FROM TAREAS WHERE TIEMPO > 2
+   #+END_SRC
+
+** [TODO] Join
+   Suponiendo que las tareas tienen complejidad diferente
+   y queremos las que tengan complejidad=X
+
+   #+BEGIN_EXAMPLE
+   En Algebra Relacional podriamos hacer
+
+   (SELECT tareas WHERE complejidad = 'X')
+   JOIN proyectos {projecto_id}
+
+   1. Agarraria todas las tareas que tienen esa complejidad
+   2. Y con el JOIN projecto_id nos daría
+      todas las tareas donde coincida 
+      tarea.projecto_id=projecto.id
+      y nos devolveria los datos de la relación Tarea
+   #+END_EXAMPLE
+
+   #+BEGIN_SRC sql
+     SELECT *
+     FROM proyectos
+          INNER JOIN tareas
+          ON tareas.proyecto_id = proyectos.id
+     WHERE tareas.complejidad='x'
+   #+END_SRC
+
+   otra manera sin usar join
+   #+BEGIN_SRC sql
+     SELECT *
+     FROM proyectos, tareas
+     WHERE tareas.proyecto_id=proyectos.id AND
+           tareas.complejidad='x'
+   #+END_SRC
+
+** Asignación
+*** Conceptos
+    La operación de asignación del Algebra Relacional
+    en sql aparece con las *instrucciones* 
+    - insert
+    - update
+    - delete
+*** Insertar datos
+    #+BEGIN_SRC sql
+      INSERT INTO proyectos
+      (descripcion)
+      VALUES ('nueva descripción');
+    #+END_SRC
+*** Modificar datos
+    #+BEGIN_SRC sql
+      UPDATE proyectos
+             SET descripcion = 'nueva descripcion'
+      WHERE id = 1;
+    #+END_SRC
+*** [TODO] Eliminar
+    Recordar que al eliminar...
+    el *DBMS* chequea las *constraints* de la entidad
+    (si prohibir, borrar en cascada, ó setear a null)
+
+    #+BEGIN_SRC sql
+      DELETE
+      FROM proyectos
+      WHERE id=1;
+    #+END_SRC
+
+
+
+* (DML) Lenguaje para Manipulación de Datos
+* (DDL) Lenguaje para Definición de Datos
+  - Nos permite crear *entidades*
+  - Decimos que *Metadata* es equivalente a *definición de datos*
+  
+  SQL es el lenguaje que lo permite (?)
+  SQL significa *Structured Query Language*
+* Glosario
+** clave subrogada

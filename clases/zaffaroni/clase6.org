@@ -1,0 +1,224 @@
+#+TITLE: Clase 06
+
+#+BEGIN_COMMENT
+leadtime es el tiempo promedio de entrega que tiene el proveedor
+y se utiliza para los sistemas q usan intime
+#+END_COMMENT
+
+* [TODO] indices
+** conceptos
+  - son estructuras opcionales a las tablas
+  - se pueden crear de forma automática
+  - para acceder mas rapido a las tablas
+  - ayuda a la integridad, y unicidad
+** TODO tipos
+*** conceptos
+    la diferencia  entre ellos es la estructura
+    en como se guardan
+*** btree
+    - es el mas comun, para indices relacionales
+
+    #+BEGIN_EXAMPLE
+    Ej. mongodb lo usa
+    #+END_EXAMPLE
+*** btree +
+*** btree cluster index
+    - solo puede haber 1 por tabla
+    - ordenada fisicamente la tabla, igual que el indice
+*** bitmap index (oracle)
+    - arma un mapa de bit,
+    - y cada bit representa una fila (valor 0 o 1)
+*** hash index (mysql)
+*** functional index / function based index
+*** reverse key index (oracle)
+    - invierte los bits de indice
+** caracteristicas diferenciadoras
+*** unico
+   - cuando le decimos al motor q lo cree,
+     este será unico
+*** TODO duplicado
+    muchas filas asociadas a la misma fila
+*** simple
+    clave formada por una sola columna
+*** compuesto
+    po varias columnas
+    (ej. dni y tipo)
+** Beneficios de su uso
+   - es una busqueda n-aria, por tanto es mas potente
+     que una busqueda binaria
+   - mejor perfomance en el acceso, y en el ordenamiento
+   - nos evita tener q ordenarlos, ya los deja ordenados
+   - cuando usemos los JOIN sera mas eficiente
+     (nested join, join con indices)
+** Desventajas
+   - costo de espacio en disco
+     (puede que el espacio ocupado por los indices
+     sea mayor que la propia tabla)
+   - costo de procesamiento y mantenimiento
+     (poque tiene que actualizar/insertar en varias partes)
+** Ejemplos
+*** Complejidad
+    - secuencial: N x N elementos
+    - binarias: N log(n+1)   < en base 2
+    - btree: N log(n+1)      < en base N
+** Cuando deberiamos indexar
+   - columnas que sabemos que usaremos JOIN
+   - columnas que suelen tener FILTROS (where)
+   - columnas que solemos usar ORDER BY
+   - evitar duplicacion de indices
+     (Ej. sexo, estado civil, ..)
+   - que el tamaño del indice debe ser menor
+     comparado co la fila
+   - limitar la cant. de indices en tablas
+     (por el tema de los costos de espacio/procesamiento)
+   - indices compuestos para incrementar los valores unicos
+   - cluster index agiliza la recuperacion de filas
+** construccion de indices en paralelo
+   (es mejor migrar sin los indices, y luego recrearlos)
+** indices segun otores
+   #+BEGIN_SRC sql
+   create unique index i_ordenes ON ordenes (n_orden)
+   #+END_SRC
+** indices clustered
+** IOT - tablas organizadas por indice (oracle)
+  index organized tables 
+* [TODO] subqueries
+** conceptos
+  primero se ejecutan los subqueries y luego la query principal
+** ejemplos
+   #+BEGIN_SRC sql
+     INSERT INTO closed_orders
+     SELECT * FROM orders -- Ojo..! Evitemos el * asterisco
+     where paid_date IS NOT NULL
+
+     DELETE FROM customer
+     WHERE customer_num NOT IN
+     (SELECT DISTINCT customer_num FROM cust_calls)
+     AND customer_num NOT IN 
+     (SELECT DISTINCT customer_num FROM orders)
+
+     UPDATE #clientesParaBorrar
+     SET state = (SELECT state FROM state WHERE sname='florida')
+     WHERE customer_num=101
+
+     -- esto va a FALLAR..!
+     -- Porque el subquery devuelve varioas resultados, en vez de uno solo
+     -- podria usarse con IN
+     UPDATE manufact lead_time=15
+     WHERE manu_code =(SELECT DISTINCT manu_code FROM items)
+
+     -- la columna cantidad viene de la subquery, es un campo calculado
+     SELECT lname, fname nombre, cliente, cantidad
+     FROM  customer c1 JOIN
+     -- esta es la subquery
+     (SELECT customer_num cliente, count(order_num) cantidad
+     FROM orders GROUP BY customer_num) c2
+     ON (c1.customer_num = c2.cliente)
+     where 
+     ;
+   #+END_SRC
+
+   #+BEGIN_SRC sql
+     select lname+','+fname, customer_num from customer
+     where customer_num
+     in (select customer_num from cust_calls
+     group by customer_num having count(*)>1)
+
+     -- la misma query con joins 
+     select lname+', '+fname, c.customer_num from customer c
+     join cust_calls cc on cc.customer_num = c.customer_num
+     group by c.customer_num, lname, fname
+     having count(cc.customer_num)>1
+
+   #+END_SRC
+
+   
+   #+BEGIN_SRC sql
+     select count(*) from customer c1 where
+     city=(select city from customer where lname='Higgins')
+
+     -- la misma query con joins 
+     select count(*) from customer c1
+     JOIN customer c2 on c1.city=c2.city
+     where c2.lname='Higgins';
+   #+END_SRC
+  EXCEPT es como el operador diferencia
+** TODO subquery correlacionado
+   es un subquery que NO se puede ejecutar 
+* [TODO] multi-select
+* [TODO] operador union
+  - devuelve las filas del primer select y del segundo
+  - trae la union pero no repite los datos
+    (a menos q usemos union all, similar a un distinct)
+* [TODO] operador union all
+  - no hace el DISTINCT, habran filas repetidas, une todos los SELECT
+  - 
+* [TODO] operador intersect
+  - devuelve las filas que estan en ambas consultas
+* [TODO] operador except
+  - actua como la diferencia,
+    (Ej.A-B, todos A menos los de B)
+  
+
+
+* [TODO] parte practica
+  #+BEGIN_SRC sql
+-- ejercicio 1
+    SELECT m.manu_code, m.manu_name, lead_time, SUM(quantity*unit_price) AS monto_total
+    FROM manufact m LEFT JOIN items i ON m.manu_code = i.manu_code
+    GROUP BY m.manu_name, m.manu_code, lead_time
+    ORDER BY m.manu_name
+  #+END_SRC
+
+  
+  #+BEGIN_SRC sql
+    -- ejercicio 2
+    select s1.stock_num, tp.description, s1.manu_code, s2.manu_Code
+    from products s1
+    left join products s2 on (s1.stock_num=s2.stock_num AND s1.manu_code != s2.manu_code)
+    join product_types tp on (s1.stock_num=tp.stock_num)
+    order by 1;
+
+
+    -- duda q dieron en clase
+    -- 
+    select s1.stock_num, tp.description, s1.manu_code, s2.manu_Code
+    from products s1
+    left join products s2 on (s1.stock_num=s2.stock_num AND s1.manu_code != s2.manu_code)
+    join product_types tp on (s1.stock_num=tp.stock_num)
+    -- si no le agregaos el "IS NULL" nos estaria sacando fabricantes
+    --where s1.manu_code < s2.manu_code OR s2.manu_code IS NULL
+    -- El COALESE  reemplaza los NULL por la cadena q pongamos
+    where s1.manu_code < COALESE(s2.manu_code, 'ZZZ')
+    order by 1;
+  #+END_SRC
+
+  #+BEGIN_SRC sql
+    -- ejercicio 3
+    SELECT customer_num, fname, lname, company, address1, address2, city,
+    state, zipcode, phone, status
+    FROM customer
+    WHERE customer_num IN (SELECT customer_num FROM orders
+    GROUP BY customer_num HAVING COUNT(order_num)>1)
+
+    -- ejercicio 3 otra manera
+
+    SELECT customer_num, fname, lname, company, address1, address2, city,
+    state, zipcode, phone, status
+    FROM customer
+    WHERE EXISTS (SELECT customer_num FROM orders WHERE o.customer_num = c.customer_num
+    GROUP BY customer_num HAVING COUNT(order_num)>1)
+
+    -- otra alternativa
+    select customer_num, fname, lanem
+    from custoer c
+    where (select count(order_num) from orders o where o.customer_num=c.customer_num) >1
+  #+END_SRC
+
+  #+BEGIN_SRC sql
+    -- ejercicio 4
+    select c.customer_nu, fname, lname
+    from customer c join orders o on (c.customer_num=o.customer_num)
+    group by c.customer_num, fname, lname
+    having counter(order_num)>1
+  #+END_SRC

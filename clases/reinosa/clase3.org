@@ -1,0 +1,56 @@
+#+TITLE: Clase 03 - Prof. Reinosa
+
+* Clasificacion
+* Registros
+* Estabilidad
+* Complejidad
+  - QUe tanto la cuesta a la computadora
+* Metodos a analizar
+** bubble sort
+   - compara de a dos
+   - sbe que el ultimo es el mas grande
+   - tiene corte anticipado
+   
+   https://gfycat.com/focusedcaninehylaeosaurus
+** selection sort
+   - compara el primer elemento contra los n-1 restantes
+   - sabe que uno es el mas chico
+
+   https://gfycat.com/daringeasygoingboilweevil
+** insertion sort
+   - hace una mezcla entre el bubble y selection sort
+   - tiene menos niveles de comparaciones 
+     (según la cant. de elementos y su orden)
+
+   https://gfycat.com/densebaggyibis
+** shell sort
+   https://www.algostructure.com/sorting/shellsort.php
+** merge sort
+   - divide y vencerás! no compares todos contra todos
+     dividilo en dos y compara
+   - al dividir nos queda un *arbol binario balanceado*
+
+   https://www.algostructure.com/sorting/mergesort.php
+** quick sort
+   - elegimos el primer elemento como *pivote*
+   - tiene un comportamiento de un *arbol*
+   - separa dos conjuntos (menores/mayores)
+     y de cada uno en otros dos subconjuntos, y asi..
+   - su nivel de dificultad es mayor si el conjunto ya
+     está ordenado
+*** Variantes
+**** bsort
+     
+**** meansort
+** heap sort
+   - ordenar a traves de monticulo (heap)
+   - es un *arbol completo balanceado* (no debe tener agujeros/huecos)
+   - se arma en orden (orden convencional de arriba abajo, de izq. a der)
+   - por cada elemento que agrega debe comparar con la cant. de elementos
+     que tenga el *piso*
+
+   obsevacion:
+   un monticulo no llega a ser montaña
+
+* Algoritmos
+  
