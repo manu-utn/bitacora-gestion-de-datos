@@ -1,8 +1,10 @@
 #+TITLE: Clase 04 - Secuencias y Tablas Temporales
 
-* Dudas
+#+BEGIN_COMMENT
   1. Pagina 8 - Secuencias (???) como sin huecos (?)
   2. <<DUDA 1>> (pagina 29)
+#+END_COMMENT
+
 * DML (Data Manipulation Language)
 ** Conceptos previos
 *** Constraints

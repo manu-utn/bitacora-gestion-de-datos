@@ -1,6 +1,6 @@
 #+TITLE: Clase 05 - Join
 
-* Dudas
+#+BEGIN_COMMENT
   1. Pagina 10,11,14 - Views
   2. Que utilidad tiene usar el outer, si te muestra resultados
      que no matchean?
@@ -12,6 +12,7 @@
      columnas virtuales?
   7. Pag. 28. cuál sería el resultado si en vez de JOIN
      usaramos solo la cláusula ~WHERE~ ?
+#+END_COMMENT
 * Ejemplos de clase
   
   #+BEGIN_SRC sql
