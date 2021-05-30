@@ -152,15 +152,11 @@ y se utiliza para los sistemas q usan intime
     (a menos q usemos union all, similar a un distinct)
 * [TODO] operador union all
   - no hace el DISTINCT, habran filas repetidas, une todos los SELECT
-  - 
 * [TODO] operador intersect
   - devuelve las filas que estan en ambas consultas
 * [TODO] operador except
   - actua como la diferencia,
     (Ej.A-B, todos A menos los de B)
-  
-
-
 * [TODO] parte practica
   #+BEGIN_SRC sql
 -- ejercicio 1

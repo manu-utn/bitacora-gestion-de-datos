@@ -1,41 +1,4 @@
-/*
-*
-* Corregir o Revisar - Teoria clase 05
-* 1. En actualizar registros pusiste "with check point"
-* pero en realidad era "with check option"
-*
-*
-*
-* Corregir o Revisar - Teoria clase 04
-*
-* INSERT
-* 1. En "Insertar multiples filas", está MAL la query
-* porque NO deben estar los paréntesis en el SELECT
-* si revisás los ejercicios resueltos que hiciste, 
-* anotaste que eso producia un error de sintaxis
-*
-* 2. Lo mismo se repite, en "Tipos de Creacion" de Tablas temporales
-* donde hace un INSERT INTO #ordenes_pendientes
-* sacale los parentesis a la query de SELECT
-*
-* TABLAS TEMPORALES
-* 1. En la primera query que hace INSERT INTO #productos
-* deberia haber una observación, de que NO se recomienda
-* utilizar el asterisco, para evitar problemas de los tipos de columnas
-* y que se NO se inserten valores en columnas que no se queria
-* (porque en algun momento se pudiese modificar la estructura de la tabla
-* con un ALTER TABLE, y los registros se ingesarían MAL)
-*
-* 2. Lo mismo que lo anterior pero en el SELECT
-*
-* PARCIALES?
-* - Revisa lo que pusiste al final de todo del org-file de la clase5
-* chequea que sepas cuales son los tipos de objetos, las funciones, etc..
-* para lo que es teorico
-*/
-
-
-
+-- TODO: Revisar a partir del ej.9 en adelante
 
 -- Ejercicio 1
 /*
@@ -92,30 +55,43 @@ HAVING SUM(unit_price*quantity) < (SELECT AVG(unit_price*quantity) FROM items);
 --HAVING monto_total < AVG(unit_price*quantity);
 
 -- Ejercicio 5
-/*
-Obtener por cada fabricante, el listado de todos los productos de stock con precio
-unitario (unit_price) mayor que el precio unitario promedio de dicho fabricante.
-Los campos de salida serán: manu_code, manu_name, stock_num, description,
-unit_price.
-*/
+-- Correcciónes:
+-- 1. NO era necesario usar el GROUP BY, poque la "función agregada" AVG() está dentro de la subquery
 SELECT m.manu_code, manu_name, p.stock_num, description
 FROM manufact m
 JOIN products p ON p.manu_code=m.manu_code
 JOIN product_types pt ON p.stock_num=pt.stock_num
-WHERE p.unit_price > (SELECT AVG(unit_price) FROM products WHERE manu_code=m.manu_code)
-GROUP BY m.manu_code, m.manu_name, p.stock_num, description
+WHERE p.unit_price > (SELECT AVG(unit_price) FROM products WHERE manu_code=m.manu_code);
+--GROUP BY m.manu_code, m.manu_name, p.stock_num, description -- (correccion #1)
 
--- Ejercicio 6
-
-SELECT o.customer_num, company, o.order_num, order_date 
-FROM orders o
-JOIN items i ON i.order_num = o.order_num
-JOIN customer c ON c.customer_num = o.customer_num
---JOIN product_types pt ON pt.stock_num = i.stock_num
-WHERE NOT EXISTS (
-      SELECT stock_num FROM product_types
-      WHERE description LIKE '%baseball gloves%' AND stock_num=i.stock_num
-      );
+/*
+* Ejercicio 6:
+*
+* Correcciones:
+* 1a. NO era necesario ese JOIN con items, nos devolvía registros de más
+* 1b. Consecuencia del remover el JOIN del FROM
+* 1c. Agregar esa condición resolvía la corrección #1a << IMPORTANTE
+*
+* Observaciones:
+* 1. el "NOT EXISTS" no devuelve ningún resultado, sólo evalúa que la consulta
+* que encierra no tenga ninguna fila, es decir que sea conjunto vacío.
+*
+* 2. El SELECT de un "NOT EXIST" no necesita tener un nombre de columna,
+* se puede dejar una constante entera como en ese caso el número 1
+*/
+SELECT o.customer_num, company, o.order_num, order_date
+  FROM orders o
+    JOIN customer c ON c.customer_num = o.customer_num
+  --JOIN items i ON i.order_num = o.order_num /*( corrección #1a )*/
+ WHERE NOT EXISTS (
+--SELECT 1 FROM product_types /*( corrección #1b )*/
+  SELECT 1 FROM items i
+    JOIN product_types pt ON i.stock_num=pt.stock_num /*( corrección #1b )*/
+     WHERE description LIKE '%baseball gloves%'
+       AND stock_num=i.stock_num
+       AND o.order_num=i.order_num /*( correccion #1c )*/
+ )
+ ORDER BY company, order_num DESC;
 
 -- para validar que esta OK el (Ej.6), podemos ejecutar la sig. y comparar
 SELECT o.customer_num, company, o.order_num, order_date, description
@@ -123,21 +99,83 @@ FROM orders o
 JOIN items i ON i.order_num = o.order_num
 JOIN product_types pt ON i.stock_num=pt.stock_num
 JOIN customer c ON c.customer_num = o.customer_num
-WHERE description LIKE '%baseball gloves%'
+WHERE description LIKE '%baseball gloves%';
 
--- Ejercicio 7
-SELECT c.customer_num, fname, lname, manu_code
-FROM customer c
-JOIN orders o ON o.customer_num=c.customer_num
-JOIN items i ON i.order_num=o.order_num
-WHERE i.manu_code NOT LIKE '%HSK%';
+/*
+ * Ejercicio 7:
+ *
+ * # Correcciones:
+ * 1. Los JOIN no eran necesarios, necesitabas usarlos dento del "NOT EXISTS"
+ * 2. Consecuencia del (1), el WHERE debe ir acompañado de un "NOT EXISTS"
+ * para decir que condición se debe cumplir
 
--- Ejecicio 8
+  SELECT c.customer_num, fname, lname, manu_code
+  FROM customer c
+  JOIN orders o ON o.customer_num=c.customer_num -- Correccion (1)
+  JOIN items i ON i.order_num=o.order_num -- Correccion (1)
+  WHERE i.manu_code NOT LIKE '%HSK%'; -- Corrección (2)
+ */
+
+/*
+ * Ejercicio 7 (Corregido):
+ */
 SELECT c.customer_num, fname, lname, manu_code
-FROM customer c
-JOIN orders o ON o.customer_num=c.customer_num
-JOIN items i ON i.order_num=o.order_num
-WHERE i.manu_code LIKE '%HSK%'
+  FROM customer c
+ WHERE NOT EXISTS(
+   SELECT 1 FROM orders o
+                   JOIN items i ON i.order_num=o.order_num
+    WHERE i.manu_code='HSK'
+      AND o.customer_num=c.customer_num /* ESTE ES FUNDAMENTAL */
+ )
+ ORDER BY 1;
+
+/*
+ * Ejercicio 7 (Alternativa):
+ *
+ * Observaciones:
+ * - Usamos "NOT IN" en vez de "NOT EXISTS"
+ */
+SELECT c.customer_num, fname, lname, manu_code
+  FROM customer c
+ WHERE c.customer_num NOT IN(
+   SELECT 1 FROM orders o
+                   JOIN items i ON i.order_num=o.order_num
+    WHERE i.manu_code='HSK'
+      AND o.customer_num=c.customer_num /* ESTE ES FUNDAMENTAL */
+ )
+ ORDER BY 1;
+
+/*
+*  Ejecicio 8:
+
+  SELECT c.customer_num, fname, lname, manu_code
+  FROM customer c
+  JOIN orders o ON o.customer_num=c.customer_num
+  JOIN items i ON i.order_num=o.order_num
+  WHERE i.manu_code LIKE '%HSK%'
+ */
+
+/*
+ * Ejercicio 8 (Corregido):
+ *
+ * Observaciones:
+ * - Nos encontramos con una "doble negación" (not exists)
+ * que como en la lógica proposicional, nos lleva al cuantificador "para todo"
+ * (en otros lenguajes se resuelve con un forall)
+ */
+SELECT c.customer_num, c.fname, C.lname
+  FROM customer c
+ WHERE NOT EXISTS (
+   SELECT p.stock_num FROM products p
+    WHERE manu_code = 'HSK'
+      AND NOT EXISTS (
+        SELECT 1 FROM orders o
+            JOIN items i ON o.order_num = i.order_num
+         WHERE P.stock_num = i.stock_num
+           AND p.manu_code = i.manu_code
+           AND o.customer_num = c.customer_num
+      )
+ );
 
 -- Ejercicio 9
 SELECT * FROM products WHERE manu_code = 'HRO'

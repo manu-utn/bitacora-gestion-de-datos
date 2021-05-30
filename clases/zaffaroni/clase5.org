@@ -2,15 +2,13 @@
 
 #+BEGIN_COMMENT
   1. Pagina 10,11,14 - Views
-  2. Que utilidad tiene usar el outer, si te muestra resultados
-     que no matchean?
-  3. Pagina 28 - Joins, se podría haber usado ~GROUP BY~ ?
-  4. [[DUDA 1]]
-  5. Una *columna virtual* representan operaciones calculadas
-     que se le agregan alias?
-  6. Pag. 38, como es que se pueden borrar filas si tiene 
+  2. Pagina 28 - Joins, se podría haber usado ~GROUP BY~ ?
+  3. [[DUDA 1]]
+  4. Una *columna virtual* representan operaciones calculadas
+     que se le agregan alias? SI
+  5. Pag. 38, como es que se pueden borrar filas si tiene 
      columnas virtuales?
-  7. Pag. 28. cuál sería el resultado si en vez de JOIN
+  6. Pag. 28. cuál sería el resultado si en vez de JOIN
      usaramos solo la cláusula ~WHERE~ ?
 #+END_COMMENT
 * Ejemplos de clase
@@ -83,7 +81,7 @@
 ** Implementacion
 *** Ejemplo 1 - Insertar registros
    #+BEGIN_SRC sql
-     -- con "WITH CHECK POINT"
+     -- con "WITH CHECK OPTION"
      -- restringimos los insert/update/delete,
      -- sólo a los que cumplan la condición del WHERE
      CREATE VIEW v_clientes_brasil (codigo, apellido, nombre, pais)
@@ -91,7 +89,7 @@
        SELECT codigo_cliente, apellido, nombre
          FROM clientes
         WHERE pais='BR'
-              WITH CHECK POINT;
+              WITH CHECK OPTION;
 
      -- lo siguiente FALLARÁ..! y NO se insertará el registro
      -- porque NO cumple con la condición de la clásula WHERE pais='BR
@@ -101,7 +99,7 @@
    #+END_SRC
 *** Ejemplo 2 - Actualizar registros
     #+BEGIN_SRC sql
-      -- con "WITH CHECK POINT"
+      -- con "WITH CHECK OPTION"
       -- restringimos los insert/update/delete,
       -- sólo a los que cumplan la condición del WHERE
       CREATE VIEW v_clientes_brasil (codigo, apellido, nombre, pais)
@@ -109,7 +107,7 @@
         SELECT codigo_cliente, apellido, nombre
           FROM clientes
          WHERE pais='BR'
-               WITH CHECK POINT;
+               WITH CHECK OPTION;
 
      -- lo siguiente FALLARÁ..! y NO se actualizará el registro
      -- porque NO cumple con la condición de la clásula WHERE pais='BR'

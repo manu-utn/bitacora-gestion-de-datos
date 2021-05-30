@@ -76,9 +76,10 @@
      #+BEGIN_SRC sql
        -- insertamos en base a una query
        -- 1. NO se recomienda usar el asterisco * en el SELECT
+       -- Obs: CUIDADO CON LOS PARENTESIS.. NO ES UNA "SUBQUERY", eso produce un error sintáctico
        INSERT INTO closed_orders
-                   (SELECT * FROM orders
-                     WHERE paid_date IS NOT null);
+                   SELECT * FROM orders
+                     WHERE paid_date IS NOT null;
 
        INSERT INTO closed_orders
                    (SELECT (order_num, order_date) FROM orders
@@ -322,6 +323,13 @@
       * tipos de datos
       * restricciones (constraints)
 
+    *Observaciones:*
+    + NO se recomienda utilizar el * (asterísco) para insertar mútiples registros porque
+      1. porque puede haber problemas de tipos de columnas
+      2. porque si llegase a cambiar la tabla, los registros quizás tipan pero se ingresarían mal
+    + Al insertar multiples registros con ~INSERT INTO~ y ~SELECT~, _no agregar paréntesis_ en la consulta
+      del  ~SELECT~ porque NO es una subquery
+
     #+BEGIN_SRC sql
       -- Es importante notar el símbolo # numeral
       -- antes del identificador/nombre de la tabla
@@ -332,12 +340,13 @@
         alta TIMESTAMP
         );
 
+      -- OBS: OJO CON LOS PARÉNTESIS EN EL SELECT.. NO ES UNA "SUBQUERY" (produciría un error sintáctico)
       INSERT INTO #ordenes_pendientes
-                  (SELECT * FROM ordenes WHERE estado = 1);
+                  SELECT * FROM ordenes WHERE estado = 1;
     #+END_SRC
 *** Implícita
     - Mediante el *resultado de una consulta* ~SELECT~
-
+    
     #+BEGIN_SRC sql
       -- Esto CREA la tabla, no solo inserta datos
       SELECT *
