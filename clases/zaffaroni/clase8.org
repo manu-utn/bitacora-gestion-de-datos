@@ -1,0 +1,169 @@
+#+TITLE: Clase 08 - Stores Procedures - Funciones - Cursores
+* Parte práctica
+ #+BEGIN_SRC sql
+   CREATE PROCEDURE actualizaEstadisticas  
+		     @customer_numDES INT , @customer_numHAS INT 
+   AS 
+   BEGIN 
+      DECLARE CustomerCursor CURSOR FOR 
+ SELECT customer_num from customer WHERE customer_num  
+		  BETWEEN @customer_numDES AND @customer_numHAS 
+ 
+     DECLARE  @customer_num INT, @ordersqty INT, @maxdate DATETIME, 
+		      @uniqueManufact INT; 
+  
+     OPEN CustomerCursor; 
+     FETCH NEXT FROM CustomerCursor INTO @customer_num 
+     WHILE @@FETCH_STATUS = 0 
+     BEGIN 
+    
+	SELECT @ordersqty=count(*) , @maxDate=max(order_date)  
+	  FROM orders 
+	 WHERE customer_num = @customer_num; 
+ 
+	 SELECT @uniqueManufact=count(distinct stock_num) 
+	   FROM items i, orders o 
+	  WHERE o.customer_num = @customer_num 
+	    AND o.order_num = i.order_num;
+ 
+	 IF NOT EXISTS( SELECT 1 FROM CustomerStatistics  
+			 WHERE customer_num = @customer_num) 
+ 
+     insert into customerStatistics  
+		    values (@customer_num,@ordersQty, @maxDate,@uniqueManufact);
+	 ELSE 
+	 update customerStatistics   
+		  SET  ordersQty=@ordersQty,maxDate=@maxDate,   
+		 uniqueManufact= @uniqueManufact 
+		   WHERE customer_num = @customer_num; 
+
+	 FETCH NEXT FROM CustomerCursor INTO @customer_num 
+     END; 
+     CLOSE CustomerCursor; 
+     DEALLOCATE CustomerCursor; 
+    END
+ #+END_SRC
+* Throw - Lanzar Excepciones
+  - el ~throw 50099~ es el normal para manejar en programas,
+  - NO utilizar el ~RAISE~ (no funciona adecuadamente para capturar excepciones)
+  - cuando es ~level 16~ se detiene toda ejecucion << IMPORTANTE
+  ej. ~throw ~
+
+  obs: NO se recomienda usar ~raise~
+  Ej. ~raiseerror('error catch', 16, 1)~
+  siendo el 2do par{ametro el nivelDeError, y el 3ro el state
+  el mensaje que devuelve es el 5000, es diferente
+  *NO CAPTURA EL ERROR, Y SIGUE EJECUTANDO EL RESTO DE LAS SENTENCIAS*
+* Cursor
+  - lee registro por registro
+* Stored procedures
+  - otorga un nivel de seguridad extra
+    (porque se permite ejecutar el procedure, y no los SELECT)
+* Funciones
+** Funciones de usuario
+   - La diferencia con un procedure
+     - es que podemos ejecutarlas dentro de una consulta (o operacion dml)
+     - el store procedure NO
+** Funciones propias por el motor (built-in function)
+   - funciones agregadas (sum, count, avg, ..)
+   - otras funciones como: ~coalese~
+* Diccionario de datos
+  En ...
+  - sys.procedures
+    son
+  - sys.all_sql_models
+    paa ver el codigo de los procedures
+* Store procedures
+** Conceptos
+  - las variables con @ son locales, y @@ para las globales
+** Modificarlos
+  - Con ~alter procedure~ se modifican
+** Ejecutarlos
+   - Con la instrucción ~execute nombreProcedimiento~
+
+   #+BEGIN_SRC sql
+     -- esto va a devolver siempre 10
+     declare @resultado int;
+     set @resultado = 10;
+     execute Suma2 15,13, @resultado
+
+     -- 
+     declare @resultado int;
+     set @resultado = 10;
+     execute Suma2 15,13, @resultado out
+   #+END_SRC
+** Sentencias de manejo de bloques
+   + Los bloques se inician con ~begin~ y finalizan con ~end~ (EXPLICITO)
+   + si usamos el ~as~ sera implicito <<DUDA 1>> (?)
+** Sentencias condicionales
+   
+   #+BEGIN_SRC sql
+   if (@var > 5)
+  	begin
+	     print 'ola'
+	     end
+     else
+	     begin
+	     print 'chau'
+	     end
+   #+END_SRC
+** Ejecutar comandos del SO
+   #+BEGIN_SRC sql
+   #+END_SRC
+** Cursores
+*** Conceptos
+  - Un *cursor* se define con el ~declare~
+  - Permiten tomar datos de un ~select~
+  - fetch
+  - deallocate 
+  - NO hay límite de cursores abiertos, y declarados
+*** Con un campo identity
+   #+BEGIN_SRC sql
+     -- el alcance es mas amplio con @@ (xq es global)
+     SET @order_id = @@IDENTITY
+
+     -- otra manera.. pero para obtener el identity local
+
+     -- usa el de mi procedure
+     SELECT @order_id = SCOPE_IDENTITY()
+   #+END_SRC
+*** Con transaction
+    - El ~commit~ cierra la transaccion (ya no se puede usar ~rollback~)
+*** Manejo de excepciones
+   #+BEGIN_SRC sql
+     begin try
+	   begin tan
+	   insert into tabla values (1)
+	   insert into tabla values (1)
+	   insert into tabla values (1)
+	   commit tran
+     end try
+
+     begin catch
+	   print 'error'
+	   rollback tran
+     end catch
+   #+END_SRC
+*** Ejemplos      
+   #+BEGIN_SRC sql
+     DECLARE items CURSOR FOR
+	     SELECT id_item FROM item
+	     WHERE id_almacen = @almacen
+
+     -- dlcoar de una variable del cursor
+     -- (queda en memoria)
+     DECLARE @item_del_cursor INTEGER
+     -- a una area de memoria, le agrega filas del select
+     OPEN items_almacen
+     -- busca la primera fila del primer select
+     FETCH items_almacen INTO @item_del_cursor
+     -- mientras haya mas filas/registros ejecuta lo de adentro del while
+     WHILE (@@FETCH_STATUS =0)
+	   BEGIN -- bloque sentencia - inicio
+	     INSERT INTO ITEMS_AUX VALUES (@item_del_cursor)
+	     FETCH items_almacen INTO @item_del_cursor
+	   END -- bloque sentencia - fin
+     CLOSE items_en_almacen
+     DEALLOCATE items_en_almacen -- 
+     END PROCEDURE;
+   #+END_SRC

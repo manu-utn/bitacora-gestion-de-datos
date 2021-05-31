@@ -1,260 +1,163 @@
 #+TITLE: Clase 07 - Triggers
-* Conceptos
-  - Es codigo transact-sql (NO es procedural)
-  - se ejecuta cuando ocurre un evento (delete,insert,..)
-  fundamental se debe definir
-  1. sobre que evento objeto (tablas, vistas)
-  2. el momento (before, after)
-  3. el tipo de evento (update, delete, insert)
-* parte practica
-  - NO utilizar el RAISE (no funciona adecuadamente para capturar excepciones)
-  
-  #+BEGIN_SRC sql
-    USE stores7new;
+* Parte practica
+ #+BEGIN_SRC sql
+   USE stores7new;
 
-    /** Ejecicio 1 **/
-    CREATE TABLE Products_historia_precios(
-    Stock_historia_Id int IDENTITY(1,1,) PRIMARY KEY,
-    stock_num smallint,
-    manu_code char(3),
-    fechaHora datetime,
-    usuario varchar(20),
-    unit_price_old decimal(6,2),
-    unit_price_new decimal(6,2),
-    estado char DEFAULT 'A' CHECK(estado IN ('A', 'I'))
-    );
+   /** Ejecicio 1 **/
+   CREATE TABLE Products_historia_precios(
+   Stock_historia_Id int IDENTITY(1,1,) PRIMARY KEY,
+   stock_num smallint,
+   manu_code char(3),
+   fechaHora datetime,
+   usuario varchar(20),
+   unit_price_old decimal(6,2),
+   unit_price_new decimal(6,2),
+   estado char DEFAULT 'A' CHECK(estado IN ('A', 'I'))
+   );
 
-    -- borramos por si ya estaba
-    DROP TRIGGER cambio_precios_TR;
-    -- creamos trigger en la tabla products
-    CREATE TRIGGER cambio_precios_TR ON products
-    -- cuando ocurra un update
-    AFTER UPDATE AS
-    BEGIN
-    -- insertamos multiples registros
-    -- hacemos INSERT nombre_tabla (campo1, campo2) SELECT (campo1, campo2) FROM 
-    INSERT INTO Products_historia_precios
-     (stock_num, manu_code, unit_price_old, unit_price_new, fechaHora, usuario)
-     SELECT i.stock_num, i.manu_code, d.unit_price, i.unit_price, getdate(), current_user
-     -- la tabla donde se hizo el INSERT
-     FROM inserted i JOIN deleted d
-     ON i.stock_num = d.stock_num AND i.manu_code = d.manu_code
-    END
+   -- borramos por si ya estaba
+   DROP TRIGGER cambio_precios_TR;
+   -- creamos trigger en la tabla products
+   CREATE TRIGGER cambio_precios_TR ON products
+   -- cuando ocurra un update
+   AFTER UPDATE AS
+   BEGIN
+   -- insertamos multiples registros
+   -- hacemos INSERT nombre_tabla (campo1, campo2) SELECT (campo1, campo2) FROM 
+   INSERT INTO Products_historia_precios
+    (stock_num, manu_code, unit_price_old, unit_price_new, fechaHora, usuario)
+    SELECT i.stock_num, i.manu_code, d.unit_price, i.unit_price, getdate(), current_user
+    -- la tabla donde se hizo el INSERT
+    FROM inserted i JOIN deleted d
+    ON i.stock_num = d.stock_num AND i.manu_code = d.manu_code
+   END
 
-    -- hacemos un cambio para que se ejecute
-    UPDATE products SET unit_price = 400
-    WHERE stock_num = 1 AND manu_code = 'HRO';
-    -- chequeamos si el trigger se ejecuto
-    SELECT * FROM Products_historia_precios;
+   -- hacemos un cambio para que se ejecute
+   UPDATE products SET unit_price = 400
+   WHERE stock_num = 1 AND manu_code = 'HRO';
+   -- chequeamos si el trigger se ejecuto
+   SELECT * FROM Products_historia_precios;
 
 
-    /** Ejecicio 2**/
-    -- Creamos un trigger captura el delete
-    CREATE TRIGGER delete_stock_histoia ON products_historia_precios
-    INSTEAD OF DELETE AS
-    BEGIN
-	    DECLARE @stock_historia_id int
-	    -- declaramos el cursor
-	    DECLARE stock_historia_borrado CURSOR FOR
-		    SELECT stock_historia_id FROM deleted
+   /** Ejecicio 2**/
+   -- Creamos un trigger captura el delete
+   CREATE TRIGGER delete_stock_histoia ON products_historia_precios
+   INSTEAD OF DELETE AS
+   BEGIN
+	   DECLARE @stock_historia_id int
+	   -- declaramos el cursor
+	   DECLARE stock_historia_borrado CURSOR FOR
+		   SELECT stock_historia_id FROM deleted
 		
-	    -- abrimos el cursor, para poder leerlo
-	    OPEN stock_historia_borrado
+	   -- abrimos el cursor, para poder leerlo
+	   OPEN stock_historia_borrado
 	
-	    -- lee la primera fila
-	    FETCH NEXT FROM stock_historia_borrado
-	      INTO @stock_historia_id --
+	   -- lee la primera fila
+	   FETCH NEXT FROM stock_historia_borrado
+	     INTO @stock_historia_id --
 
-	    -- si no llego al final del cursor
-	    -- cuando no haya mas registros se detiene
-	    WHILE @@FETCH_STATUS = 0 
-	    BEGIN
-		    UPDATE products_historia_precios
-		    SET estado = 'I' WHERE stock_historia_id = @stock_historia_id
+	   -- si no llego al final del cursor
+	   -- cuando no haya mas registros se detiene
+	   WHILE @@FETCH_STATUS = 0 
+	   BEGIN
+		   UPDATE products_historia_precios
+		   SET estado = 'I' WHERE stock_historia_id = @stock_historia_id
 
-		    -- chequeamos si hubo otro registro borrado
-		    FETCH NEXT FROM stock_historia_borrado 
-		      INTO @stock_historia_id -- y guardo el historia_id
-	    END 
-	    CLOSE stock_historia_borrado -- cerramos el cursor
-	    -- borra el cursor en la zona de memoria
-	    DEALLOCATE stock_historia_borrado --
-    END;
+		   -- chequeamos si hubo otro registro borrado
+		   FETCH NEXT FROM stock_historia_borrado 
+		     INTO @stock_historia_id -- y guardo el historia_id
+	   END 
+	   CLOSE stock_historia_borrado -- cerramos el cursor
+	   -- borra el cursor en la zona de memoria
+	   DEALLOCATE stock_historia_borrado --
+   END;
 	
-  #+END_SRC
+ #+END_SRC
 
-
-  
-  #+BEGIN_SRC sql
-    CREATE PROCEDURE actualizaEstadisticas  
-		      @customer_numDES INT , @customer_numHAS INT 
-    AS 
-    BEGIN 
-       DECLARE CustomerCursor CURSOR FOR 
-	SELECT customer_num from customer WHERE customer_num  
-		   BETWEEN @customer_numDES AND @customer_numHAS 
- 
-      DECLARE  @customer_num INT, @ordersqty INT, @maxdate DATETIME, 
-		       @uniqueManufact INT; 
-  
-      OPEN CustomerCursor; 
-      FETCH NEXT FROM CustomerCursor INTO @customer_num 
-      WHILE @@FETCH_STATUS = 0 
-      BEGIN 
-    
-	 SELECT @ordersqty=count(*) , @maxDate=max(order_date)  
-	   FROM orders 
-	  WHERE customer_num = @customer_num; 
- 
-	  SELECT @uniqueManufact=count(distinct stock_num) 
-	    FROM items i, orders o 
-	   WHERE o.customer_num = @customer_num 
-	     AND o.order_num = i.order_num;
- 
-	  IF NOT EXISTS( SELECT 1 FROM CustomerStatistics  
-			  WHERE customer_num = @customer_num) 
- 
-      insert into customerStatistics  
-		     values (@customer_num,@ordersQty, @maxDate,@uniqueManufact);
-	  ELSE 
-		update customerStatistics   
-		   SET  ordersQty=@ordersQty,maxDate=@maxDate,   
-			uniqueManufact= @uniqueManufact 
-		    WHERE customer_num = @customer_num; 
-
-	  FETCH NEXT FROM CustomerCursor INTO @customer_num 
-      END; 
-      CLOSE CustomerCursor; 
-      DEALLOCATE CustomerCursor; 
-     END
-  #+END_SRC
-* throw - excepciones
-  - el ~throw 50099~ es el normal para manejar en programas,
-  - cuando es ~level 16~ se detiene toda ejecucion << IMPORTANTE
-  ej. ~throw ~
-
-  obs: NO se recomienda usar ~raise~
-  Ej. ~raiseerror('error catch', 16, 1)~
-  siendo el 2do par{ametro el nivelDeError, y el 3ro el state
-  el mensaje que devuelve es el 5000, es diferente
-  *NO CAPTURA EL ERROR, Y SIGUE EJECUTANDO EL RESTO DE LAS SENTENCIAS*
-* cursor
-  - lee registro por registro
-* Stored procedures
-  - otorga un nivel de seguridad extra (porque se permite ejecutar
-    el procedure, y no los SELECT)
-  - 
-* funciones de usuario
-  - la dif. contra un procedure
-    - es que podemos ejecutarlas dentro de una consulta (o opeacion dml)
-    - el store procedure NO
-  - 
-* funciones propias por el motor (built-in function)
-  ej. coalese
-  - funciones agregadas (sum, count, avg, ..)
-* diccionario de datos
-  - sys.procedures
-    son
-  - sys.all_sql_models
-    paa ver el codigo de los procedures
-* store procedures
-  - las variables con @ son locales, y @@ para las globales
-** modificarlos
-  - un *alter procedure* lo modifica
-** ejecutarlos
-   - con la instruccion ~execute nombreProcedimiento~
-
-   #+BEGIN_SRC sql
-     -- esto va a devolver siempre 10
-     -- 
-     declare @resultado int;
-     set @resultado = 10;
-     execute Suma2 15,13, @resultado
-
-     -- 
-     declare @resultado int;
-     set @resultado = 10;
-     execute Suma2 15,13, @resultado out
-   #+END_SRC
-** sentencias de manejo de bloques
-   - inicia con ~begin~ y finaliza con ~end~ (EXPLICITO)
-   - si usamos el ~as~ sera implicito?
-** sentencias condicionales
-
-   #+BEGIN_SRC sql
-     if (@var > 5)
-	begin
-	     print 'ola'
-	     end
-     else
-	     begin
-	     print 'chau'
-	     end
-   #+END_SRC
-** ejecutar comandos del SO
-   #+BEGIN_SRC sql
-   #+END_SRC
-** cursores
-*** conceptos
-  - se define con el ~declare~
-  - permite tomar datos de un ~select~
-  - fetch
-  - deallocate 
-  - no hay limite de cursores abiertos, y declarados
-*** con un campo identity
-    
-   #+BEGIN_SRC sql
-     -- el alcance es mas amplio con @@ (xq es global)
-     SET @order_id = @@IDENTITY
-
-     -- otra manera.. pero para obtener el identity local
-
-     -- usa el de mi procedure
-     SELECT @order_id = SCOPE_IDENTITY()
-   #+END_SRC
-*** con transaction
-    - el ~commit~ cierra la transaccion (ya no se puede usar ~rollback~)
-    - 
-*** manejo de excepciones
-    
-   #+BEGIN_SRC sql
-     begin try
-	   begin tan
-	   insert into tabla values (1)
-	   insert into tabla values (1)
-	   insert into tabla values (1)
-	   commit tran
-     end try
-
-     begin catch
-	   print 'error'
-	   rollback tran
-     end catch
-   #+END_SRC
-*** ejemplos      
-   #+BEGIN_SRC sql
-     DECLARE items CURSOR FOR
-	     SELECT id_item FROM item
-	     WHERE id_almacen = @almacen
-
-     -- dlcoar de una variable del cursor
-     -- (queda en memoria)
-     DECLARE @item_del_cursor INTEGER
-     -- a una area de memoria, le agrega filas del select
-     OPEN items_almacen
-     -- busca la primera fila del primer select
-     FETCH items_almacen INTO @item_del_cursor
-     -- mientras haya mas filas/registros ejecuta lo de adentro del while
-     WHILE (@@FETCH_STATUS =0)
-	   BEGIN -- bloque sentencia - inicio
-	     INSERT INTO ITEMS_AUX VALUES (@item_del_cursor)
-	     FETCH items_almacen INTO @item_del_cursor
-	   END -- bloque sentencia - fin
-     CLOSE items_en_almacen
-     DEALLOCATE items_en_almacen -- 
-     END PROCEDURE;
-   #+END_SRC
-** ejemplos
+* Triggers
+** Conceptos
+   - Ante un evento determinado se ejecute una sentencia sql de forma automatica
+   - Es codigo transact-sql (NO es procedural)
+   - se ejecuta cuando ocurre un evento (delete,insert,..)
+   - es fundamental definir
+     1. sobre que evento objeto (tablas, vistas)
+     2. el momento (before, after)
+     3. el tipo de evento (update, delete, insert)
+** Trigger Inserted
+   cuando es una operacion insert o update
+** Trigger Deleted
+   para operaciones delete y update
+** Cuando se ejecuta
+   - after instead of
+** Porque usarlos
+** Triggers posibles
+*** dml en tablas o views
+    insert on tabla_nombre
+    delete from tabla_nombre
+*** ddl en db (oracle, sql server)
+    create, alter, drop
+** Operaciones
+   Se puede tener un log de los eventos, para saber que operaciones se hicieron
+   (Ej. como auditoria para controlar al personal)
    
+   + *logon* (si alguien se logea)
+   + *logoff*
+   + *startup*
+   + *shutdown*
+** Transacciones entre evento y accion
+   se pueden combinar los triggers con las transacciones
+** momentos de ejecucion
+*** Before
+    se ejecuta antes
+*** After
+    es lo que sucede normalmente en sql
+*** for each row
+*** Instead of
+    reemplaza
+** Triggers
+  - sys.triggers (solo para triggers)
+  - sys.objects
+  - sys...
+** Ejemplos
+*** Ejemplo 1
    #+BEGIN_SRC sql
+     create trigger actualizarAuditoria
+     on nombre_tabla
+     after update
+     BEGIN INSERT INTO state_upd
+     select state from inserted
+     END
+     -- falta  codigo
+
+     DROP TRIGGER actualizarAuditoria
+
+     SELECT * FROM SYS.TRIGGERS
+
+     -- muestra todos los objetos de la base de datos
+     SELECT * FROM SYS.OBJECTS
+
+
+     SELECT * FROM SYS.OBJECTS where OBJECT_ID=numero
+
+     -- muestra la metadata del objeto
+     SELECT * FROM SYS.ALL_SQL_MODULES where OBJECT_ID=numero
    #+END_SRC
+*** Ejemplo 2
+   #+BEGIN_SRC sql
+     -- si queremos agregar una columna en la tabla orders
+     ALTER TABLE orders ADD total DECIMAL(12,2);
+
+     -- 1. creamos una tabla temporal (?)
+     SELECT order_num, SUM (quantity*precio) totalItems
+     into #ordenes
+     FROM items GROUP BY order_num;
+
+     -- 2. modificaos todos los registros, la columna total
+     -- en base a la tabla temporal
+     UPDATE orders o
+     SET total=(SELECT totalitems FROM #ordenes o2
+		WHERE orders.order_num=o2.order_num)
+
+     -- 3. trigger
+   #+END_SRC
+** bloque anonimo
