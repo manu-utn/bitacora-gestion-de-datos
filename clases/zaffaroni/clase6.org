@@ -326,41 +326,123 @@ y se utiliza para los sistemas q usan intime
      ON c1.customer_num = c2.cliente;
    #+END_SRC
 * Operadores Multi-Select
-** [TODO] Operador UNION
-   - devuelve las filas del primer select y del segundo
-   - trae la union pero no repite los datos
-     (a menos q usemos union all, similar a un distinct)
-** [TODO] Operador UNION ALL
-   - no hace el DISTINCT, habran filas repetidas, une todos los SELECT
-** [TODO] Operador INTERSECT
-   - devuelve las filas que estan en ambas consultas
-** [TODO] Operador EXCEPT
-   Actúa como la diferencia de teoría de conjuntos
-   (/Ej.Si decimos A-B, es lo mismo que decir todos los elementos de A menos los de B/)
+** Operador UNION
+*** Conceptos
+   - La tabla resultante adquiere los nombres de las columnas del primer ~SELECT~
+   - Devuelve las filas del primer ~SELECT~ y del segundo ~SELECT~
+   - Trae la unión de ambas consultas pero _NO repite los datos_
+     (a menos que usemos ~union all~, similar a un distinct)
+
+   *Observaciones:*
+   1. La _cantidad de columnas_ y los _tipos de datos_ de los ~SELECT~ deben ser iguales
+   2. Sólo se puede _ordenar indicando la posición de las columnas_ en el ~ORDER BY~
+*** Ejemplo 1
+   #+BEGIN_SRC sql
+     -- El resultado será una tabla nueva, con el nombre de las columnas del primer SELECT
+     SELECT cod_producto, precio -- las columnas de los SELECT deben ser las mismas (1)
+       FROM productos
+      WHERE precio < 10
+      UNION -- << ACA ESTÁ EL UNION >>
+     SELECT cod_producto, precio  -- las columnas de los SELECT deben ser las mismas (1)
+       FROM items
+      WHERE cod_prod = 10
+      ORDER BY 1, 2; -- solo se puede ordenar con la posición de las columnas (2)
+   #+END_SRC
+*** Ejemplo 2 - Elegir el orden de los resultados
+    Podemos agregar una columna extra para ordenarlos, usando un número entero y agregandole un ~alias~
+    (Ej. ~SELECT 1 orden, nombre, apellido~)
+
+    En este ejemplo a la primera columna de cada ~SELECT~ le pusimos un número entero y le pusimos de alias ~orden~
+    luego en el ~ORDER BY~ indicamos que ordene por la nueva columna (que tiene posición 1).
+    Además aplicamos un filtro diferente para cada una en el ~WHERE~
+    El resultado final sería
+    1. muestra los registros que tengan precio igual a 10
+    2. luego los registros que tenga precio mayor a 50
+    3. por último los registros que tengan precio entre 15 y 20
+
+    Recordemos que dice ~ORDER BY 1 ASC~ ordenará de manera ascendente 1,2,3,4,..
+    usando de referencia los valores que tenga la primera columna
 
    #+BEGIN_SRC sql
+     SELECT 1 orden, cod_producto, precio -- las columnas de los SELECT deben ser las mismas (1)
+       FROM productos WHERE precio = 10
+     UNION -- << UNION >>
+     SELECT 3 orden, cod_producto, precio -- las columnas de los SELECT deben ser las mismas (1)
+       FROM productos WHERE precio BETWEEN 15 AND 20
+     UNION -- << UNION >>
+     SELECT 2 orden, cod_producto, precio -- las columnas de los SELECT deben ser las mismas (1)
+       FROM productos WHERE precio > 50
+      ORDER BY 1 ASC, 2 DESC; -- solo se puede ordenar con la posición de las columnas (2)
+   #+END_SRC
+** Operador UNION ALL
+*** Conceptos
+   + Tiene las mismas restricciones que el ~UNION~ para los ~SELECT~
+     1. Misma cantidad de columnas
+     2. Mismo tipos de datos
+     3. Ordenar por posición de columna
+   + NO hace el ~DISTINCT~, por tanto _repite filas_
+*** Ejemplos
+   #+BEGIN_SRC sql
+     -- El resultado será una tabla nueva, con el nombre de las columnas del primer SELECT
+     SELECT cod_producto, precio -- las columnas de los SELECT deben ser las mismas (1)
+       FROM productos
+      WHERE precio < 10
+      UNION ALL -- << ACA ESTÁ EL UNION ALL>>
+     SELECT cod_producto, precio  -- las columnas de los SELECT deben ser las mismas (1)
+       FROM items
+      WHERE cod_prod = 10
+      ORDER BY 1, 2; -- solo se puede ordenar con la posición de las columnas (2)
+   #+END_SRC
+** Operador INTERSECT
+*** Conceptos
+   + Devuelve las filas que están en ambas consultas
+   + Tiene las mismas restricciones que el ~UNION~ para los ~SELECT~
+     1. Misma cantidad de columnas
+     2. Mismo tipos de datos
+     3. Ordenar por posición de columna
+*** Ejemplos
+   #+BEGIN_SRC sql
+     -- El resultado será una tabla nueva, con el nombre de las columnas del primer SELECT
+     SELECT cod_producto, precio -- las columnas de los SELECT deben ser las mismas (1)
+       FROM productos
+      WHERE precio < 10
+      INTERSECT -- << ACA ESTÁ EL INTERSECT>>
+     SELECT cod_producto, precio  -- las columnas de los SELECT deben ser las mismas (1)
+       FROM items
+      WHERE cod_prod = 10
+      ORDER BY 1, 2; -- solo se puede ordenar con la posición de las columnas (2)
+   #+END_SRC
+** Operador EXCEPT
+*** Conceptos
+   + Actúa como la operación *diferencia* de *teoría de conjuntos* 
+     (/Ej.Si decimos A-B, es lo mismo que decir todos los elementos de A menos los de B/)
+   + Tiene las mismas restricciones que el ~UNION~ para los ~SELECT~
+     1. Misma cantidad de columnas
+     2. Mismo tipos de datos
+     3. Ordenar por posición de columna
+*** Ejemplos
+   #+BEGIN_SRC sql
      -- seleccionamos los clientes de la tabla "customer"
-     -- que NO estén en la tabla temporal #clientesParaBorrar
+     -- y que NO estén en la tabla temporal #clientesParaBorrar
      SELECT customer_num FROM customer
      EXCEPT
      SELECT customer_num FROM #clientesParaBorrar;
    #+END_SRC
-* [TODO] Parte práctica
-** Ejecicio 1
+* Parte práctica en clase
+** Ejercicio 1
   #+BEGIN_SRC sql
     SELECT m.manu_code, m.manu_name, lead_time, SUM(quantity*unit_price) AS monto_total
     FROM manufact m LEFT JOIN items i ON m.manu_code = i.manu_code
     GROUP BY m.manu_name, m.manu_code, lead_time
     ORDER BY m.manu_name
   #+END_SRC
-** Ejecicio 2
+** Ejercicio 2
   #+BEGIN_SRC sql
     select s1.stock_num, tp.description, s1.manu_code, s2.manu_Code
     from products s1
     left join products s2 on (s1.stock_num=s2.stock_num AND s1.manu_code != s2.manu_code)
     join product_types tp on (s1.stock_num=tp.stock_num)
     order by 1;
-
 
     -- duda q dieron en clase
     select s1.stock_num, tp.description, s1.manu_code, s2.manu_Code
