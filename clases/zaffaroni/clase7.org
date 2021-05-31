@@ -1,4 +1,89 @@
 #+TITLE: Clase 07 - Triggers
+* Conceptos
+  - Ante un evento determinado se ejecute una sentencia sql de forma automatica
+  - Es codigo transact-sql (NO es procedural)
+  - se ejecuta cuando ocurre un evento (delete,insert,..)
+  - es fundamental definir
+    1. sobre que evento objeto (tablas, vistas)
+    2. el momento (before, after)
+    3. el tipo de evento (update, delete, insert)
+* Trigger Inserted
+  cuando es una operacion insert o update
+* Trigger Deleted
+  para operaciones delete y update
+* Cuando se ejecuta
+  - after instead of
+* Porque usarlos
+* Triggers posibles
+** dml en tablas o views
+   insert on tabla_nombre
+   delete from tabla_nombre
+** ddl en db (oracle, sql server)
+   create, alter, drop
+* Operaciones
+  Se puede tener un log de los eventos, para saber que operaciones se hicieron
+  (Ej. como auditoria para controlar al personal)
+   
+  + *logon* (si alguien se logea)
+  + *logoff*
+  + *startup*
+  + *shutdown*
+* Transacciones entre evento y accion
+  se pueden combinar los triggers con las transacciones
+* Momentos de ejecucion
+** Before
+   se ejecuta antes
+** After
+   es lo que sucede normalmente en sql
+** for each row
+** Instead of
+   reemplaza
+* Triggers
+ - sys.triggers (solo para triggers)
+ - sys.objects
+ - sys...
+* Ejemplos
+** Ejemplo 1
+  #+BEGIN_SRC sql
+    create trigger actualizarAuditoria
+    on nombre_tabla
+    after update
+    BEGIN INSERT INTO state_upd
+    select state from inserted
+    END
+    -- falta  codigo
+
+    DROP TRIGGER actualizarAuditoria
+
+    SELECT * FROM SYS.TRIGGERS
+
+    -- muestra todos los objetos de la base de datos
+    SELECT * FROM SYS.OBJECTS
+
+
+    SELECT * FROM SYS.OBJECTS where OBJECT_ID=numero
+
+    -- muestra la metadata del objeto
+    SELECT * FROM SYS.ALL_SQL_MODULES where OBJECT_ID=numero
+  #+END_SRC
+** Ejemplo 2
+  #+BEGIN_SRC sql
+    -- si queremos agregar una columna en la tabla orders
+    ALTER TABLE orders ADD total DECIMAL(12,2);
+
+    -- 1. creamos una tabla temporal (?)
+    SELECT order_num, SUM (quantity*precio) totalItems
+    into #ordenes
+    FROM items GROUP BY order_num;
+
+    -- 2. modificaos todos los registros, la columna total
+    -- en base a la tabla temporal
+    UPDATE orders o
+    SET total=(SELECT totalitems FROM #ordenes o2
+	 WHERE orders.order_num=o2.order_num)
+
+    -- 3. trigger
+  #+END_SRC
 * Parte practica
  #+BEGIN_SRC sql
    USE stores7new;
@@ -74,90 +159,3 @@
 	
  #+END_SRC
 
-* Triggers
-** Conceptos
-   - Ante un evento determinado se ejecute una sentencia sql de forma automatica
-   - Es codigo transact-sql (NO es procedural)
-   - se ejecuta cuando ocurre un evento (delete,insert,..)
-   - es fundamental definir
-     1. sobre que evento objeto (tablas, vistas)
-     2. el momento (before, after)
-     3. el tipo de evento (update, delete, insert)
-** Trigger Inserted
-   cuando es una operacion insert o update
-** Trigger Deleted
-   para operaciones delete y update
-** Cuando se ejecuta
-   - after instead of
-** Porque usarlos
-** Triggers posibles
-*** dml en tablas o views
-    insert on tabla_nombre
-    delete from tabla_nombre
-*** ddl en db (oracle, sql server)
-    create, alter, drop
-** Operaciones
-   Se puede tener un log de los eventos, para saber que operaciones se hicieron
-   (Ej. como auditoria para controlar al personal)
-   
-   + *logon* (si alguien se logea)
-   + *logoff*
-   + *startup*
-   + *shutdown*
-** Transacciones entre evento y accion
-   se pueden combinar los triggers con las transacciones
-** momentos de ejecucion
-*** Before
-    se ejecuta antes
-*** After
-    es lo que sucede normalmente en sql
-*** for each row
-*** Instead of
-    reemplaza
-** Triggers
-  - sys.triggers (solo para triggers)
-  - sys.objects
-  - sys...
-** Ejemplos
-*** Ejemplo 1
-   #+BEGIN_SRC sql
-     create trigger actualizarAuditoria
-     on nombre_tabla
-     after update
-     BEGIN INSERT INTO state_upd
-     select state from inserted
-     END
-     -- falta  codigo
-
-     DROP TRIGGER actualizarAuditoria
-
-     SELECT * FROM SYS.TRIGGERS
-
-     -- muestra todos los objetos de la base de datos
-     SELECT * FROM SYS.OBJECTS
-
-
-     SELECT * FROM SYS.OBJECTS where OBJECT_ID=numero
-
-     -- muestra la metadata del objeto
-     SELECT * FROM SYS.ALL_SQL_MODULES where OBJECT_ID=numero
-   #+END_SRC
-*** Ejemplo 2
-   #+BEGIN_SRC sql
-     -- si queremos agregar una columna en la tabla orders
-     ALTER TABLE orders ADD total DECIMAL(12,2);
-
-     -- 1. creamos una tabla temporal (?)
-     SELECT order_num, SUM (quantity*precio) totalItems
-     into #ordenes
-     FROM items GROUP BY order_num;
-
-     -- 2. modificaos todos los registros, la columna total
-     -- en base a la tabla temporal
-     UPDATE orders o
-     SET total=(SELECT totalitems FROM #ordenes o2
-		WHERE orders.order_num=o2.order_num)
-
-     -- 3. trigger
-   #+END_SRC
-** bloque anonimo

@@ -82,12 +82,18 @@
    - Con la instrucción ~execute nombreProcedimiento~
 
    #+BEGIN_SRC sql
-     -- esto va a devolver siempre 10
-     declare @resultado int;
-     set @resultado = 10;
-     execute Suma2 15,13, @resultado
+     -- esto va a devolver siempre 10 (???)
+     CREATE PROCEDURE suma @var1 INT, @var2 INT, @var3 INT
+     AS
+     BEGIN
+     declare @resultado int
+     set @resultado = 10
+     END
+     GO
 
-     -- 
+     execute suma 15,13, @resultado
+
+     --
      declare @resultado int;
      set @resultado = 10;
      execute Suma2 15,13, @resultado out
@@ -96,7 +102,6 @@
    + Los bloques se inician con ~begin~ y finalizan con ~end~ (EXPLICITO)
    + si usamos el ~as~ sera implicito <<DUDA 1>> (?)
 ** Sentencias condicionales
-   
    #+BEGIN_SRC sql
    if (@var > 5)
   	begin
