@@ -1,47 +1,134 @@
 #+TITLE: Clase 07 - Triggers
 * Conceptos
-  - Ante un evento determinado se ejecute una sentencia sql de forma automatica
-  - Es codigo transact-sql (NO es procedural)
-  - se ejecuta cuando ocurre un evento (delete,insert,..)
-  - es fundamental definir
-    1. sobre que evento objeto (tablas, vistas)
-    2. el momento (before, after)
-    3. el tipo de evento (update, delete, insert)
-* Trigger Inserted
-  cuando es una operacion insert o update
-* Trigger Deleted
-  para operaciones delete y update
-* Cuando se ejecuta
-  - after instead of
-* Porque usarlos
-* Triggers posibles
-** dml en tablas o views
-   insert on tabla_nombre
-   delete from tabla_nombre
-** ddl en db (oracle, sql server)
-   create, alter, drop
+  - Un *trigger* aguarda un evento determinado y ejecuta una sentencia sql de forma automática
+  - Se ejecuta cuando ocurre un evento (/Ej. delete, insert, update, ../)
+  - Es fundamental definir
+    1. Sobre que objeto (tablas, vistas)
+    2. El momento (before, after)
+    3. El tipo de evento (update, delete, insert)
+
+  #+BEGIN_COMMENT
+  Pendiente a revisar
+
+  *Observaciones:*
+  - Los triggers utilizan como variables internas ~inserted~ y ~deleted~
+  - Se utiliza ~from inserted~ cuando la operación fue
+    1) insert
+    2) ó update
+  - Se utiliza ~from deleted~ cuando la operación fue
+    1) delete
+    2) ó update
+   #+END_COMMENT
+
+  |---------+--------------------+-----------------------+----------|
+  | Eventos | Variables Internas | Acciones              | Momentos |
+  |---------+--------------------+-----------------------+----------|
+  | Insert  | Inserted           | Insert                | Before   |
+  | Update  | Deleted            | Update                | After    |
+  | Delete  |                    | Delete                |          |
+  |         |                    | Exec stored procedure |          |
+  |         |                    | Exec function         |          |
+  |         |                    | Bloque anónimo        |          |
+  |---------+--------------------+-----------------------+----------|
+* Eventos posibles
+** DML en tablas o views
+   Recordemos que *DML* son las siglas de *Data Manipulation Language* y esto engloba a todas las 
+   instrucciones que nos permiten manipular los datos. (Delete, Insert, Update)
+
+   |--------------------------------------------------+--------------------------------------------------|
+   | (Eventos) Instrucciones *DML* sobre Tablas/Views | Descripción                                      |
+   |--------------------------------------------------+--------------------------------------------------|
+   | INSERT ON nombreTabla                            | Insertar un registro                             |
+   | DELETE FROM nombreTabla                          | Borrar algún registro                            |
+   | UPDATE nombreTabla                               | Actualizar algún registro                        |
+   | UPDATE OF nombreColumna ON nombreTabla           | Actualizar alguna columna                        |
+   |--------------------------------------------------+--------------------------------------------------|
+** DDL en db (oracle, sql server)
+   La sigla *DDL* hace referencia a *Data Definition Language* y es el conjunto de operaciones necesarias
+   para defini las estructuras de datos, en donde se van a persistir. (create, alter, drop)
 * Operaciones
   Se puede tener un log de los eventos, para saber que operaciones se hicieron
-  (Ej. como auditoria para controlar al personal)
-   
-  + *logon* (si alguien se logea)
-  + *logoff*
-  + *startup*
-  + *shutdown*
-* Transacciones entre evento y accion
-  se pueden combinar los triggers con las transacciones
-* Momentos de ejecucion
-** Before
-   se ejecuta antes
-** After
-   es lo que sucede normalmente en sql
-** for each row
-** Instead of
-   reemplaza
-* Triggers
- - sys.triggers (solo para triggers)
- - sys.objects
- - sys...
+  (/Ej. como auditoría para controlar al personal/)
+
+  *Observación:*
+  Es importante que la tabla a la que especifique el *trigger* esté en *modo local*
+  ya que NO todos los motores aceptan tablas en servidores remotos (externos)
+
+  |-------------+--------------------------------------|
+  | Operación   | Descripción                          |
+  |-------------+--------------------------------------|
+  | LOGON       | Para saber si alguien se logea       |
+  | LOGOFF      | Para saber que usuario se desconecta |
+  |-------------+--------------------------------------|
+  | STARTUP     |                                      |
+  | SHUTDOWN    |                                      |
+  |-------------+--------------------------------------|
+  | SERVERERROR |                                      |
+  |-------------+--------------------------------------|
+* Evento y acción como Transacción
+** Conceptos
+  Los *eventos* y las *acciones* que ejecutan los *triggers*
+  - Representan una ~transaction~ (una o varias instrucciones que se ejecutan como una sola)
+  - Si alguno falla, se realiza un ~rollback~ automáticamente
+** Ejemplos
+   #+BEGIN_SRC sql
+     DROP TRIGGER stateUpdateAudit
+
+     CREATE TRIGGER stateUpdateAudit ON state
+     AFTER update AS
+     BEGIN
+       INSERT INTO state_upd
+       SELECT state,sname,'A',getdate()
+       FROM deleted;
+
+       -- INSERTO UN NULO EN LA TABLA STATE_UPD FORZANDO ERROR
+       INSERT INTO state_upd
+       SELECT null,sname,'N',getdate()
+       FROM inserted;
+     END
+
+     UPDATE state SET sname='AZ...' WHERE state='AZ'
+   #+END_SRC
+* Momentos de ejecución de acciones
+** Conceptos
+  Recordemos que las *acciones* son el conjunto de operaciones que engloba *DML* (insert, delete, update)
+  para manipular los datos.
+  
+  *Observaciones:*
+  - Las mas relevantes son ~instead of~ y ~after~ ya que son las utilizadas por *SQL Server*
+  - Se pueden utilizar los en triggers sobre *tablas* y *views*
+
+  |----------------------+------------------------------------------------------------------|
+  | Momento de ejecución | Descripción                                                      |
+  |----------------------+------------------------------------------------------------------|
+  | INSTEAD OF           | Se ejecutan las acciones en vez del evento del trigger           |
+  | AFTER                | Se ejecutan las acciones luego de ocurrido el evento del trigger |
+  |----------------------+------------------------------------------------------------------|
+  | BEFORE               | Las acciones se ejecutan antes que el evento del trigger         |
+  | FOR EACH ROW         |                                                                  |
+  |----------------------+------------------------------------------------------------------|
+* Tablas/Vistas del Diccionario de Datos
+  La información de la *metadata* de todos los *db objects* aparecen en las siguientes *tablas*
+
+  |---------------------+----------------------------------------------------------------|
+  | Tabla               | Información que contiene                                       |
+  |---------------------+----------------------------------------------------------------|
+  | sys.triggers        | Datos sobre cada *trigger*                                     |
+  |---------------------+----------------------------------------------------------------|
+  | sys.objects         | Contiene datos sobre todos los *objetos*                       |
+  |                     | (nombre, esquema al que pertenece, tipo de objeto, descripcion |
+  |                     | fecha de creación/modificación)                                |
+  |---------------------+----------------------------------------------------------------|
+  | sys.all_sql_modules | Contiene la definición de cada *objeto*                        |
+  |---------------------+----------------------------------------------------------------|
+  | sys.procedures      | Datos similares a ~sys.objects~                                |
+  |                     | Contiene mas detalles sobre los *procedimientos*               |
+  |---------------------+----------------------------------------------------------------|
+
+ *Observaciones:*
+ - El término *metadata* hace referencia al conjunto de datos que describen el contenido de
+   un recurso, de archivos, etc.. Es información que describe otros datos.
+ - Los *objetos en una base de datos* son:
 * Ejemplos
 ** Ejemplo 1
   #+BEGIN_SRC sql
