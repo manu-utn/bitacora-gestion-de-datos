@@ -113,8 +113,16 @@ y se utiliza para los sistemas q usan intime
    + Limitar la cantidad de indices en tablas
      (/por el tema de los costos de espacio y de procesamiento/)
 
-   <<DUDA 4>>: Cómo es el tema de crear indices con poca cant. de filas,
+   #+BEGIN_COMMENT
+   <<DUDA 4>>
+   Cómo es el tema de crear indices con poca cant. de filas,
    por lo de la cant de páginas? (pag. 11, 30-DML..pdf)
+  
+   El apunte dice:
+   No crear índices sobre tablas con poca cantidad de filas, no olvidar que
+   siempre se recupera de a páginas. De esta manera evitaríamos que el sistema
+   lea el árbol de índices
+   #+END_COMMENT
 
    #+BEGIN_QUOTE
    Se tiende a decir que los índices formados con una clave numérica son más eficientes que aquellos
@@ -123,12 +131,23 @@ y se utiliza para los sistemas q usan intime
    #+END_QUOTE
 ** [TODO] Recomendaciones al Indexar
    + Si usamos *Indices Compuestos* incrementamos los valores únicos
-     <<DUDA 5>>: Como sería lo de *Búsqueda de clave parcial* ? (pag. 12, 30-DML..pdf)
    + Si utilizamos *Cluster Index* se agiliza la recuperacion de filas, porque
      - su objetivo es _reducir la entrada/salida de disco_
      - las filas se guardan en Bloques Contiguos permitiendo
        1. facilitar el acceso
        2. reduci la cant. de accesos (/porque se recuperan en menos páginas los mismos datos/)
+
+     #+BEGIN_COMMENT
+     <<DUDA 5>>
+     Como sería lo de *Búsqueda de clave parcial* ? (pag. 12, 30-DML..pdf)
+    
+     El apunte dice:
+     Tratar de usar índices compuestos para incrementar los valores únicos
+     Tener en cuenta que si una o más columnas intervienen en un índice
+     compuesto el optimizador podría decidir acceder a través de ese índice
+     aunque sea solo para la búsqueda de los datos de una columna, esto se
+     denomina “partial key search
+     #+END_COMMENT
 ** [TODO] Construccion de Indices en Paralelo
    - Se sugiere _migrar sin los índices_ y luego recrearlos
 
@@ -292,7 +311,6 @@ y se utiliza para los sistemas q usan intime
             WHERE customer_num_referedBy IS NOT NULL
          );
     #+END_SRC
-** Ejemplos
 ** Subquery Correlacionado
 *** Conceptos
     Es una *subconsulta* que utiliza valores de la *consulta principal* en  su cláusula ~WHERE~
