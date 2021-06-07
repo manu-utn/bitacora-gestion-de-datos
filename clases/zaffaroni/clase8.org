@@ -56,51 +56,170 @@
   *NO CAPTURA EL ERROR, Y SIGUE EJECUTANDO EL RESTO DE LAS SENTENCIAS*
 * Cursor
   - lee registro por registro
-* Stored procedures
-  - otorga un nivel de seguridad extra
-    (porque se permite ejecutar el procedure, y no los SELECT)
 * Funciones
-** Funciones de usuario
-   - La diferencia con un procedure
-     - es que podemos ejecutarlas dentro de una consulta (o operacion dml)
-     - el store procedure NO
-** Funciones propias por el motor (built-in function)
-   - funciones agregadas (sum, count, avg, ..)
-   - otras funciones como: ~coalese~
+** Funciones de Usuario
+   Se pueden ejecutar dentro de una consulta (sentencia sql)
+   (Mientras que los *store procedure* NO pueden ser ejecutados dentro de una *query*)
+** Funciones propias por el Motor (built-in function)
+   - Funciones agregadas (~SUM~, ~COUNT~, ~AVG~, ..)
+   - Otras funciones como ~coalese~
 * Diccionario de datos
   En ...
   - sys.procedures
     son
   - sys.all_sql_models
     paa ver el codigo de los procedures
+* Asignación de valor a Variables
+** Conceptos
+  - Se asigna el valor de derecha a izquieda
+  - Se puede usar ~SET~ ó ~SELECT~
+
+  Los *operadores de asignación compuesta* figuran en esta tabla
+
+  #+name: operadores-asignacion-compuesta
+  |----------+-------------------------|
+  | Operador | Descripción             |
+  |----------+-------------------------|
+  | +=       | Sumar y asignar         |
+  | -=       | Restar y asignar        |
+  | *=       | Multiplicar y asignar   |
+  | /=       | Dividir y asignar       |
+  | %=       | Módulo y asignar        |
+  | &=       | AND bit a bit y asignar |
+  | ^=       | XOR bit a bit y asignar |
+  |----------+-------------------------|
+  
+** Ejemplos
+*** Ejemplo 1 - Declarar variables
+   #+BEGIN_SRC sql
+     SET @variable1 = valor
+
+     SELECT @variable2 = valor;
+   #+END_SRC
+*** Ejemplo 2 - Asignarle el resultado de una consulta a una variable
+    Al asignar el resultado de una consulta a una variable, la podemos reutilizar fuera de esta.
+    Es útil para cuando se utilizan *cursores*
+
+   #+BEGIN_SRC sql
+     SELECT @variable = nombre
+       FROM clientes WHERE codCliente = 500;
+
+     SELECT @telefono = tel
+       FROM clientes WHERE codCliente = 500;
+   #+END_SRC
 * Store procedures
 ** Conceptos
   - las variables con @ son locales, y @@ para las globales
+  - otorga un nivel de seguridad extra
+    (porque se permite ejecutar el procedure, y no los SELECT)
+  
+  *Observación:*
+  - Las expresiones entre corchetes [ ] quieren decir que son opcionales
+
+  #+name: procedure-sintaxis 
+  #+BEGIN_SRC sql
+    CREATE PROCEDURE [esquema].[nombre_proc] (parametros de entrada ó de salida) AS
+      -- sentencias SPL y/o SQL
+    GO
+  #+END_SRC
+** Parámetros de Entrada/Salida
+   Por defecto los parámetros son ~IN~ es decir que son *variables de entrada* que se usarán
+   como variables locales dentro del SP.
+   Si al parámetro le agregamos ~OUT~ indicamos que algún resultado dentro del SP se guardará en él,
+   y tanto en la creación del SP como en su ejecución debe aparecer ~OUT~ 
+
+   |-----------+---------------------------------------------------------------------|
+   | Parámetro | Descripción                                                         |
+   |-----------+---------------------------------------------------------------------|
+   | IN        | Indica que será un parámetro de entrada, será variable local del SP |
+   |-----------+---------------------------------------------------------------------|
+   | OUT       | Indica que se guardará algún resultado del SP                       |
+   |-----------+---------------------------------------------------------------------|
+
+   #+BEGIN_SRC sql
+     -- en este caso @var1 y @var2 son parámetros de entrada, por defecto tienen IN
+     CREATE PROCEDURE suma1 @var1 INT, @var2 INT AS
+     RETURN @var1+@var2
+     GO 
+
+     -- en este caso @var1 es un parámetro de entrada, y @var2 uno de salida
+     CREATE PROCEDURE suma2 @var1 INT, @var2 INT OUT AS
+     SET @var2 = @var1 + 10
+     GO 
+   #+END_SRC
+** Ejemplos
+*** Ejemplo 1 - Con dos parámetros y retornando valor
+    #+BEGIN_SRC sql
+      CREATE PROCEDURE suma @var1 INT, @var2 INT AS
+      DECLARE @var3 INT         -- declaramos una tercera variables
+      SET @var3 = @var1 + @var2 -- le asignamos un valor
+      RETURN @var3              -- la retornamos
+      GO
+
+      /*
+       ,* 1. Declaramos la variable y su tipo de dato
+       ,* 2. Ejecutamos el procedimiento y se lo asignamos a la variable
+       ,* 3. Lo imprimimos con SELECT, aunque podríamos haber usado PRINT
+       ,*/
+      DECLARE @resultado INT
+      EXECUTE @resultado = suma 3 2 -- alternativa: usar "exec"
+      SELECT @resultado
+      GO
+    #+END_SRC
+*** Ejemplo 2 - Con un parámetro de entrada y otro de salida
+    #+BEGIN_SRC sql
+      /*
+       ,* A la variable que le agregamos "OUT" es la que tendrá
+       ,* el resultado de la operación que hagamos.
+       ,*
+       ,* IMPORTANTE!! Ese OUT debe aparecer en la creación del SP
+       ,* como en su ejecución (al usar EXECUTE ó EXEC)
+       ,*/
+      CREATE PROCEDURE suma @var1 INT, @var2 INT OUT
+      AS
+      SET @var2 = @var1 + 10;
+      GO
+
+      -- 1. Declaramos la variable
+      DECLARE @resultado INT
+      -- 2. Ejecutamos el SP, le pasamos el parámetro de entrada y el de salida
+      EXECUTE suma 2, @resultado OUT
+      SELECT @resultado
+      GO
+    #+END_SRC
 ** Modificarlos
   - Con ~alter procedure~ se modifican
 ** Ejecutarlos
-   - Con la instrucción ~execute nombreProcedimiento~
+   Con la instrucción ~EXECUTE~ ó también ~EXEC~ seguido del nombre del procedimiento
 
    #+BEGIN_SRC sql
-     -- esto va a devolver siempre 10 (???)
-     CREATE PROCEDURE suma @var1 INT, @var2 INT, @var3 INT
-     AS
+     -- esto va a devolver siempre 10, porque por más que recibe dos parámetros
+     -- sólo le estamos asignando el valor 10 al tercer parámetro
+     CREATE PROCEDURE suma @var1 INT, @var2 INT, @var3 INT AS
      BEGIN
-     declare @resultado int
-     set @resultado = 10
+     DECLARE @resultado int
+     SET @resultado = 10
      END
      GO
 
-     execute suma 15,13, @resultado
-
-     --
-     declare @resultado int;
-     set @resultado = 10;
-     execute Suma2 15,13, @resultado out
+     DECLARE @resultado int;
+     EXECUTE suma 15,13, @resultado
+     SELECT @resultado
    #+END_SRC
 ** Sentencias de manejo de bloques
-   + Los bloques se inician con ~begin~ y finalizan con ~end~ (EXPLICITO)
-   + si usamos el ~as~ sera implicito <<DUDA 1>> (?)
+*** Conceptos
+    + Un *bloque explícito* se inician con ~BEGIN~ y finalizan con ~END~
+    + Un *bloque implícito* se forma con lo que esté despues del ~AS~ y antes del ~BEGIN .. END~
+*** Ejemplos
+    #+BEGIN_SRC sql
+      CREATE PROCEDURE nombre AS
+      DECLARE @var1 INT
+      SET @var1 = 10
+
+      BEGIN -- inicio de "bloque explícito"
+            -- sentencias
+      END   -- fin de "bloque explícito"
+    #+END_SRC
 ** Sentencias condicionales
    #+BEGIN_SRC sql
    if (@var > 5)
