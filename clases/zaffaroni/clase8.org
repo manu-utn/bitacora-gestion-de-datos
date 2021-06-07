@@ -43,26 +43,6 @@
      DEALLOCATE CustomerCursor; 
     END
  #+END_SRC
-* Throw - Lanzar Excepciones
-  - el ~throw 50099~ es el normal para manejar en programas,
-  - NO utilizar el ~RAISE~ (no funciona adecuadamente para capturar excepciones)
-  - cuando es ~level 16~ se detiene toda ejecucion << IMPORTANTE
-  ej. ~throw ~
-
-  obs: NO se recomienda usar ~raise~
-  Ej. ~raiseerror('error catch', 16, 1)~
-  siendo el 2do par{ametro el nivelDeError, y el 3ro el state
-  el mensaje que devuelve es el 5000, es diferente
-  *NO CAPTURA EL ERROR, Y SIGUE EJECUTANDO EL RESTO DE LAS SENTENCIAS*
-* Cursor
-  - lee registro por registro
-* Funciones
-** Funciones de Usuario
-   Se pueden ejecutar dentro de una consulta (sentencia sql)
-   (Mientras que los *store procedure* NO pueden ser ejecutados dentro de una *query*)
-** Funciones propias por el Motor (built-in function)
-   - Funciones agregadas (~SUM~, ~COUNT~, ~AVG~, ..)
-   - Otras funciones como ~coalese~
 * Diccionario de datos
   En ...
   - sys.procedures
@@ -107,6 +87,194 @@
      SELECT @telefono = tel
        FROM clientes WHERE codCliente = 500;
    #+END_SRC
+* Throw - Lanzar Excepciones
+  - el ~throw 50099~ es el normal para manejar en programas,
+  - NO utilizar el ~RAISE~ (no funciona adecuadamente para capturar excepciones)
+  - cuando es ~level 16~ se detiene toda ejecucion << IMPORTANTE
+  ej. ~throw ~
+
+  obs: NO se recomienda usar ~raise~
+  Ej. ~raiseerror('error catch', 16, 1)~
+  siendo el 2do par{ametro el nivelDeError, y el 3ro el state
+  el mensaje que devuelve es el 5000, es diferente
+  *NO CAPTURA EL ERROR, Y SIGUE EJECUTANDO EL RESTO DE LAS SENTENCIAS*
+* Sentencias condicionales
+** Sentencia IF
+*** Conceptos
+  #+BEGIN_EXAMPLE
+    IF condicion
+        sentencia 1
+    ELSE
+        sentencia 2
+  #+END_EXAMPLE
+*** Ejemplo 1 - Sentencia Simple
+  #+BEGIN_SRC sql
+    IF (@var1 > 5)
+       PRINT 'Hola'
+    ELSE
+       PRINT 'olis'
+  #+END_SRC
+*** Ejemplo 2 - Consultas como expresiones
+  #+BEGIN_SRC sql
+    DECLARE @cod_cliente INT;
+    SET @cod_cliente = 199;
+
+    IF EXISTS(SELECT nombre FROM clientes WHERE cod_cliente=@cod_cliente)
+       PRINT 'Este cliente existe..! :o'
+    ELSE
+       PRINT 'El cliente no existe, que pasó acá? Agregalo!'
+  #+END_SRC
+** Sentencia CASE 
+*** Conceptos
+    Se puede utilizar en
+    + En la instrucción ~SELECT~
+      1) Dentro de la cláusula ~SELECT~  (esto sería en donde van la lista de columnas)
+      2) Dentro de la cláusula ~ORDER BY~ 
+      3) Dentro de la cláusula ~HAVING~
+    + En la instrucción ~UPDATE~
+    + En la instrucción ~SET~
+*** Ejemplo 1 - En la cláusula SELECT de un SELECT
+    Lo colocamos en la cláusula ~SELECT~ (que es donde se listan las columnas a seleccionar)
+    de la instrucción ~SELECT~.
+
+    #+BEGIN_EXAMPLE
+    La sintáxis para este caso sería
+
+    un_alias=CASE nombre_columna
+      WHEN valor1_de_la_columna THEN nuevo_valor_de_columna
+      WHEN valor2_de_la_columna THEN otro_valor_de_columna
+    END
+    
+    un_alias: es el nombre que aparecerá en el resultado de la consulta,
+    nombre_columna: es el nombre real de la columna que queremos usar
+    valor_de_columna: es el valor que la columna
+    nuevo_valor_de_columna: por el que vamos a reemplazar el que viene como dato
+    #+END_EXAMPLE
+
+    #+BEGIN_SRC sql
+      SELECT 'Fabricante'=CASE cod_fabricante
+        WHEN 'HRO' THEN 'HERO'
+        WHEN 'HSK' THEN 'HUSKY'
+        ELSE 'OTRO'
+        END,
+        precio, descripcion FROM dbo.productos
+      GO
+    #+END_SRC
+*** Ejemplo 2 - En la cláusula SELECT como condicional tipo IF
+    Igual que el ejemplo anterior, pero podemos agregarle que condiciones
+    debería cumplir.
+    Además podemos usarlo como columna para ordenar el resultado final.
+
+    #+BEGIN_SRC sql
+      SELECT cod_producto, cod_fabricante,
+        'Criterio Precio' =
+           CASE
+             WHEN precio = 0 THEN  'SIN PRECIO'
+             WHEN precio < 50 THEN 'SAFA'
+             WHEN precio < 100 THEN 'ESTAFA'
+             WHEN precio BETWEEN 150 AND 200 THEN 'NI LOCO'
+             ELSE 'NI MIRO'
+             END
+        FROM dbo.productos
+       ORDER BY 'Criterio Precio', cod_producto
+      GO
+    #+END_SRC
+*** Ejemplo 4 - En la cláusula ORDER BY con 1 criterio de ordenamiento
+    Si usamos la sintáxis de los anteriores ~case~ sólo podríamos ordenar por todos los campos,
+    pero no de manera individual. En el próximo ejemplo se muestra como hacer.
+
+    #+BEGIN_SRC sql
+      SELECT stock_num, manu_code, unit_price
+        FROM products
+       WHERE manu_code IN ('HRO', 'HSK')
+       ORDER BY CASE
+                WHEN manu_code='HRO' THEN stock_num  -- no podemos pone ASC ni DESC acá
+                WHEN manu_code='HSK' THEN unit_price -- no podemos pone ASC ni DESC acá
+                END ASC; -- sólo acá podemos poner la manera de ordenar
+    #+END_SRC
+*** Ejemplo 5 - En la cláusula ORDER BY con varios criterios de ordenamiento
+    En este la sintáxis cambia un poco a diferencia de los primeros dos ejemplos.
+    Tenemos que usar ~CASE WHEN nombre_columna=valor_columna THEN otra_columna END~
+    es decir por cada posible valor repetimos la *sentencia case*
+
+    *Observación:*
+    Podemos notar que cada ~case~ puede tener su forma de ordenar (~ASC~ y ~DESC~) de forma independiente.
+    Si quisieramos aplicar la sintáxis de los ejemplos anteriores, NO sería posible para cada uno por separado.
+
+    #+BEGIN_SRC sql
+      SELECT cod_producto, cod_fabricante, precio FROM productos
+       WHERE cod_fabricante IN ('HRO', 'HSK')
+       ORDER BY CASE WHEN cod_fabricante='HRO' THEN cod_producto END ASC,
+                CASE WHEN cod_fabricante='HSK' THEN precio END DESC;
+    #+END_SRC
+*** Ejemplo 6 - En la instrucción UPDATE con un condicional tipo IF
+    Similar al ejemplo (2) que usabamos en la *cláusula* ~SELECT~ de la instrucción ~SELECT~
+
+    #+BEGIN_SRC sql
+      UPDATE productos
+         SET precio=(
+           CASE
+           WHEN precio < 100 THEN precio*1.10 -- aumentamos un 10%
+           WHEN precio < 200 THEN precio*1.20 -- aumentamos un 20%
+           ELSE precio*1.50 -- aumentamos el valor un 50%
+           END
+         ) WHERE fabricante='IBM';
+    #+END_SRC
+*** Ejemplo 7 - En la instrucción SET con consultas
+    - Utilizamos el ~WHEN EXISTS~ seguido entre paréntesis de una *query*
+    - El ~SET~ como instrucción se usa para asignar un valor a una *variable* que declaremos
+      (también podíamos usar la instrucción ~SELECT~)
+
+    #+BEGIN_SRC sql
+      -- 1. Declaramos las variables
+      DECLARE @cod_empleado INT;
+      DECLARE @TipoContacto VARCHAR(30); -- en esta guardaremos el resultado
+
+      -- 2. Le asignamos un valor (del mismo tipo) según lo que devuelva la consulta
+      SET @TipoContacto=
+        CASE
+          -- si se cumple, su valor será Empresario
+          WHEN EXISTS(SELECT * FROM Ventas.empleados v WHERE v.cod_empleado=@cod_empleado)
+          THEN 'Empresario'
+
+          -- si se cumple, su valor será Vendedor
+          WHEN EXISTS(SELECT * FROM Compras.empleados c WHERE c.cod_empleado=@cod_empleado)
+          THEN 'Vendedor'
+        END;
+    #+END_SRC
+** Sentencias Cíclicas
+*** Conceptos
+    - Podemos utilizar la sentencia ~WHILE~ para generar el ciclo
+    - Se pueden usar las cláusulas ~BREAK~ y ~CONTINUE~ dentro del bloque de ~WHILE~
+*** Cláusula BREAK
+    Con la cláusula ~BREAK~ abandona el bloque del ~WHILE~ y sigue con la próxima instrucción
+    que le siga a ~END~ (el que finaliza el bloque explícito)
+*** Cláusula CONTINUE
+    Con la cláusula ~CONTINUE~ NO ejecuta la próxima instrucción y sigue con la próxima iteración del ~WHILE~
+*** Ejemplo 1 - Modificar varios registros
+   #+BEGIN_SRC sql
+     -- Mientras el promedio de todos los precios sea menor  a 900 que siga iterando
+     WHILE (SELECT AVG(precio) FROM productos) < 1000
+       BEGIN
+         -- aumentamos todos los precios en un 10%
+         UPDATE productos SET precio = precio*1.10
+
+         -- si algún registro supera los 1500, cortamos la iteración con BREAK
+         IF (SELECT MAX(precio) FROM productos) > 4500
+           BREAK
+         ELSE
+           PRINT 'Estamos actualizando los precios.. Muahaha..!'
+       END
+       PRINT 'Se actualizaron todos los precios.. NO te asustes (?)' -- termina el ciclo
+     GO
+   #+END_SRC
+* Funciones
+** Funciones de Usuario
+   Se pueden ejecutar dentro de una consulta (sentencia sql)
+   (Mientras que los *store procedure* NO pueden ser ejecutados dentro de una *query*)
+** Funciones propias por el Motor (built-in function)
+   - Funciones agregadas (~SUM~, ~COUNT~, ~AVG~, ..)
+   - Otras funciones como ~coalese~
 * Store procedures
 ** Conceptos
   - las variables con @ son locales, y @@ para las globales
@@ -213,81 +381,73 @@
 *** Ejemplos
     #+BEGIN_SRC sql
       CREATE PROCEDURE nombre AS
-      DECLARE @var1 INT
+      -- bloque implícito
+      DECLARE @var1 INT  
       SET @var1 = 10
 
       BEGIN -- inicio de "bloque explícito"
             -- sentencias
       END   -- fin de "bloque explícito"
     #+END_SRC
-** Sentencias condicionales
-   #+BEGIN_SRC sql
-   if (@var > 5)
-  	begin
-	     print 'ola'
-	     end
-     else
-	     begin
-	     print 'chau'
-	     end
-   #+END_SRC
 ** Ejecutar comandos del SO
    #+BEGIN_SRC sql
    #+END_SRC
-** Cursores
-*** Conceptos
-  - Un *cursor* se define con el ~declare~
-  - Permiten tomar datos de un ~select~
-  - fetch
-  - deallocate 
-  - NO hay límite de cursores abiertos, y declarados
-*** Con un campo identity
-   #+BEGIN_SRC sql
-     -- el alcance es mas amplio con @@ (xq es global)
-     SET @order_id = @@IDENTITY
+* Cursores
+** Conceptos
+ - Un *cursor* se define con el ~declare~
+ - Permiten tomar datos de un ~select~
+  - lee registro por registro
+ - fetch
+ - deallocate 
+ - NO hay límite de cursores abiertos, y declarados
+** Con un campo identity
+  #+BEGIN_SRC sql
+    -- el alcance es mas amplio con @@ (xq es global)
+    SET @order_id = @@IDENTITY
 
-     -- otra manera.. pero para obtener el identity local
+    -- otra manera.. pero para obtener el identity local
 
-     -- usa el de mi procedure
-     SELECT @order_id = SCOPE_IDENTITY()
-   #+END_SRC
-*** Con transaction
-    - El ~commit~ cierra la transaccion (ya no se puede usar ~rollback~)
-*** Manejo de excepciones
-   #+BEGIN_SRC sql
-     begin try
-	   begin tan
-	   insert into tabla values (1)
-	   insert into tabla values (1)
-	   insert into tabla values (1)
-	   commit tran
-     end try
+    -- usa el de mi procedure
+    SELECT @order_id = SCOPE_IDENTITY()
+  #+END_SRC
+** Con transaction
+   - El ~commit~ cierra la transaccion (ya no se puede usar ~rollback~)
+** Manejo de excepciones
+  #+BEGIN_SRC sql
+    begin try
+	  begin tan
+	  insert into tabla values (1)
+	  insert into tabla values (1)
+	  insert into tabla values (1)
+	  commit tran
+    end try
 
-     begin catch
-	   print 'error'
-	   rollback tran
-     end catch
-   #+END_SRC
-*** Ejemplos      
-   #+BEGIN_SRC sql
-     DECLARE items CURSOR FOR
-	     SELECT id_item FROM item
-	     WHERE id_almacen = @almacen
+    begin catch
+	  print 'error'
+	  rollback tran
+    end catch
+  #+END_SRC
+** Ejemplos      
+  #+BEGIN_SRC sql
+    DECLARE items CURSOR FOR
+	    SELECT id_item FROM item
+	    WHERE id_almacen = @almacen
 
-     -- dlcoar de una variable del cursor
-     -- (queda en memoria)
-     DECLARE @item_del_cursor INTEGER
-     -- a una area de memoria, le agrega filas del select
-     OPEN items_almacen
-     -- busca la primera fila del primer select
-     FETCH items_almacen INTO @item_del_cursor
-     -- mientras haya mas filas/registros ejecuta lo de adentro del while
-     WHILE (@@FETCH_STATUS =0)
-	   BEGIN -- bloque sentencia - inicio
-	     INSERT INTO ITEMS_AUX VALUES (@item_del_cursor)
-	     FETCH items_almacen INTO @item_del_cursor
-	   END -- bloque sentencia - fin
-     CLOSE items_en_almacen
-     DEALLOCATE items_en_almacen -- 
-     END PROCEDURE;
-   #+END_SRC
+    -- dlcoar de una variable del cursor
+    -- (queda en memoria)
+    DECLARE @item_del_cursor INTEGER
+    -- a una area de memoria, le agrega filas del select
+    OPEN items_almacen
+    -- busca la primera fila del primer select
+    FETCH items_almacen INTO @item_del_cursor
+    -- mientras haya mas filas/registros ejecuta lo de adentro del while
+    WHILE (@@FETCH_STATUS =0)
+	  BEGIN -- bloque sentencia - inicio
+	    INSERT INTO ITEMS_AUX VALUES (@item_del_cursor)
+	    FETCH items_almacen INTO @item_del_cursor
+	  END -- bloque sentencia - fin
+    CLOSE items_en_almacen
+    DEALLOCATE items_en_almacen -- 
+    END PROCEDURE;
+  #+END_SRC
+
