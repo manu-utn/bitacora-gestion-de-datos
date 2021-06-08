@@ -1,0 +1,40 @@
+version: '3'
+services:
+  mssql:
+    image: 'microsoft/mssql-server-linux:2017-latest'
+    hostname: 'mssql'
+    ports:
+      - 1433:1433
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=SuperP4ssw0rd!
+      - MSSQL_PID=Express
+    networks:
+      - redsql
+  sqlpad:
+    image: sqlpad/sqlpad:5
+    hostname: 'sqlpad'
+    ports:
+      - '3000:3000'
+    environment:
+      SQLPAD_ADMIN: 'admin'
+      SQLPAD_ADMIN_PASSWORD: '123123'
+      SQLPAD_APP_LOG_LEVEL: info
+      SQLPAD_WEB_LOG_LEVEL: warn
+      SQLPAD_CONNECTIONS__sqlserverdemo__name: SQL Server Demo
+      SQLPAD_CONNECTIONS__sqlserverdemo__driver: sqlserver
+      SQLPAD_CONNECTIONS__sqlserverdemo__host: mssql
+      SQLPAD_CONNECTIONS__sqlserverdemo__database: master
+      SQLPAD_CONNECTIONS__sqlserverdemo__username: sa
+      SQLPAD_CONNECTIONS__sqlserverdemo__password: SuperP4ssw0rd!
+    volumes:
+      # el directorio "data" tiene que estar en la misma ruta
+      # que este archivo Docker-compose.yml
+      - ./data:/var/lib/sqlpad
+    networks:
+      - redsql
+
+networks:
+  redsql:
+    name: "redsql"
+    driver: "bridge"
