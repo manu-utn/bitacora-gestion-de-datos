@@ -1,19 +1,33 @@
 #+TITLE: Sql Server Linux
+* Intro
+  En la carpeta ~backups~ se encuentra el archivo ~7storesnew.sql~ para crear las estructuras e insertar los registros.
 * Docker Compose
 ** Conceptos
    - La utilizaremos en conjunto con *Docker* (es necesario tenerlo instalado previamente)
    - Es la herramienta que usaremos para correr un *contenedor* en una *shell*
    - Es un tanto similar a *Virtualbox* pero más eficiente en todo sentido :)
-** Ejecución
-  - Sólo debemos ejecutar en la shell ~docker-compose up -d~
-    (El parámetro ~-d~ es para que se ejecute en segundo plano, y no bloquee el uso de la terminal)
+
+   |------------------------+-----------------------------------------------|
+   | Comando                | Descripción                                   |
+   |------------------------+-----------------------------------------------|
+   | ~docker-compose up -d~ | Ejecuta SQL Server en segundo plano           |
+   | ~docker-compose ps~    | Listar contenedores en ejecución, y su estado |
+   | ~docker-compose down~  | Detiene la ejecución del servidor             |
+   |------------------------+-----------------------------------------------|
+
+   *Observación:*
+   El parámetro ~-d~ es para que el comando se ejecute en segundo plano, y no bloquee el uso de la terminal
 ** Configuración
    - Esta configuración ya la tenemos en el archivo ~docker-compose.yml~ pero la dejo por si acaso..
    - Si vas a cambiar la *password* estate seguro que mantenga ese nivel de seguridad
      (es un requisito al momento de instalar SQL Server, si no va a fallar a mitad de la instalación)
-   - Podés obviar usar ~sqlpad~ es sólo extra, monta un servidor web para utilizar sql via un browser
+   - Podés obviar usar ~sqlpad~ es sólo extra, monta un servidor web para utilizar sql accediendo desde un navegador web
    - Si necesitas tener algunos archivos ~.sql~ creá la carpeta ~data~ o cambiá la configuración en ~volumes~
      la misma se creará dentro del contenedor (del sqlpad)
+
+   *Observación:*
+   Si queres acceder al servidor web ingresá en http://localhost:3000/ e ingresa los datos
+   que aparecen en la configuración en *SQLPAD_ADMIN* y *SQLPAD_ADMIN_PASSWORD*
 
    #+BEGIN_SRC yaml
      version: '3'
