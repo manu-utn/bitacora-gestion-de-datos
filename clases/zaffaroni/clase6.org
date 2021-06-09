@@ -114,6 +114,10 @@ y se utiliza para los sistemas q usan intime
      (/por el tema de los costos de espacio y de procesamiento/)
 
    #+BEGIN_COMMENT
+   _RESPUESTA:_
+   si tiene pocas filas va a acceder rápido igual
+   el motor no trabaja con bytes, si no con páginas
+
    <<DUDA 4>>
    Cómo es el tema de crear indices con poca cant. de filas,
    por lo de la cant de páginas? (pag. 11, 30-DML..pdf)
