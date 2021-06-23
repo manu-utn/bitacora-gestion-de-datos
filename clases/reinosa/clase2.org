@@ -1,18 +1,59 @@
-#+TITLE: Clase 02- Arboles - Prof. Reinosa
+#+TITLE: Clase 02- Arboles
 
 #+BEGIN_COMMENT
-Por convención, es por convención occidental
-que algo se decidió hacer de una manera 
+Es por convención occidental que algo se decidió hacer de una manera 
 sin importar si esta ok o no
 #+END_COMMENT
 
+* Conceptos Basicos
+** Correspondencia unívoca 
+   - Cuando a cada elemento (a) de un conjunto (A) _le corresponde al menos un elemento_ (b) de 
+     un conjunto (B)
+
+   #+BEGIN_QUOTE
+   Podemos tener una función que cualquiera sea su entrada ~x~ tenga al menos una salida ~d~ o la que sea
+   eso si, esta es una correspondencia *unívoca* pero NO *biunívoca* (porque tiene misma imagen para
+   varios datos de entrada)
+   Ej.: f(1) = d, f(2)=d
+
+   Si tenemos estas otras funciones y suponiendo que por cualquier valor de entrada siempre devuelve
+   uno distinto, además de ser *unívoca* también será *biunívoca*
+
+   Ej.: h(1)=a, h(2)=b
+   #+END_QUOTE
+
+   *Observación:*
+   - Puede cumplirse que NO todos los elementos del origen (a) tengan asociado uno de destino (b)
+   - Puede cumplirse que NO todos los elementos de destino (b) tengan asociado uno del origen (a)
+** Correspondencia biunívoca
+   - Es la *relación de uno a uno*
+   - Debe cumplirse la *correspondencia unívoca*
+   - Es una correspondencia unívoca, donde su correspondencia inversa
+     también es unívoca
+   - Cuando a a cada elemento (a) de un conjunto (A) le corresponde
+     sólo un elemento (b) de un conjunto (B), y viceversa
+
+   *Observación:*
+   - Puede cumplirse que NO todos los elementos del origen (a) tengan asociado uno de destino (b)
+   - Puede cumplirse que NO todos los elementos de destino (b) tengan asociado uno del origen (a)
+
+   #+BEGIN_QUOTE
+   En una *correspondencia biunívoca* cada elemento del dominio le corresponde
+   una única imagen, y a cada imagen le corresponde sólo un elemento del dominio.
+
+   Una *correspondencia unívoca* pero NO *biunívoca* podria ser
+   A cada persona de un pueblo le corresponde sólo un domicilio,
+   pero cada domicilio tenga varias personas viviendo.
+
+   Un ejemplo de una relación que SI es *biunívoca* sería
+   cada estudiante de una universidad le corresponde un número legajo
+   #+END_QUOTE
 * Conceptos
   - Los árboles entran en las estructuras unívocas 
   - Las colas/pilas entran en las estructuras biunivocas
 * Grado
   - Cantidad máxima de hijos que puede tener una estructura
-  - Es cuanto va a crecer (cant. de hijos/sub-arboles
-    que puede tener cada nodo)
+  - Es cuanto va a crecer (cant. de hijos/sub-arboles que puede tener cada nodo)
   - Siempre se necesita, para poder representarlo en cualquier lado
     (Ej. en un vector)
   
@@ -26,8 +67,7 @@ sin importar si esta ok o no
   - la raiz está en el nivel 0
   
   #+BEGIN_QUOTE
-  Un árbol busca por niveles, pero en un mismo nivel puede
-  hacer muchas busquedas
+  Un árbol busca por niveles, pero en un mismo nivel puede hacer muchas busquedas
 
   En un vector busca por niveles, donde cada nivel es una posición
   Ej. arr[4] tiene 4 niveles
@@ -41,142 +81,205 @@ sin importar si esta ok o no
   y el elemento más lejano al inicio (al nivel 0)
   estará a no más de 3 pasos
   #+END_EXAMPLE
-* [TODO] Representación
-** COnceptos
+* Representación
+** Conceptos
    - Para existir debe estar representado computacionalmente
 ** Estática
-   - EL arbol está representado por un vector
-   - Los guarda como una estructura de datos por [[Nivel][niveles]] 
-     (osea en las *posiciones* del vector)
+*** Conceptos
+   - El árbol está _representado por un vector_
+   - Los guarda como una estructura de datos por [[Nivel][niveles]] (/osea en las *posiciones* del vector/)
+*** Ejemplo
+    En el siguiente arreglo/vector de longitud 6, tiene sólo 1 nivel, y es de grado 1.
 
-    | nivel | [0] | [1] | [2] | [3] | [4] | [5]  | [6] |
-    |-------+-----+-----+-----+-----+-----+------+-----|
-    |       |   1 |   2 |   3 |   4 |   5 | null |   6 |
-    |-------+-----+-----+-----+-----+-----+------+-----|
+    |---------+-----+-----+-----+-----+-----+------+-----|
+    | NIVELES | [0] | [1] | [2] | [3] | [4] | [5]  | [6] |
+    |---------+-----+-----+-----+-----+-----+------+-----|
+    |         |   1 |   2 |   3 |   4 |   5 | null |   6 |
+    |---------+-----+-----+-----+-----+-----+------+-----|
 ** Dinámica
-   - EL arbol está representado por una lista/estructura linkeada
-     (los nodos están vinculados a través de punteros)
-   - Hay tantos punteros como el [[Grado][grado]] del arbol
-     (osea como si fuesen pisos)
-   - por cada nuevo nivel (posición), se aumenta un grado
-
-   #+BEGIN_EXAMPLE
-   Un árbol binario al tener grado 2 (cant. máxima de hijos que puede tener)
-   puede tener a lo mucho 2 punteros, 
+*** Conceptos
+    - El árbol está _representado por una lista/estructura linkeada_
+      (/los nodos están vinculados a través de punteros/)
+    - Hay tantos punteros como el [[Grado][grado]] del árbol (/osea como si fuesen pisos/)
+    - por cada nuevo nivel (posición), se aumenta un grado
+     
+     #+BEGIN_EXAMPLE
+     Un árbol binario al tener grado 2 (/cant. máxima de hijos que puede tener/)
+     puede tener a lo mucho 2 punteros (referencias)
    
-   Un árbol de grado-N va a tener N punteros
+     Un árbol de grado-N va a tener N punteros
 
-   Una pila/cola al tener grado 1, soporta solo 1 puntero
-   #+END_EXAMPLE
+     Una pila/cola al tener grado 1, soporta solo 1 puntero
+     #+END_EXAMPLE
+*** Ejemplo - Conocer posición de un nodo padre
+     #+BEGIN_QUOTE
+     Si queremos determinar la posición del elemento padre de un nodo operamos
 
-   #+BEGIN_EXAMPLE Si tenemos un árbol con 27 elementos, y queremos conocer la posición del padre del elemento de la posición 27 Si tenemos un árbol con 29 elementos, y queremos conocer la posición del elemento 29. #+END_EXA
+     ~( (numero-restoDeLaDivision) * (numero/grado) ) / 2~
+
+     1. dividimos por el grado
+     2. si el resto es distinto de cero,
+        1. hacemos primero la diferencia entre la posición y el resto de la división
+        2. al resultado la diferencia, le dividimos el grado
+     #+END_QUOTE
+*** Ejemplo 1
      Si un elemento está en la posición 45, para saber en que posicion
-     está en el padre hacemos 45-1/2 osea posición 22
+     está en el padre hacemos ~(45-1)/2~ osea posición 22 (resultado de la operación anterior)
 
-     ( (numero-restoDeLaDivision) * (numero/grado) ) / 2
+     (le estamos restando 1, porque es la diferencia de dividir la posición del nodo por el grado
+     es decir el resto de ~45/2~ es 1. Otra forma de obtener el resto sería con la operación módulo %
+     porque ~45 % 2 = 1~ ó ~mod(45,2)=1~)
+*** Ejemplo 2
+     Si tenemos un árbol con 27 elementos, y queremos conocer la posición del padre 
+     del elemento de la posición 27.
+     
+     Hacemos ~27-3/3~ (suponiendo que es de grado 3)
 
-     1. dividimos po el grado
-     2. si el resto es distinto de cero, se lo restamos al número
-
-     Ej. 27-3/3 (suponiendo que es de grado 3)
-   #+END_EXAMPLE
+     Como ~27 % 3=0~ ó ~mod(27,3)=0~ el resto de ~27/3~ es cero
+     entonces sólo a la posición 27 le restamos el grado=3, y lo dividimos por este también
+*** Ejemplo 3
+     Si tenemos un árbol con 29 elementos, y queremos conocer la posición del elemento 29.
 * Carácteristicas
 ** Completo
-   - CUando todos los elementos cumplen el grado o son hojas
+   - Cuando _todos los elementos cumplen el grado o son hojas_
+   
+   *Observación:*
+   - Que un nodo cumpla el grado es que está en el último nivel
+     (/Ej. Un arbol de grado=4, el nodo mas lejano a el cumple el grado, por tanto también es hoja/)
+   - Que un nodo sea hoja, no quiere decir que cumpla el grado
+     (/Ej. Un árbol de grado=4, es hoja y está en el nivel 3, por tanto no cumple con el grado/)
 
-   Ej. Si el árbol es de grado 4, 
+   #+BEGIN_EXAMPLE
+   El nodo raiz siempre está en el nivel 0
+
+   Un árbol binario es de grado 2
+   - cada nodo puede tener un máximo de 2 nodos hijos
+   - el arbol puede tener a lo mucho 2 subarboles
+   - tiene 2 niveles (cada nivel repesenta que tan distante está cada nodo de la raiz)
+   
+   Si un árbol n-ario tiene grado 4
+   - cada nodo puede tener un máximo de 4 nodos hijos
+   - el arbol puede tener a lo mucho 4 subarboles
+   - tiene 4 niveles (cada nivel representa la posición de un nodo respecto a la raiz)
+   #+END_EXAMPLE
 ** [TODO] Balanceado
-   - Si cada subarbol tiene misma cant. de elementos (pesan lo mismo)
-   - ó si hay una diferencia indivisible
-    (que no se pude dividir por el grado, entre los subarboles) 
+   - Si cada subarbol tiene misma cant. de elementos (/pesan lo mismo/)
+   - ó si _hay una diferencia indivisible_ entre el peso de ambos subarboles con el grado del arbol
+    (/que no se puede dividir por el grado, entre los subarboles/) 
+
+   #+BEGIN_QUOTE
+   Si tenemos un arbol con
+   - grado 4 (max. cant. de nodos hijos que puede tener cada nodo, y tmb la max. cant. de subarboles)
+   - con 3 niveles (seria como tener 3 pisos)
+
+   y tenemos 2 subarboles
+   1. uno con peso 2  (cant. de nodos, tiene solo dos)
+   2. otro con peso 1 (cant. de nodos, tiene solo 1)
+
+   si hacemos la diferencia entre los pesos de los subarboles
+   y tratamos de dividirlo por el grado del arbol, no podremos
+   ~(2-1) / 4 = ?~ => esto nos indica que podria haber un *arbol balanceado*
+   porque no podemos dividir el valor 1 en más partes, es atómico
+
+   Otro ejemplo sería, con el mismo árbol
+   si tenemos 2 subarboles de peso=2 (osea ambos tienen 2 nodos)
+   entonces también da un indicio de que quizas haya un *arbol balanceado*
+   #+END_QUOTE
 ** Perfectamente balanceado
-   - Puede haber un árbol completo pero que NO esté balanceado
-     (Ej. que tenga muchos subarboles de un lado)
+   - que no haya huecos en el grafo (ó dígrafo no-dirigido)
+   - _Puede haber un árbol completo pero que NO esté balanceado_
+     (/Ej. que tenga muchos subarboles de un lado/)
    - Cuando está balanceado en todos sus niveles
    - ó Cuando todas las hojas están en el mismo nivel
-   - que no haya huecos en el diagrama
 
    #+BEGIN_EXAMPLE
-   Si tenemos un árbol de grado 2 (binario) 
-   con 3 niveles (tiene 3 pisos: 0,1,2)
+   Si tenemos un árbol de 
+   - grado 2 (binario, max. cant de nodos hijos que puede tener cada nodo, y max. cant. subarboles) 
+   - y con 3 niveles (tiene 3 pisos: 0,1,2 donde el 0 es la posición del nodo raíz)
 
-   ese árbol está perfectamente balanceado,
-   si agarramos cada subarbol y ese está balanceado
+   ese árbol estará perfectamente balanceado, si agarramos cada subarbol y estén balanceados
 
-   ej.
+   Por ejemplo
    1. partimos de la raiz (tiene dos hijos)
    2. seguimos con el hijo izq. (tiene otros 2 hijos)
-   3. seguimos como el hijo der. (tiene otros 2 hijos)
+   3. seguimos con el hijo der. (tiene otros 2 hijos)
    #+END_EXAMPLE
 ** Crecimiento
-   - El crecimiento es en función de grado del árbol
-     (cada nivel crece en función al grado)
+   - El crecimiento es en _función al grado del árbol_
+     (/por cada nivel crece en función al grado/)
 
-   #+BEGIN_EXAMPLE
-   MaxElementos = (grado^nivel)-1
+   #+BEGIN_QUOTE
+   ~MaxElementos = (grado^nivel) - 1~
 
-   (2^nivel)-1
-   El -1 es por la imparidad de la raíz
-   El 2 suponiendo que es grado 2
-   #+END_EXAMPLE
+   Si calculamos lo siguiente ~(2^nivel) - 1~
+   - Es un árbol binario que puede tener varios niveles
+   - El 2 suponiendo que es grado 2 (por tanto es un árbol binario)
+   - Se le resta ~1~ por la _imparidad de la raíz_
+   #+END_QUOTE
 * Búsqueda
 ** Conceptos
-  - la busqueda se hace por niveles
+  - la búsqueda _se hace por niveles y NO por elementos_
+    (/no buscará de manera secuencial como en un vector, que es elemento por elemento/)
  
   #+BEGIN_EXAMPLE
   En una lista, cada elemento se relaciona solo con uno (el siguiente)
-  por tanto al buscar elementos en una lista,
-  buscaremos nivel por nivel (porque cada nivel, soporta solo 1 elemento)
+  por tanto al buscar elementos en una lista estamos buscando en el 
+  mismo nivel (porque tiene solo 1 nivel, y cada nivel soporta solo 1 elemento)
 
   En un árbol binario (grado 2) cada elemento se relaciona con otros dos,
   (la relación en un grafo se representa con las flechas)
   por tanto al buscar elementos puede llegar a descartar más elementos
-  (quizás solo busca los de la izq. ó solo los de la der.
+  (quizás solo busca los del subarbol izquierdo ó solo en los del subarbol de la derecha
   porque cada flecha representa una relación diferente)
 
-  una lista tiene una búsqueda lineal,
-  porque la cant. de niveles a los que va a buscar 
+  Una lista tiene una búsqueda lineal/secuencial, porque la cant. de niveles a los que va a buscar 
   depende de la cant. de elementos
-  SI tiene N elementos, buscará en N niveles,
+  SI tiene N elementos, buscará en N niveles.
   #+END_EXAMPLE
   
   #+BEGIN_EXAMPLE
-   la busqueda en un árbol  es logarítmica
-   porque su crecimiento es exponencial
-
-   porque la busqueda es la inversa al crecimiento,
+  La búsqueda en un árbol es logarítmica porque su crecimiento es exponencial
+  porque la busqueda es la inversa al crecimiento.
    
-   (listas) si el crecimiento es lineal, la busqueda sera lineal
-   (árboles) si el crecimiento es exponeicla, la busqueda será logarítmica
+  (listas) si el crecimiento es lineal => la busqueda sera lineal
+  (árboles) si el crecimiento es exponencial => la busqueda será logarítmica
   #+END_EXAMPLE
-** arbol binario de busqueda 
-   - los elementos menores se ingresan a la izq.y los mayores a la der.
-     (respecto de la raiz)
-   - su velocidad de busqueda es mayor que a la de una lista
-     (Excepto que todos los elementos estén de un lado, o del otro,
-      en ese caso tendrá la misma vel. que una lista)
-   - para que la búsqueda sea aún mayor, debe estar *balanceado*
-     (osea si tiene mas elementos de un lado, que del otro, 
-      tendrá mas niveles y tardará más)
-   - si el árbol NO está *balanceado* quiere decir que tiene mas niveles
-     y se puede corregir, reduciendo los niveles, y mejorando el
-     algoritmo de busqueda.
+** Arbol Binario de Busqueda (ABB)
+*** Construcción del árbol
+    + Los elementos que se ingresan en el arbol, se comparan 
+      1. Con la raiz (/Si n < raiz => irá al subarbol izq, si n > raiz => irá al subarbol der./)
+      2. Luego con los nodos del subarbol correspondiente
+    + Los elementos menores se ingresan en el subarbol izq.
+    + Los elementos mayores se ingresan en el subarbol der.
+
+     *Observación:*
+     El arból binario de busqueda, se va armando en base a como estén dispuestos
+     los valores en la lista. Donde _la raiz es el primer elemento de la lista_
+*** Velocidad de búsqueda
+    + Su velocidad de busqueda es mayor que a la de una lista
+      (/excepto que todos los elementos estén sólo un lado, osea en un subarbol izq. ó el der
+       /en ese caso tendrá la misma vel. que una lista/)
+    + Para que la búsqueda sea aún mayor => debe estar *balanceado*
+      (/si tiene mas elementos en un subarbol, que en el otro, tendrá mas niveles y tardará más/)
+*** Corrección del Balanceo
+    _Si el árbol NO está *balanceado* es porque tiene mas niveles_ pero se puede corregir
+     - reduciendo los niveles
+     - y mejorando el algoritmo de busqueda.
      (osea balanceamos por niveles, primero por la raiz, y seguimos...)
+*** Ejemplo - Corrección de balanceo
+    Nos basamos en el ejemplo de la página 15 de la ppt arboles.
 
-   #+BEGIN_EXAMPLE
-   Supongamos un árbol que tiene mas elementos de la derecha
-   que de la izquierda.
-   (osea la raiz tiene más elementos mayores a ella,
-    para balancearlo habria a acomodar la raiz)
+    Supongamos un árbol que tiene mas elementos en el subarbol de la derecha
+    que del de la izquierda.
+    (osea la raiz tiene más elementos mayores a ella, para balancearlo habria a acomodar la raiz)
 
-   Entonces agarramos el menor elemento del subarbol de la derecha
-   (osea el que tiene los valores mayores a la raiz)
-   y lo colocamos como ráiz
+    Entonces agarramos el menor elemento del subarbol de la derecha,
+    y lo colocamos como nueva ráiz,
+    desplazando el que estaba como raiz hacia el sub-arbol izq
+    (/el sub-arbol de la der. es el que tiene los valores mayores al de la raiz/)
 
-   Evaluamos nuevamente el subarbol de la derecha,
-   (el que tiene valores mayores a la raiz)
-   y revisamos si se puede balancear ese subarbol también
-   #+END_EXAMPLE
+    Evaluamos nuevamente el subarbol de la derecha,
+    y revisamos si se puede balancear ese subarbol también
 * Barridos
 ** Conceptos
    - Barrido es como imprimo(lectura) el contenido de un árbol
@@ -187,18 +290,15 @@ sin importar si esta ok o no
 ** Postorden
    - leo despues de leerlo
 ** Inorden
-   - leo cuando se va a cambiar
+   - leo cuando se va a cambiar de rama
    - se lee ordenado (por el orden convencional)
 
    Ej. 3,4,5,7,8,9...
+** Referencias
+   1. https://dev.to/abdisalan_js/4-ways-to-traverse-binary-trees-with-animations-5bi5
 * Arbol de expresion
   - Es una expresion que puede representase a partir de un arbol
-  - Si el árbol se barre en *inorden*,
-    entonces se obtiene una expresión matemática en notación infijo
-    (lo mismo con postorden donde su notacion es postfijo ó polaca inversa)
+  - Si el árbol se barre en *inorden*, => se obtiene una expresión matemática (en notación infijo)
+    (/lo mismo con postorden donde su notacion es postfijo ó polaca inversa/)
 
-  3 + 5 * 8 - 4 * 2
-* Salto del caballo
-  
-
-
+  Ej. 3 + 5 * 8 - 4 * 2

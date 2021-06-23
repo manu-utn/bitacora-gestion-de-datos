@@ -1,6 +1,5 @@
-#+TITLE: Clase 1 - Grafos - Prof. Reinosa
+#+TITLE: Clase 1 - Grafos
 #+STARTUP: inlineimages
-
 * Grafos
 ** Conceptos
    - Se usan para modelar datos
@@ -153,10 +152,6 @@
 
      Ej. En instagram una relación puede NO ser bidireccional,
          yo puedo seguir a A, y él puede querer no seguirme.
-
-
-
-
 
 
 

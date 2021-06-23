@@ -1,6 +1,10 @@
-#+TITLE: Clase 03 - Prof. Reinosa
+#+TITLE: Clase 03 - Métodos de Clasificacion
 
-* Clasificacion
+#+BEGIN_COMMENT
+Dudas:
+1. Pag. 19: porque dice que H_1=1 hace referencia al *ordenamiento por inserción*?
+#+END_COMMENT
+
 * Registros
 * Estabilidad
 * Complejidad

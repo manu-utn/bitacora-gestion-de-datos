@@ -6,6 +6,14 @@ fecha de parcial:
 - parcial practico: 6 jun quizas
 #+END_COMMENT
 
+#+BEGIN_COMMENT
+DUDAS
+Pag: 19: Como sería el tamaño de la página del disco?
+Pag. 22: Que era un camino (? y una decisión binaria?
+Pag. 22: No entendi (?)
+Pag. 24: Como sería lo de una baja potencial?
+#+END_COMMENT
+
 * Indices
 ** Almacenamiento
    - Sirve como un esquema auxiliar, como otra estructura de datos

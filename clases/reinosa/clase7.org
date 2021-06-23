@@ -1,0 +1,46 @@
+#+TITLE: INtegridad y encriptación
+* Integridad
+  - validar que un archivo no sufrió cambios
+* Encriptación
+** Conceptos
+  - Para ocultar información 
+** Procesos de encriptación
+*** Desplazamiento
+    - mover las posiciones (ej.. rompecabezas, sopa de letra)
+    - se desplazan en bits
+*** Reemplazo
+    - reemplazar el contenido
+**** Reemplazo fijo
+     poque lo fija el algoritmo
+**** Reemplazo variable
+     cuando el valor que voy a usar depende de.. usuario
+*** Mixto
+    - en cualquier orden reemplaza y desplaza
+    - 
+* Problema
+  #+BEGIN_EXAMPLE
+  Archivo origen -> PRoceso -> Archivo Destino
+  #+END_EXAMPLE
+* Control de integridad
+** Necesidad
+** Procedimiento
+** algo
+*** CONCEPTOS
+*** tamaño
+*** contenido
+*** posición
+** checksum
+   - utiliza los *polinomios*
+   - chequea como su nombre, una suma
+   - compara dos sumas
+** CRC - Integridad
+   - CRC significa *control de redundancia ciclica*
+     (no hace caracter a caracter poque haria un polinomio muy grande,
+      por eso lo hace por ciclos)
+   - Siempre agarra el último caracter para terminar el ciclo
+   - Tiende a variar entre 32 a 128 bits
+   - si toma más caracteres
+     - mas tarda en hacer el calculo
+     - más precisión
+   - se toman paquetes más chicos =>
+   - 

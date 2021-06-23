@@ -512,6 +512,9 @@
 ** Conceptos
    La sintáxis es similar a los *store procedures*, con la diferencia que se pueden ejecutar dentro de *queries*
    mientras que los *store procedures* NO se pueden ejecutar en una *query*
+
+   IMPORTANTE:
+   los *store procedures* NO se pueden ejecutar en una *query*
 ** Funciones de Usuario
    Se pueden ejecutar dentro de una consulta (sentencia sql)
    (Mientras que los *store procedure* NO pueden ser ejecutados dentro de una *query*)

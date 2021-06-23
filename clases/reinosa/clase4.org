@@ -1,5 +1,18 @@
-#+TITLE: Clase 04 - Indices - Prof. Reinosa
+#+TITLE: Clase 04 - Indices
 
+#+BEGIN_COMMENT
+Dudas..!
+1. Página 11: POrque la función hash guarda especificamente en una *posición relativa*?
+  tiene que ver con la pag. 19, que habla de los *indices fisicos*?
+1. Pagina 16: Menciona la H, está realizando una *secuenca de incrementos* ?
+   (en la ppt de metodos de clasificación aparece, en la pag. 19)
+   (si no me equivoco es el tema de recurrencia de discreta)
+2. Pag. 17.: Porque en el *hashing doble* si este arroja un valor negativo haría un loop infinito?
+porque luego produciria numeros negativos tan grandes, y nunca llegaria a ser positivo?
+3. Pag. 19: El debe ser *balanceado* para hacer menos consultas por eso minimiza las operaciones?
+   en que otra ppt lo decia?
+
+#+END_COMMENT
 * [TODO] Indices
 ** conceptos
   - tener índices, NO quiere decir que los datos estén ordenados

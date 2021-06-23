@@ -1,0 +1,121 @@
+#+TITLE: Clase 8 - Inteligencia de negocios
+
+parcial: .. pendiente, el 28 queda cancelado, quizas para el 5 de julio
+porque faltan 
+
+#+BEGIN_COMMENT
+TECNOLOGIAS OLAP
+1. Pag. 12: que problemas de construcción y mantenimiento tenian?
+   Rta: en la pag 14 lo menciona el xq
+2. Pag.20: DUDA (???) xq quedarian vacias? xq se cargan con el resto 
+   de la informacion, pero esa faltante serian columnas vacias?
+#+END_COMMENT
+
+* Sistemas de Data Warehouse
+  - Es un gran sistema de datos
+  - SE alimenta de muchos sistemas (propios/externos de la empresa)
+  - Es un a base de datos corporativa
+  - desde el punto de vista comercial lo mas importante son las *dimensiones*
+  - 
+** Caracteristicas
+*** Orientado a sujetos
+*** Es integrado
+*** Es tematico
+    - porque es a partir de un tema determinado
+*** es variante en el tiempo
+    - varia a medida que ingresan nuevos datos
+*** es simple de manejar
+    - NO se necesita conocimiento de base de datos para consultar los datos
+*** NO es volatil
+** Arquitectura
+*** Base de datos fuentes
+    - cualquier información que queramos agregar (db, textos, archivos, ..)
+    - 
+*** Heramientas de abstaccion de informacion
+    -
+** Objetivos
+   - Convertir modelos de datos OLTP a uno OLAP
+   - *tablero de control* (necesita de un modelo de data warehouse)
+** Funcionalidades
+*** conceptos
+   - acceso a fuentes (source)
+   - carga (load)
+   - ...
+*** acceso a fuentes
+    - son los origenes de información a manejar (pueden ser distintos tecnicamente oracle,sql,...)
+    - se identifica a QUE se va a accede
+*** carga
+**** extraccion
+**** depuracion
+     - elegir que se va a cargar
+**** conversion
+***** conceptos
+       - hay dos tipos
+       - 
+***** sintactica
+      que en distintos origenes uno sea alfabetico, en otro numerico, ..
+***** semantica
+**** carga de datos
+     - extract transform load
+***** renovacion completa
+      - recalcular todo el datawarehouse (Desde el origen)
+***** renovacion incremental
+      - 
+** Almacenamiento
+   - Manejadores: RDBMS, 
+** Consultas
+*** conceptos
+    herramientas OLAP
+*** Data mining
+    - 
+*** simulacion de negocios
+** Metadatos
+   - 
+** Migración de datos
+*** area de staging
+    - pasa acá cuando ya está convertido
+    - acá se produce la carga
+    - antes de llegar al datawarehouse
+*** tablas del data warehouse
+*** sistemas fuente de origen
+** concilacion de datos
+*** calidad de datos
+*** cantidad de datos
+*** tipos
+**** completa
+**** por fase
+* data marts
+  - es información segmentada de la compania, de un sector/departamento
+    (a dif. del data warehouse que es global)
+* implementacion de un RDBMS
+** modelo estrella
+*** conceptos
+    - para implementar un DW en un RDBMS
+    - considera al modelo *OLAP*
+    - utiliza el modelo de tablas
+    - se basa en dimensiones
+    - puede haber más de un modelo estrella
+*** tabla de hechos
+    - tiene los hechos que pueden ocurrir 
+*** tabla de dimensiones
+    - tiene información de las dimensiones que aparecen en la *tabla de hechos*
+** modelo inter...
+* big data
+* data science
+* machine learning
+  - que la maquina aprenda a hacer algo
+  - aprende del concepto *backtracking* (prueba y error)
+  - un *sistema experto* no aprende
+* Tp grupal
+  - en nuestro modelo *elpt* tenemos un.. "cliente"
+  - momentos que habla de tp: 0:36:00, 0:51:00, 1:03:00
+  - en el tp, el *data marts* será del sector de *ventas/compras*
+  - vamos a implementar un *data warehouse* 
+  - nuestro DER es el OLAP
+  - tenemos una sola Carga
+  - definir un modelo bussiness inteligent (un nuevo DER) 
+  - vamos a tener que migrar
+* funciones de hash
+  - no genera colisiones cuando el dominio de entrada es igual al universo de salida
+    (mas chico o igual)
+    
