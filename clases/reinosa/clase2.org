@@ -112,6 +112,10 @@ sin importar si esta ok o no
      note bottom of C: Nodos Hojas
      @enduml
    #+END_SRC
+
+   #+RESULTS:
+   [[file:img/arbol-niveles.png]]
+
 * Profundidad
   - Cantidad de niveles
   - Indica que tan lejos estará un elemento de inicio (nivel 0, la raiz)
