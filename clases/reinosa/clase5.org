@@ -1,4 +1,4 @@
-#+TITLE: Clase 05 - Indices y Cluster - Prof. Reinosa
+#+TITLE: Clase 05 - Indices y Cluster
 
 #+BEGIN_COMMENT
 fecha de parcial:
@@ -11,60 +11,11 @@ DUDAS
 Pag: 19: Como sería el tamaño de la página del disco?
 Pag. 22: Que era un camino (? y una decisión binaria?
 Pag. 22: No entendi (?)
-Pag. 24: Como sería lo de una baja potencial?
 #+END_COMMENT
 
 * Indices
-** Almacenamiento
-   - Sirve como un esquema auxiliar, como otra estructura de datos
-   - Se guardan datos de forma secuencia
-   - 
-** Tipos de acceso
-*** Secuencial
-*** Secuencial indexada
-    recorrer secuencialmente el indice
-*** directo o random
-    acceder directamente a una posicion
-    sin hacer una busqueda
-** metodos
-** arboles m-arios
-   - tienen un grado mayor a un arbol-b
-     (su exponente ya no es 2)
-   - a mas elementos, menos niveles, y busca mas rapido
-   - requisito que sea un arbol *completo* y *balanceado*
 ** arboles-b
-*** Conceptos
-    - es un tipo de arbol m-ario
-    - para crear indices fisicos
-    - arma un arbol *completo* y *balanceado*
-      (para poder cumplir la formula de log(n)
-    - es un poco mas lento que la *tabla de hashing*
-      (porque debe hacer busquedas)
-*** nodos
-**** nodo hoja
-     - contienen las claves
-     - es la componente dato (donde van los valores, clave-valor)
-     - se ordenan de menor a menor
-     - en cada nodo puede haber tantos punteros a valores como elementos hay
-       (aumenta segun el grado de arbol)
-     - tienen un puntero que no apunta al siguiente elemento
-       sino a la posición relativa ...
-     - es el primer elemento que se crea en un *arbol*
-**** nodo raiz (o rama)
-     - 
-     - puede apuntar a otra *rama* o una *hoja*
-*** busqueda
-    - se busca a partir de la *raíz* hacia las *hojas*
-    - similar a una busqueda binaria
-      (Excepto que hace una decision multicamino)
 *** inserción
-**** inserción
-     - 
-**** split
-     - consiste en dividir una unidad en otra del mismo tamaño
-       osea iguales (en dos partes iguales)
-     - a parti de un nodo crear dos iguales (identicos)
-     - 
 **** factor split
      - concepto q usan los motores
 *** eliminación

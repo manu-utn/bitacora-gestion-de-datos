@@ -162,6 +162,9 @@
 ** Caminos y Pasos
 **** [TODO] Conceptos de discreta
 ***** Camino
+      - Si hay camino => existe una trayectoria para llegar de un extremo al otro
+        (interpretemos la trayectoria como una sucesión de aristas,
+         y cada extremo como vértices)
       - Puede no haber *paso*
       - Es *bidireccional*
 ***** Paso

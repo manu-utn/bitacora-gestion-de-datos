@@ -186,7 +186,7 @@ sin importar si esta ok o no
    entonces también da un indicio de que quizas haya un *arbol balanceado*
    #+END_QUOTE
 ** Perfectamente balanceado
-   - que no haya huecos en el grafo (ó dígrafo no-dirigido)
+   - que no haya huecos en el grafo
    - _Puede haber un árbol completo pero que NO esté balanceado_
      (/Ej. que tenga muchos subarboles de un lado/)
    - Cuando está balanceado en todos sus niveles
@@ -220,6 +220,7 @@ sin importar si esta ok o no
 ** Conceptos
   - la búsqueda _se hace por niveles y NO por elementos_
     (/no buscará de manera secuencial como en un vector, que es elemento por elemento/)
+  - 
  
   #+BEGIN_EXAMPLE
   En una lista, cada elemento se relaciona solo con uno (el siguiente)
@@ -244,7 +245,7 @@ sin importar si esta ok o no
   (listas) si el crecimiento es lineal => la busqueda sera lineal
   (árboles) si el crecimiento es exponencial => la busqueda será logarítmica
   #+END_EXAMPLE
-** Arbol Binario de Busqueda (ABB)
+** Arbol Binario de Búsqueda (ABB)
 *** Construcción del árbol
     + Los elementos que se ingresan en el arbol, se comparan 
       1. Con la raiz (/Si n < raiz => irá al subarbol izq, si n > raiz => irá al subarbol der./)
@@ -256,7 +257,7 @@ sin importar si esta ok o no
      El arból binario de busqueda, se va armando en base a como estén dispuestos
      los valores en la lista. Donde _la raiz es el primer elemento de la lista_
 *** Velocidad de búsqueda
-    + Su velocidad de busqueda es mayor que a la de una lista
+    + Su velocidad de busqueda es mayor que a la de una *lista*
       (/excepto que todos los elementos estén sólo un lado, osea en un subarbol izq. ó el der
        /en ese caso tendrá la misma vel. que una lista/)
     + Para que la búsqueda sea aún mayor => debe estar *balanceado*
@@ -302,3 +303,5 @@ sin importar si esta ok o no
     (/lo mismo con postorden donde su notacion es postfijo ó polaca inversa/)
 
   Ej. 3 + 5 * 8 - 4 * 2
+* Referencias
+  1. https://www.oscarblancarteblog.com/2014/08/22/estructura-de-datos-arboles/

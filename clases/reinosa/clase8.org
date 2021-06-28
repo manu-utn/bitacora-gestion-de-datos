@@ -4,12 +4,45 @@ parcial: .. pendiente, el 28 queda cancelado, quizas para el 5 de julio
 porque faltan 
 
 #+BEGIN_COMMENT
-TECNOLOGIAS OLAP
+DUDAS...
+
+# TECNOLOGIAS OLAP
+
 1. Pag. 12: que problemas de construcción y mantenimiento tenian?
    Rta: en la pag 14 lo menciona el xq
 2. Pag.20: DUDA (???) xq quedarian vacias? xq se cargan con el resto 
    de la informacion, pero esa faltante serian columnas vacias?
+   
+--------------------------------------------------------------------------------
+
+# DATA WAREHOUSE
+
+*Prioridad ALTA*
+1. Pag 6: DUDAS
+   1. Que serian los "datos operacionales"?
+   2. Menciona que afecta a los datos operacionales, porque son db relacionales?
+2. Pag. 12: Que se aconseja? Que cada area tenga su propia MDB? (multidimensional data base)
+3. Pag. 13: Data mining.. existencia de corelaciones inesperadas entre ellos? QUE?
+4. Pag. 27: Tabla d hechos (?) no entendi del todo..
+
+*Prioridad BAJA*
+1. Pag. 5: Los datos antes de ingresar al DW se integran con TODOS los demás?
+           Por ejemplo..?
+
+2. Pag. 7: Una DB de Texto, seria cualquiera que guarde contenido ej. de revistas, libros, ..?
+
+3. Pag. 6: En DW es màs comun el ingreso de registros, que el borrado/update?
+   Rta: al final de la pag. 6, dice "NO SE MODIFICA"
+   
+4. Pag. 11: Como es el tema de *depuracion*..? osea como verifica la calidad de los datos?
+   Rta: En la pag 17. lo detalla
 #+END_COMMENT
+* Referencias
+** Base de datos de texto completo
+   Algunas son.. EBSCO, PROQUEST, E-LIBRO, 
+  1. http://scielo.sld.cu/scielo.php?script=sci_arttext&pid=S1024-94352008001000007
+  2. https://www.ebsco.com/es/productos/bases-de-datos/bases-de-datos-gratuitas
+  3. https://es.slideshare.net/BiblioSher/base-de-datos-2636450
 
 * Sistemas de Data Warehouse
   - Es un gran sistema de datos

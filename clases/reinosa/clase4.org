@@ -2,39 +2,529 @@
 
 #+BEGIN_COMMENT
 Dudas..!
-1. Página 11: POrque la función hash guarda especificamente en una *posición relativa*?
+
+ **Alta Prioridad**
+Pag. 9: Funcion hash es O(1), quiere decir que su complejidad es constante..?
+
+Pagina 27-35: Las tablas que tienen como valor el asterísco de puntero,
+  son los *nodos raiz/rama* y las demás que tene un valor númerico son los *nodos hoja*?
+  Entonces un *nodo hoja* puede también ser un *nodo raiz*? habiendo varios *nodos raiz*?
+
+Página 11: POrque la función hash guarda especificamente en una *posición relativa*?
   tiene que ver con la pag. 19, que habla de los *indices fisicos*?
-1. Pagina 16: Menciona la H, está realizando una *secuenca de incrementos* ?
-   (en la ppt de metodos de clasificación aparece, en la pag. 19)
-   (si no me equivoco es el tema de recurrencia de discreta)
+
+Pagina 16: Menciona la H, está realizando una *secuenca de incrementos* ?
+  (en la ppt de metodos de clasificación aparece, en la pag. 19)
+  (si no me equivoco es el tema de recurrencia de discreta)
+
+**Baja Prioridad**
 2. Pag. 17.: Porque en el *hashing doble* si este arroja un valor negativo haría un loop infinito?
 porque luego produciria numeros negativos tan grandes, y nunca llegaria a ser positivo?
+
 3. Pag. 19: El debe ser *balanceado* para hacer menos consultas por eso minimiza las operaciones?
    en que otra ppt lo decia?
-
 #+END_COMMENT
-* [TODO] Indices
-** conceptos
-  - tener índices, NO quiere decir que los datos estén ordenados
-  - por lo general los archivos se guardan de forma secuencial
-  - es otra estructura, para acceder más rapido a los datos
-    (similar a un acceso directo)
-  - para no tener que evaluar dato por dato de manera secuencial
-  - 
-** almacenamiento
-** tipos de acceso
-*** secuencial
-    - es recorrer un conjunto de datos uno atrás del otro 1,2,3...
-    - los indices evitaran esto, porque es lento
-*** secuencial indexada
-    - 
-*** directo o random
-    - acceder de forma directa, sin pasar por los elementos anteriores
-    - Ej. cuando usamos fseek en C, para acceder a una parte
-      específica
-** métodos para crear índices
-*** hashing
-*** árbol b
-** [TODO] ???
-** hashing
-*** hashing doble
+
+* Objetivo
+  - Crear una *estructura de datos* adicional a la tabla (genera un espacio extra)
+  - Ordena los datos en función a una *clave*
+  - Se guardan los datos de manera secuencial
+* Conceptos
+ - Tener índices, NO quiere decir que los datos estén ordenados
+   (/lo están pero por las claves de los indices/)
+ - Por lo general los archivos se guardan de forma secuencial
+ - Es otra estructura, para acceder más rapido a los datos (/similar a un acceso directo/)
+ - Para no tener que evaluar dato por dato de manera secuencial
+* Tipos de Acceso
+** Secuencial
+   - Es recorrer un conjunto de datos uno atrás del otro 1,2,3...
+   - Los índices evitaran esto, porque es lento
+** Secuencial Indexado
+   - En función a alguna *clave*
+   - Recorrer secuencialmente los indices
+** Directo o Aleatorio
+   - Acceder directamente a una posición, sin hacer una búsqueda
+   - Acceder de forma directa a una *clave*, sin pasar por los elementos anteriores
+     (/Ej. cuando usamos fseek en C, para acceder a una parte específica/)
+* Arbol M-Ario
+   - Tienen un *grado* mayor a un *árbol binario* (/el grado es mayor a 2/)
+   - Mayor cant. de elementos => menos *niveles* => busca mas rapido
+   - Requisito que sea un arbol *completo* y *balanceado*
+* [TODO] Métodos para crear índices
+** Conceptos
+   Para crear *índices* en un (DBMS, Data Base Management System) se utiliza
+   - Hashing
+   - Arbol B (btree)
+
+   *Observación:*
+   - Un (DBMS) Data Base Management System, es un software que permite realizar
+     - Operaciones (DML) Data Manipulation Language (select/update/delete)
+     - Operaciones (DDL) Data Definition Language (create/alter/drop)
+   - DML es un conjunto de operaciones para manipular los datos de una base de datos
+   - DDL es un conjunto de operaciones para definir estructuras de datos para una base de datos
+* Método Hashing
+** Conceptos
+  + Trabaja sobre una *tabla* y una *función hash* (función de dispersión)
+  + Crea una estructura aparte, que es una *tabla* (vector de 2 dimensiones)
+    - En la 1ra dimensión se colocan las *claves* (ordenadas)
+    - En la 2da dimensión se colocan las *posiciones relativas*
+      (en la tabla donde se encuentran los datos de esa clave)
+  + En la tabla adiciona, mantiene las *claves* ordenadas
+** Función Hash (ó de Dispersión)
+*** Conceptos
+    - Convierte un tipo de dato en un pequeño número entero (código hash)
+    - Recibe como entrada la *clave* a almacenar
+    - Devuelve la *posición* de la tabla en donde guardar la *clave*
+    - A partir de un algoritmo genera un valor ó código hash
+*** Cualidades
+**** Evita Colisiones
+     + Si devuelve un *conjunto de salida* diferente al *conjunto de entrada*
+**** Distribuye las claves uniformemente
+**** Facil de calcular
+     + Si el *tiempo de ejecución* es ~O(1)~ (poca complejidad)
+** Código Hash
+   - Se utilizan como *indices* para las *tablas hash*
+   - Sirven como *control de integridad* (para datos ó archivos)
+** Colisiones
+*** Conceptos
+    - Cuando *función de hash* ante una *clave*, devuelve una *posición* ya ocupada en la tabla
+
+    *Observación:*
+    - La función de hash recibe como entrada una clave
+    - La función de hash devuelve como valor una posición de donde se deberia
+      de guardar la clave en la tabla
+    - El valor de retorno calculado por la función de hash es el índice
+      en donde se guardará un registro
+** Técnicas de resolución de Colisiones
+*** Encadenamiento
+    + Cada celda del vector tiene una referencia a una *lista enlazada*
+    + En las *listas enlazadas* se insertan los registros que colisionan en esa *posición*
+*** Direccionamiento Abierto
+**** Conceptos       
+     - Se busca otra *posición* dentro de la tabla
+**** Metodo - Sondeo lineal
+     + Es el método más simple
+     + Busca *secuencialmente* en la tabla, hasta encontrar una *posición* vacía
+     + Si llega al final de la tabla => vuelve a la primera posición y retoma la búsqueda
+**** Método - Sondeo Cuadrático
+     + Busca una posición a una distancia específica, desde donde empieza el sondeo
+     + Permite una mejor distribución de las claves *colisionadas*
+     + Deriva de la fórmula ~F(i)=i^²~
+     + Si se llega a una posición ocupada => cambia la fórmula del cálculo de la posición
+       (de esta manera ~H+1^¹, H+2^², H+3^²,...,H+i^²~)
+**** Método - Hashing Doble
+    + Aplica la *función de hash* dos veces
+    + La 2da *función de hash* (secundaria)
+      - Debe ser distinta a la primaria
+      - Usa el resultado como tamaño de salto (posible posición de la clave)
+      - Si NO es mayor a cero => NO se produce el salto ó se produce un *bucle infinito*
+* Método - Arbol B (Btree)
+** Conceptos
+   + Es un tipo de *árbol M-ario*
+   + Arma un arbol *completo* y *balanceado* (/Para cumplir con ~log(n)~ que/)
+   + Crea *índices físicos* para el _acceso a la información_
+   + Tiene dos tipos de *nodos* diferentes
+     1. Un nodo hoja
+     2. Un nodo rama
+
+   *Observaciones:*
+   + La (MP) Memoria Principal se considera 
+     - un dispositivo de almacenamiento principal
+     - de acceso rápido a los datos
+     - con poco espacio de almacenamiento
+   + El (HDD) Disco Duro se considera 
+     - un dispositivo de almacenamiento secundario
+     - de acceso LENTO a los datos
+     - con mucho espacio de almacenamiento
+     - los indices reducen el numero de accesos a disco
+** Ventajas y Desventajas
+   Tiene como *ventajas*:
+   + Minimiza las operaciones de entrada/salida a disco (dispositivo de almacenamiento secundario)
+
+   Tiene como *desventajas*:
+   + Es más lento que una *tabla de hashing* (/porque debe hacer búsqueda/)
+** Condición de Balanceado
+   - Garantiza que se realize en un tiempo ~O(logn)~ (orden de complejidad logarítmico)
+     - la búsqueda
+     - la inserción
+     - la eliminación
+
+   *Observaciones:*
+   - Si el *orden de complejidad* es ~O(logn)~ => el algoritmo es eficiente (se realizará rápido)
+   - El balanceado es una *característica* que puede tener o no un árbol
+   - El *balanceado* de un árbol se puede *corregir* (reduciendo los niveles, y mejorando la velocidad de búsqueda)
+   - Un árbol puede estar solo *balanceado* ó *perfectamente balanceado*
+   - Un árbol está balanceado
+     - si cada subarbol tiene la misma cant. de elementos (/es igual que decir que.. pesan lo mismo/)
+     - ó si _hay una diferencia indivisible_ entre el *peso* de ambos subarboles y el grado del árbol
+** Grado
+   El grado ~M~ del árbol se determina en base
+   - al tamaño de las *claves*
+   - al tamaño de la *página del disco*
+
+   *Observación:*
+   - El grado de un árbol, es la _cant. máx. de hijos/subarboles que puede tener cada nodo_
+** Nodo - Hoja
+*** Conceptos
+    Está formado por dos *componentes*
+    1. Un componente de dato (la clave)
+    2. Un componente puntero (posición relativa de la clave)
+
+    #+name: btree-nodo-hoja
+    |-------+----------|
+    | Clave | Posición |
+    |-------+----------|
+    |   2   |    1     |
+    |   3   |    5     |
+    |   5   |    2     |
+    |-------+----------|
+
+    En la siguiente tabla vemos como el *componente puntero* que tiene {1,5,2} del nodo hoja
+    actúa como puntero y nos lleva directo a esta otra tabla con más columnas, donde también
+    tiene la *componente de dato* (la clave).
+
+    |----------+-----+---------+------|
+    | Posicion | ID  | Nombre  | Edad |
+    |----------+-----+---------+------|
+    |    0     | 10  | Carlos  |  15  |
+    |   ~1~    | ~2~ | Mariano |  19  |
+    |   ~2~    | ~5~ | Pepito  |  19  |
+    |    3     |  8  | Samuel  |  17  |
+    |    4     |  9  | Mariela |  18  |
+    |   ~5~    | ~3~ | Sábato  |  99  |
+    |----------+-----+---------+------|
+*** Componente Dato
+     - Tiene los valores de las *claves* (ordenados de menor a mayor)
+*** Componente Puntero
+    - Tiene la *posición relativa* de los datos de la *clave*
+    - A diferencia de una *lista enlazada* este no apunta al siguiente elemento,
+      sino a la *posición relativa*
+    - A mayor el *grado* del árbol => mayor cant. de *componentes punteros*
+
+    *Observación:*
+    - El grado de un árbol, es la cant. max. de nodos hijos/subarboles que puede tener cada nodo
+     (/Ej. Un árbol binario tiene grado 2, porque cada nodo puede tener o mas de 2 nodos hijos/)
+** Nodo - Raiz/Rama
+*** Conceptos
+    - Puede apuntar a otro *nodo raíz* ó a un *nodo hoja*
+    - También está formado por dos *componentes*
+      1. Un componente de dato (valores de las *claves*)
+      2. Un componente puntero (apunta a otro nodo, con claves menores o iguales a ella)
+
+    #+name: btree-nodo-rama
+    |-------+------|
+    |  <c>  | <c>  |
+    | Clave | Link |
+    |-------+------|
+    |   5   |  *   |
+    |  50   |  *   |
+    |-------+------|
+
+    La primera fila del *nodo rama/raíz* apunta a este *nodo hoja*
+    que contiene *claves* menores o iguales a ~5~
+
+    #+name: btree-nodo-1
+    |-------+------|
+    |  <c>  | <c>  |
+    | Clave | Link |
+    |-------+------|
+    |   2   |  1   |
+    |   3   |  5   |
+    |   5   |  2   |
+    |-------+------|
+
+    La segunda fila del *nodo rama/raíz* apunta a este *nodo hoja*
+    que contiene *claves* menores o iguales a ~50~ (pero mayores a ~5~)
+
+    #+name: btree-nodo-2
+    |-------+------|
+    | Clave | Link |
+    |-------+------|
+    |    15 |    0 |
+    |    25 |    3 |
+    |    50 |    4 |
+    |-------+------|
+*** Componente Dato
+     - Tiene los valores de las *claves* (ordenados de menor a mayor)
+*** Componente Puntero
+    - Apunta a otro nodo, con *claves* menores o iguales a ella
+** Ejemplo
+   #+BEGIN_SRC plantuml :file img/btree-1.png :exports result
+     @startuml
+     note as nodoRaiz
+     |= Clave |= Link |
+     | 5  |  * |
+     | 50 |  * |
+     end note
+
+
+     note as nodoHojaIzq
+     |= Clave |= Link |
+     | 2 |  1 |
+     | 3 |  5 |
+     | 5 |  2 |
+     end note
+
+     note as nodoHojaDer
+     |= Clave |= Link |
+     | 15 |  3 |
+     | 18 |  7 |
+     | 50 |  4 |
+     end note
+
+     nodoRaiz-d->nodoHojaDer
+     nodoRaiz-d->nodoHojaIzq
+
+     note top of nodoRaiz : Nodo Raiz
+     note left of nodoHojaIzq: Nodo Hoja\nTiene elementos con claves\n menor o igual que 5
+     note right of nodoHojaDer: Nodo Hoja\nTiene elementos con claves\n menor o igual que 50
+     @enduml
+   #+END_SRC
+
+   #+RESULTS:
+   [[file:img/btree-1.png]]
+* Arbol B - Búsqueda/Inserción/Eliminación
+** Búsqueda
+   - La *búsqueda* en un *árbol b* es similar al de un (ABB) *Arbol Binario de Búsqueda*
+   - Se tienen *decisiones multicamino* en base al número de hijos del nodo
+
+   *Obsevaciones:*
+   - Si hay camino => existe una trayectoria (sucesión de aristas) para llegar de 
+     un extremo al otro (vértices unidos por un conjunto de aristas)
+   - En un (ABB) *árbol binario de búsqueda* se tienen *decisiones binarias*
+     (por ser de grado=2, max. cant de hijos/subarboles que puede tener cada nodo)
+** Inserción
+   - Ocurre el proceso [[Split Page]] cuando no hay espacio en un nodo hoja para insertar elementos
+   - Aparece el concepto de [[Fill Factor]] (factor de ocupamiento)
+   - Asumiendo que el elemento a insertar es ~x~ y no existe en el árbol aún
+     1. Se comienza por la *raíz*
+     2. Se llega hasta a un *nodo hoja* (si no encontrara el elemento ~x~)
+     3. Se inserta el elemento ~x~ en ese nodo hoja
+** Eliminación
+   - Ocurre el proceso [[Fusión]] cuando al eliminar un *elemento*, un *nodo* queda vacío, este debe eliminarse.
+   - Asumiendo que el elemento a insertar es ~x~ y existe en el árbol
+     1. Se comienza por la *raíz*
+     2. Se llega hasta a un *nodo hoja* donde esté
+     3. Se elimina el elemento ~x~ de ese nodo hoja
+** Split Page
+*** Conceptos
+    + *Split* significa separar/dividir
+    + *Split page* es dividir/romper las páginas en otras dos del mismo tamaño (/páginas de memoria/)
+    + Ocurre cuando se intenta *insertar* un elemento ~x~ en un *nodo hoja* que no tiene espacio (/en memoria/)
+    + Divide al *nodo hoja* en otros dos *nodos hojas* de igual tamaño (/misma cant. de elementos/)
+      - Cada nodo hoja tendrá la mitad de elementos (/se mantiene el orden de los elementos/)
+      - Se reparten los elementos entre los nodos, según el valor de las *claves*
+        - Un nodo tendrá los que tengan *claves* de mayor valor numérico 
+        - Otro nodo tendrá los que tengan *claves* de menor valor numérico
+
+      #+BEGIN_QUOTE
+      Un primer acercamiento podría ser..
+      Cuando hay muchas actualizaciones en un índice y necesitan de más espacio
+      las páginas se rompen/dividen por la mitad y una parte de ella se traslada
+      a una página de indice libre     
+      #+END_QUOTE
+
+      #+BEGIN_QUOTE
+      Otro acercamiento similar seria..
+      Cuando una fila es agregada a una página de índice que está llena,
+      el motor de base de datos mueve aprox. la mitad de las filas a una 
+      nueva página abriendole espacio a la nueva fila.
+      #+END_QUOTE
+*** Ventajas
+    - Si se utiliza en combinación con *fill factor* 
+*** Desventajas
+    - Puede demorarse un tiempo en realizar
+    - Es un proceso costoso a nivel de recursos de máquina
+    - Puede causar *fragmentación* (aumentando las operaciones de I/O)
+** Fragmentación
+*** Conceptos
+    Cuando se ejecutan instrucciones como ~INSERT~, ~UPDATE~, ~DELETE~ 
+    se produce una *dispersión de los datos* (fragmentación)
+*** Problema
+    Cuando los *índices* tienen *páginas* que están ordenadas de manera lógica (por una PK)
+    y no coinciden con el orden físico dentro del archivo de datos.
+*** Solución 1 - Reconstrucción del Indice (Rebuild)
+    - Elimina y crea nuevamente el índice (removiendo la fragmentación)
+    - Se *compactan* las páginas según la configuración del *fill factor*
+*** Solución 2 - Reorganización del Indice (Reorganize)
+    - Requiere menos recursos del sistema
+    - Realiza una *desfragmentación* _a nivel de hoja de la página_
+    - Reorganiza a nivel físico las hojas, para que coincidan con el orden lógico de las páginas de los indices
+    - También se *compactan* las páginas según la configuración del *fill factor*
+** Algunos conceptos de SISOP
+*** Compactación
+    Cuando se desplazan los segmentos en memoria
+    - Cuando se consolidan particiones (procesos en ejecución) separadas por huecos (particiones libres, por pocesos que finalizaron) en una patición
+    - Soluciona el problema de la *fragmentación externa* (huecos entre particiones con procesos activos)
+
+    *Observación:*
+    Consolidar se refiere a unir, a que dos o más particiones se junten en una.
+** [TODO] Fill Factor
+*** Conceptos
+    - Se lo conoce como *factor de ocupamiento*
+    - Determina el _porcentaje de espacio libre a nivel de hoja_ de cada *página* que será llenada con datos
+    - Reserva el espacio en cada página como espacio libre/disponible para la expansión de los indices
+      a medida que se van agregando datos a la tabla
+    - Su valor oscila entre 1 y 100
+*** Ventajas
+    - Permite optimizar los indices
+    - Reduce la cantidad de [[Split Page]] (si es muy frecuente, baja el rendimiento del índice)
+    - Evita que se produzca *fragmentación interna* (tema de sisop)
+
+    *Observación:*
+    - La fragmentación interna, es lo que le sobra a una partición de memoria, son espacios libres
+      que NO se utilizan.
+*** Ejemplo 1
+    Si tenemos un índice con *fill factor* de 80 entonces
+    - 80% del espacio será para el índice
+    - 20% será espacio libre, queda reservado para el momento que se agreguen datos, y sean guardados ahi
+*** Ejemplo 2 - Problemas con columnas IDENTITY
+    Si la información que se inserta en la tabla siempre va al final de la misma,
+    los espacios vacíos (fragmentación interna) nunca van a ser llenados.
+    
+    Si agregamos información con una columna tipo ~IDENTITY~ (incrementa con la inserción de registros)
+    y esta columna es la *primary key* de la tabla, las filas del índice se agregarán siempre
+    al final del índice.
+
+    Por tanto si sabemos que se aumentarán el tamaño de las filas, se recomienda dejar un *fill factor*
+    menor a 100, agregandole un espacio extra a cada pagina, minimizando la cantidad de *page splits*
+    que ocurren por la expansión de la tabla de índice.
+** Fusión
+*** Conceptos
+    + Cuando al eliminar un *elemento* de un *nodo hoja*, este queda vacío y se debe eliminar
+    + Al eliminar el *nodo hoja* se podria generar una baja de los *nodos* que le anteceden
+      - porque el arbol queda *desbalanceado* y al corregir el *balanceo* ocurre eso
+*** Ejemplo 1 - Antes de eliminar nodo
+    En este ejemplo si eliminamos algun nodo de nivel 2, el arbol queda desbalanceado.
+    Al corregir el balanceo, se eliminan los nodos del nivel 1, para que todos los nodos
+    tengan la mitad de elementos.
+
+    #+BEGIN_SRC plantuml :file img/btree-fusion.png :exports result
+      @startuml
+      left to right direction
+      title Arbol B - Eliminación de Nodo (antes de eliminarlo)
+
+      note as nodoRaiz
+      |= Clave |= Link |
+      | 5  |  * |
+      | 50 |  * |
+      end note
+
+      together {
+      note as nodoHojaIzq
+      |= Clave |= Link |
+      | 5      |  *    |
+      | 10     |  *    |
+      end note
+
+      note as nodoHoja1 #palegreen
+      |= Clave |= Link |
+      | 3      |  1    |
+      | 5      |  2    |
+      end note
+
+      note as nodoHoja2
+      |= Clave |= Link |
+      | 7      |  5    |
+      | 10     |  3    |
+      end note
+      }
+
+      together {
+      note as nodoHojaDer
+      |= Clave |= Link |
+      | 20     |  *    |
+      | 50     |  *    |
+      end note
+
+      note as nodoHoja3
+      |= Clave  |= Link |
+      | 15      |  9    |
+      | 20      |  7    |
+      end note
+
+      note as nodoHoja4
+      |= Clave  |= Link |
+      | 35      |  8    |
+      | 50      |  0    |
+      end note
+
+      }
+
+      nodoRaiz    --> nodoHojaIzq
+      nodoHojaIzq --> nodoHoja1
+      nodoHojaIzq --> nodoHoja2
+
+      nodoRaiz    --> nodoHojaDer
+      nodoHojaDer --> nodoHoja3
+      nodoHojaDer --> nodoHoja4
+
+      note right of nodoHoja1: claves menores o igual a 5\nsupongamos que lo eliminamos
+      note right of nodoHoja2: claves menores o igual a 10
+
+      note right of nodoHoja3: claves menores o igual a 20
+      note right of nodoHoja4: claves menores o igual a 50
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/btree-fusion.png]]
+*** Ejemplo 1 - Despues de eliminar el nodo
+    Luego de eliminar uno de los nodos del nivel 2, al corregir el balanceo
+    se tuvo que borrar los nodos del nivel 1.
+    Es necesario corregir el balanceo para que la velocidad de busqueda/inserción/eliminación
+    sea de ~O(logn)~ osea que el *orden de complejidad* del algoritmo rápido.
+
+    #+BEGIN_SRC plantuml :file img/btree-fusion2.png :exports result
+      @startuml
+      left to right direction
+      title Arbol B - Eliminación de Nodo (después de eliminarlo)
+
+      note as nodoRaiz
+      |= Clave |= Link |
+      | 10  |  * |
+      | 20  |  * |
+      | 50 |  * |
+      end note
+
+      note as nodoHoja2
+      |= Clave |= Link |
+      | 7      |  5    |
+      | 10     |  3    |
+      end note
+
+      note as nodoHoja3
+      |= Clave  |= Link |
+      | 15      |  9    |
+      | 20      |  7    |
+      end note
+
+      note as nodoHoja4
+      |= Clave  |= Link |
+      | 35      |  8    |
+      | 50      |  0    |
+      end note
+
+      nodoRaiz --> nodoHoja2
+      nodoRaiz --> nodoHoja3
+      nodoRaiz --> nodoHoja4
+
+      note right of nodoHoja2: claves menores o igual a 10
+      note right of nodoHoja3: claves menores o igual a 20
+      note right of nodoHoja4: claves menores o igual a 50
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/btree-fusion2.png]]
+* Referencias
+  1. https://www.geeksforgeeks.org/sql-ddl-dql-dml-dcl-tcl-commands/
+  2. https://www.guru99.com/what-is-dbms.html
+  3. https://www.oscarblancarteblog.com/2014/08/22/estructura-de-datos-arboles/
+  4. https://www.personal.kent.edu/~rmuhamma/Algorithms/algorithm.html
+  5. https://runestone.academy/runestone/static/pythoned/Trees/RecorridosDeArboles.html
+  6. https://www.displayr.com/what-is-a-decision-tree/
+  7. https://www.displayr.com/how-is-splitting-decided-for-decision-trees/
+  8. https://social.technet.microsoft.com/wiki/contents/articles/13801.como-especificar-el-fill-factor-en-un-indice-es-es.aspx
+  9. https://social.technet.microsoft.com/wiki/contents/articles/13796.sql-server-fragmentacion-y-desfragmentacion-de-indices-es-es.aspx
+  10. https://miblogtecnico.wordpress.com/tag/fill-factor/
