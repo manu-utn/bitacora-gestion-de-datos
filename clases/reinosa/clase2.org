@@ -63,6 +63,7 @@ sin importar si esta ok o no
   varios hijos
   #+END_EXAMPLE
 * Nivel
+** Conceptos
   - Es la posición donde está el nodo (como si fueran pisos)
   - la raiz está en el nivel 0
   
@@ -72,6 +73,45 @@ sin importar si esta ok o no
   En un vector busca por niveles, donde cada nivel es una posición
   Ej. arr[4] tiene 4 niveles
   #+END_QUOTE
+** Ejemplo
+   #+BEGIN_SRC plantuml :file img/arbol-niveles.png :exports results
+     @startuml
+     'left to right direction
+     top to bottom direction
+
+     rectangle "Nivel 0" as A{
+     (a)
+     }
+
+     rectangle "Nivel 1" as B{
+     (b)
+     (c)
+     }
+
+     rectangle "Nivel 2" as C{
+     (d)
+     (e)
+     (f)
+     (g)
+     }
+
+
+     (a) --> (b)
+     (a) --> (c)
+
+     (b) --> (d)
+     (b) --> (e)
+
+     (c) --> (f)
+     (c) --> (g)
+
+     note left of A: Nodo Raiz
+
+     note bottom of B: Nodos
+
+     note bottom of C: Nodos Hojas
+     @enduml
+   #+END_SRC
 * Profundidad
   - Cantidad de niveles
   - Indica que tan lejos estará un elemento de inicio (nivel 0, la raiz)

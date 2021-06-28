@@ -249,7 +249,7 @@ porque luego produciria numeros negativos tan grandes, y nunca llegaria a ser po
 *** Componente Puntero
     - Apunta a otro nodo, con *claves* menores o iguales a ella
 ** Ejemplo
-   #+BEGIN_SRC plantuml :file img/btree-1.png :exports result
+   #+BEGIN_SRC plantuml :file img/btree-1.png :exports results
      @startuml
      note as nodoRaiz
      |= Clave |= Link |
@@ -399,7 +399,7 @@ porque luego produciria numeros negativos tan grandes, y nunca llegaria a ser po
     Al corregir el balanceo, se eliminan los nodos del nivel 1, para que todos los nodos
     tengan la mitad de elementos.
 
-    #+BEGIN_SRC plantuml :file img/btree-fusion.png :exports result
+    #+BEGIN_SRC plantuml :file img/btree-fusion.png :exports results
       @startuml
       left to right direction
       title Arbol B - Eliminación de Nodo (antes de eliminarlo)
@@ -475,7 +475,7 @@ porque luego produciria numeros negativos tan grandes, y nunca llegaria a ser po
     Es necesario corregir el balanceo para que la velocidad de busqueda/inserción/eliminación
     sea de ~O(logn)~ osea que el *orden de complejidad* del algoritmo rápido.
 
-    #+BEGIN_SRC plantuml :file img/btree-fusion2.png :exports result
+    #+BEGIN_SRC plantuml :file img/btree-fusion2.png :exports results
       @startuml
       left to right direction
       title Arbol B - Eliminación de Nodo (después de eliminarlo)
