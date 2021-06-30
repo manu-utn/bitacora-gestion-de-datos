@@ -1,30 +1,5 @@
 #+TITLE: Clase 04 - Indices
 
-#+BEGIN_COMMENT
-Dudas..!
-
- **Alta Prioridad**
-Pag. 9: Funcion hash es O(1), quiere decir que su complejidad es constante..?
-
-Pagina 27-35: Las tablas que tienen como valor el asterísco de puntero,
-  son los *nodos raiz/rama* y las demás que tene un valor númerico son los *nodos hoja*?
-  Entonces un *nodo hoja* puede también ser un *nodo raiz*? habiendo varios *nodos raiz*?
-
-Página 11: POrque la función hash guarda especificamente en una *posición relativa*?
-  tiene que ver con la pag. 19, que habla de los *indices fisicos*?
-
-Pagina 16: Menciona la H, está realizando una *secuenca de incrementos* ?
-  (en la ppt de metodos de clasificación aparece, en la pag. 19)
-  (si no me equivoco es el tema de recurrencia de discreta)
-
-**Baja Prioridad**
-2. Pag. 17.: Porque en el *hashing doble* si este arroja un valor negativo haría un loop infinito?
-porque luego produciria numeros negativos tan grandes, y nunca llegaria a ser positivo?
-
-3. Pag. 19: El debe ser *balanceado* para hacer menos consultas por eso minimiza las operaciones?
-   en que otra ppt lo decia?
-#+END_COMMENT
-
 * Objetivo
   - Crear una *estructura de datos* adicional a la tabla (genera un espacio extra)
   - Ordena los datos en función a una *clave*
@@ -35,7 +10,7 @@ porque luego produciria numeros negativos tan grandes, y nunca llegaria a ser po
  - Por lo general los archivos se guardan de forma secuencial
  - Es otra estructura, para acceder más rapido a los datos (/similar a un acceso directo/)
  - Para no tener que evaluar dato por dato de manera secuencial
-* Tipos de Acceso
+* Tipos de Acceso (Secuencial / Indexado / Directo)
 ** Secuencial
    - Es recorrer un conjunto de datos uno atrás del otro 1,2,3...
    - Los índices evitaran esto, porque es lento
@@ -46,10 +21,113 @@ porque luego produciria numeros negativos tan grandes, y nunca llegaria a ser po
    - Acceder directamente a una posición, sin hacer una búsqueda
    - Acceder de forma directa a una *clave*, sin pasar por los elementos anteriores
      (/Ej. cuando usamos fseek en C, para acceder a una parte específica/)
-* Arbol M-Ario
-   - Tienen un *grado* mayor a un *árbol binario* (/el grado es mayor a 2/)
-   - Mayor cant. de elementos => menos *niveles* => busca mas rapido
-   - Requisito que sea un arbol *completo* y *balanceado*
+* Arbol M-Ario (Arbol Multicamino)
+** Conceptos
+   - Un árbol es m-ario si todos sus nodos tienen al menos ~m~ nodos hijos
+   - Tienen un *grado* mayor ó igual a un *árbol binario* (/si m=2 es un árbol binario/)
+   - Mayor cant. de elementos => menos *niveles* => la busqueda es más rápido
+
+   *Observaciones:*
+   - Un árbol m-ario no necesariamente es *completo* (puede haber un nodo que no tiene grado ~m~)
+   - Un árbol m-ario no necesariamente es *balanceado* (un sub-árbol con más peso que otro, cant. de nodos hijos)
+** Propiedades
+   - Un árbol m-ario es completo si.. cada nodo interno tiene grado=m
+   - Un árbol m-ario de altura ~h~ puede tener un máximo de ~m^ĥ~ hojas
+** Ejemplos
+*** Ejemplo 1 - Arbol Binario Completo
+    Un árbol m-ario con ~m=2~ es un *árbol binario*
+    En este ejemplo tenemos un árbol donde cada *vértice interno* tiene grado 2
+    osea un máximo de 2 nodos hijos. Esto incluye al *nodo raíz*
+
+    *Observación:*
+    Podemos ver que los nodos ~d~ y ~c~ no tienen grado 2, y está bien que así sea.
+    Porque son *nodos hojas*, la condición de que un árbol m-ario es completo si sólo
+    si los nodos son de grado=m, es para los *nodos internos* que no son *nodos hojas*
+
+    #+BEGIN_SRC plantuml :file img/arbol-binario.png :exports results
+      @startuml
+      title Arbol m-ario m=2 (Arbol Binario)
+      'left to right direction
+      top to bottom direction
+
+      (a) --> (b)
+      (a) --> (c)
+
+      (b) --> (d)
+      (b) --> (e)
+
+      (e) --> (f)
+      (e) --> (g)
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/arbol-binario.png]]
+
+*** Ejemplo 2 - Arbol Ternario Completo
+    Un árbol m-ario con ~m=3~ es un *árbol tenario*
+    En este ejemplo tenemos un árbol donde cada *vértice interno* tiene grado 3
+    osea un máximo de 3 nodos hijos. Esto incluye al *nodo raíz* (/que es (a)/)
+
+    #+BEGIN_SRC plantuml :file img/arbol-ternario.png :exports results
+      @startuml
+      title Arbol m-ario m=3 (Arbol Ternario)
+      'left to right direction
+      top to bottom direction
+
+      (a) --> (b)
+      (a) --> (c)
+      (a) --> (d)
+
+      (c) --> (k)
+      (c) --> (m)
+      (c) --> (n)
+
+      (b) --> (e)
+      (b) --> (f)
+      (b) --> (g)
+
+      (e) --> (h)
+      (e) --> (i)
+      (e) --> (j)
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/arbol-ternario.png]]
+
+*** Ejemplo 3 - Arbol m-ario pero NO completo
+    En este ejemplo tenemos un árbol m-ario de grado 3, 
+    pero que NO es completo, porque el *nodo interno* ~b~ tiene *grado 2* en vez de 3
+
+    #+BEGIN_SRC plantuml :file img/arbol-no-m-ario.png :exports results
+      @startuml
+      title Arbol m-ario (pero NO completo)
+      'left to right direction
+      top to bottom direction
+
+      (b) #red
+
+      (a) --> (b)
+      (a) --> (c)
+      (a) --> (d)
+
+      (c) --> (k)
+      (c) --> (m)
+      (c) --> (n)
+
+      (b) --> (e)
+      (b) --> (g)
+
+      (e) --> (h)
+      (e) --> (i)
+      (e) --> (j)
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/arbol-no-m-ario.png]]
+
 * [TODO] Métodos para crear índices
 ** Conceptos
    Para crear *índices* en un (DBMS, Data Base Management System) se utiliza
@@ -276,8 +354,8 @@ porque luego produciria numeros negativos tan grandes, y nunca llegaria a ser po
      nodoRaiz-d->nodoHojaIzq
 
      note top of nodoRaiz : Nodo Raiz
-     note left of nodoHojaIzq: Nodo Hoja\nTiene elementos con claves\n menor o igual que 5
-     note right of nodoHojaDer: Nodo Hoja\nTiene elementos con claves\n menor o igual que 50
+     note left of nodoHojaIzq: **Nodo Hoja** \nTiene elementos con claves \nmenor o igual que 5
+     note right of nodoHojaDer: **Nodo Hoja** \nTiene elementos con claves \nmenor o igual que 50
      @enduml
    #+END_SRC
 
@@ -517,14 +595,64 @@ porque luego produciria numeros negativos tan grandes, y nunca llegaria a ser po
 
     #+RESULTS:
     [[file:img/btree-fusion2.png]]
+* Preguntas resueltas
+** Pregunta 1
+   Pag. 9:
+   La *función de hash* es ~O(1)~ quiere decir que su *orden de complejidad* es constante?
+
+   *Respuesta:*
+   No. Sólo hace una operación matemática y es inmediata, no tiene nivel de complejidad
+   por eso es ~O(1)~
+** Pregunta (2)
+   Pag. 11:
+   Cuando dice que la *función hash* guarda en una *posición relativa* quiere decir que se guarda en memoria?
+
+   *Respuesta:*
+   Es relativa en base a la primera posición, la 5ta posición está a una distancia 
+   de 4 posiciones de la primera.
+   Es relativa, porque es distante a un punto en particular.
+** Pregunta (3)
+   Pag. 16:
+   Los indices con *Hashing*, cuando habla del *método Sondeo cuadrático*
+   cuando menciona la ~H~, se refiere a una *secuencia de incrementos* ?
+   (/Obs: en la ppt de métodos de clasificación también aparece, en la pag. 19/)
+
+   *Respuesta:* Correcto
+** [TODO] Duda 4
+   Pag. 17:
+   Porque en el *hashing doble* si este arroja un valor negativo haría un loop infinito?
+   porque luego produciria numeros negativos tan grandes, y nunca llegaria a ser positivo?
+** Pregunta (5)
+   Pag. 19:
+   El debe ser *balanceado* para hacer menos consultas por eso minimiza las operaciones?
+   en que otra ppt lo decia?
+
+   *Respuesta:*
+   Debe ser balanceado y completo
+** [TODO] Duda 2
+   Pag. 27-35:
+   Un *nodo hoja* puede también ser un *nodo raíz*? habiendo varios *nodos raíz*?
+   ó es único y el primero que se genera?
+
+   *Respuesta:*
+   Al principio es un *nodo hoja* porque debe apuntar a una *posición relativa*
+   luego muere y se convierte en un *nodo raiz*
+** [TODO] Duda F (basada en la duda 2)
+   Entonces pueden haber varios *nodos raíz* ?
+   En un árbol hay sólo 1 nodo raíz, pero.. en el *btree*  el *nodo raiz* tiene una *componente puntero*
+   que apunta a otro *nodo hoja* y.. si hay 2 nodos que tienen *componentes punteros* apuntando
+   no son también *nodo raiz*?
+   Un ejemplo es la pag. 32
 * Referencias
-  1. https://www.geeksforgeeks.org/sql-ddl-dql-dml-dcl-tcl-commands/
-  2. https://www.guru99.com/what-is-dbms.html
-  3. https://www.oscarblancarteblog.com/2014/08/22/estructura-de-datos-arboles/
-  4. https://www.personal.kent.edu/~rmuhamma/Algorithms/algorithm.html
-  5. https://runestone.academy/runestone/static/pythoned/Trees/RecorridosDeArboles.html
-  6. https://www.displayr.com/what-is-a-decision-tree/
-  7. https://www.displayr.com/how-is-splitting-decided-for-decision-trees/
-  8. https://social.technet.microsoft.com/wiki/contents/articles/13801.como-especificar-el-fill-factor-en-un-indice-es-es.aspx
-  9. https://social.technet.microsoft.com/wiki/contents/articles/13796.sql-server-fragmentacion-y-desfragmentacion-de-indices-es-es.aspx
-  10. https://miblogtecnico.wordpress.com/tag/fill-factor/
+  1. https://ccia.ugr.es/~jfv/ed1/tedi/cdrom/docs/tablash.html
+  2. https://www.geeksforgeeks.org/sql-ddl-dql-dml-dcl-tcl-commands/
+  3. https://www.guru99.com/what-is-dbms.html
+  4. https://www.oscarblancarteblog.com/2014/08/22/estructura-de-datos-arboles/
+  5. https://www.personal.kent.edu/~rmuhamma/Algorithms/algorithm.html
+  6. https://runestone.academy/runestone/static/pythoned/Trees/RecorridosDeArboles.html
+  7. https://www.displayr.com/what-is-a-decision-tree/
+  8. https://www.displayr.com/how-is-splitting-decided-for-decision-trees/
+  9. https://social.technet.microsoft.com/wiki/contents/articles/13801.como-especificar-el-fill-factor-en-un-indice-es-es.aspx
+  10. https://social.technet.microsoft.com/wiki/contents/articles/13796.sql-server-fragmentacion-y-desfragmentacion-de-indices-es-es.aspx
+  11. https://miblogtecnico.wordpress.com/tag/fill-factor/
+  12. https://www.sqlshack.com/es/operaciones-de-indices-sql-server/
