@@ -1,19 +1,19 @@
-#+TITLE: Clase 03 - Métodos de Clasificacion
+#+TITLE: Clase 03 - Métodos de Clasificación
 
 #+BEGIN_COMMENT
 Dudas:
 1. Pag. 19: porque dice que H_1=1 hace referencia al *ordenamiento por inserción*?
 
 2. En la clase de complejidad P y NP se dice tienen un conjunto de *problemas de decisión*
-donde la complejidad P que se resuelve como una funcion lineal (porque lo resuelve una maquina determinista)
-y la complejidad NP como un *arbol de decisión* ? (porque lo resuelve una maquina NO determinista)
+donde la *complejidad P* que se resuelve como una funcion lineal (porque lo resuelve una maquina determinista)
+y la *complejidad NP* como un *arbol de decisión* (porque lo resuelve una maquina NO determinista)
 #+END_COMMENT
 
 * Objetivo
   + Objetivo principal es *ordenar* elementos
   + Dado un conjunto desordenado, la idea es devolverlo ordenado
   + Dada una secuencia de entrada {3,4,1} se deberia retornar una secuencia {1,3,4}
-* Registros
+* Registros (Clave / Datos Satélites)
 ** Conceptos
   Están conformados por
   * Clave (key)
@@ -28,10 +28,10 @@ y la complejidad NP como un *arbol de decisión* ? (porque lo resuelve una maqui
 ** Datos Satélites
    Es todo lo que no sea la clave
 * Estabilidad
+** Orden estable
   - Orden Estable => Si se mantiene el *orden relativo* original para registros con misma *clave*
   - Orden Estable => Si dos elementos con igual clave mantienen el mismo orden que al principio
-
-  #+BEGIN_QUOTE
+** Ejemplo
   Por ejemplo si tenemos un conjunto de registros con {clave, valor}
   ~{2,A}~, {1,B}, ~{2,C}~, {5,F} <- registros {clave, valor}
 
@@ -41,7 +41,6 @@ y la complejidad NP como un *arbol de decisión* ? (porque lo resuelve una maqui
   En este otro caso el orden de los registros de igual clave,
   NO mantienen el orden, aparece primero el que contiene C y luego el de A
   {1,B}, ~{2,C}, {2,A}~, {5,F}   <- *Orden NO estable*
-  #+END_QUOTE
 * Métodos In Situ
 ** Conceptos
   - Permiten la optimización de algoritmos
@@ -94,25 +93,27 @@ y la complejidad NP como un *arbol de decisión* ? (porque lo resuelve una maqui
 ** Método Externo
    - Cuando utilizamos dispositivos de almacenamiento como *discos duros*
    - Cuando NO utilizamos la *memoria principal*
-* Complejidad
+* Complejidad (Polinómica)
 ** Conceptos
-  - La *complejidad* es que tanto la cuesta a la computadora
+  - La *complejidad computacional* es que tanto la cuesta a la computadora
   - Es la complejidad de ejecutar un algoritmo
-  
-  #+BEGIN_QUOTE
-  #+END_QUOTE
+** Problemas de Decisión
+   - Un *problema de decisión* es aquel que puede ser contestado con una *afirmación* ó *negación*
+   - Los de *clase P* son aquellos que pueden ser resultados en tiempo de cálculo que crece de forma polinomial
+   - Los de *clase NP* sólo pueden ser resueltos en *tiempo polinomial* indeterminado con una *maquina de Turing* no determinística
+     (/ordenador, que puede ser un autómata/)
 ** Clase de Complejidad P
    - Conjunto de *problemas de decisión*
-   - Pueden ser resueltos por una *máquina Determinista*
+   - Pueden ser resueltos por una *máquina determinista*
    - Se pueden resolver en *tiempo polinómico*
 
    *Observación:*
-   Algo que es *deterministico* se conoce como empieza, termina, se conoce los cambios entre transiciones.
-   Es decir se conoce su resultado, y su comportamiento.
+   Algo que es *determinístico* se conoce como empieza, termina, se conoce los cambios entre transiciones.
+   Es decir se conoce sus entradas, su comportamiento, y el resultado final.
 ** Clase de Complejidad NP (Non-Deterministic Polynomial Time)
    - Las siglas *NP* significan *tiempo polinomial NO determinista*
    - Conjunto de *problemas de decisión*
-   - Pueden ser resueltos por una *máquina NO Determinista*
+   - Pueden ser resueltos por una *máquina NO Determinista* (/Ej. una máquina de Turing no determinista/)
    - Se pueden resolver en _tiempo mayor que polinómico_
 
    *Observación:*
@@ -120,8 +121,8 @@ y la complejidad NP como un *arbol de decisión* ? (porque lo resuelve una maqui
 ** Orden de complejidad
    - Se describe como ~O(funcion)~
    - Es una función matemática que _acota el comportamiento_ del algoritmo
-     - en función del tiempo
-     - y de la cantidad de elementos
+     - en función del _tiempo_
+     - y en función de la _cantidad de elementos_
 ** Evaluar la complejidad
    - Se _evalúa la cant. de comparaciones_ realizadas
    - Una comparación con un ~if~ puede ser más costosa que una *operación matemática*
@@ -138,7 +139,7 @@ y la complejidad NP como un *arbol de decisión* ? (porque lo resuelve una maqui
 
    por tanto su *orden de complejidad* es  ~O(n/2)~
    #+END_QUOTE
-* [TODO] Métodos a analizar
+* [TODO] Métodos a analizar (Algoritmos)
 ** bubble sort
    - compara de a dos
    - sabe que el ultimo es el mas grande
@@ -179,3 +180,8 @@ y la complejidad NP como un *arbol de decisión* ? (porque lo resuelve una maqui
    - por cada elemento que agrega debe comparar con la cant. de elementos que tenga el *piso*
 
    *Observacion:* un monticulo no llega a ser montaña
+* Referencias
+  1. https://www.matematica.uns.edu.ar/uma2016/material/curso%20UMA%202016_fbonomo_handout.pdf
+  2. http://www.cs.uns.edu.ar/~prf/teaching/AyC17/downloads/Teoria/Complejidad-1x1.pdf
+  3. http://exa.unne.edu.ar/informatica/programacion1/public_html/archivos/tema10_algoritmos.pdf
+  4. https://www.utm.mx/~jahdezp/archivos%20estructuras/DESICION.pdf
