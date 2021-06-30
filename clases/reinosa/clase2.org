@@ -1,11 +1,11 @@
-#+TITLE: Clase 02- Arboles
+#+TITLE: Clase 02 - Arboles
 
 #+BEGIN_COMMENT
 Es por convención occidental que algo se decidió hacer de una manera 
 sin importar si esta ok o no
 #+END_COMMENT
 
-* Conceptos Basicos
+* Conceptos Básicos
 ** Correspondencia unívoca 
    - Cuando a cada elemento (a) de un conjunto (A) _le corresponde al menos un elemento_ (b) de 
      un conjunto (B)
@@ -51,81 +51,154 @@ sin importar si esta ok o no
 * Conceptos
   - Los árboles entran en las estructuras unívocas 
   - Las colas/pilas entran en las estructuras biunivocas
-* Grado
-  - Cantidad máxima de hijos que puede tener una estructura
-  - Es cuanto va a crecer (cant. de hijos/sub-arboles que puede tener cada nodo)
-  - Siempre se necesita, para poder representarlo en cualquier lado
-    (Ej. en un vector)
-  
-  #+BEGIN_EXAMPLE
-  Las pilas/colas tienen grado 1 por ser biunívocas
-  Los árboles tienen un grado exponencial, porque puede tener
-  varios hijos
-  #+END_EXAMPLE
-* Nivel
-** Conceptos
-  - Es la posición donde está el nodo (como si fueran pisos)
-  - la raiz está en el nivel 0
-  
+
   #+BEGIN_QUOTE
-  Un árbol busca por niveles, pero en un mismo nivel puede hacer muchas busquedas
-
-  En un vector busca por niveles, donde cada nivel es una posición
-  Ej. arr[4] tiene 4 niveles
+  Un árbol es una *estructura de datos* que permite localizar de manera rápida
+  información de un archivo (se utiliza para los índices)
   #+END_QUOTE
-** Ejemplo
-   #+BEGIN_SRC plantuml :file img/arbol-niveles.png :exports results
-     @startuml
-     'left to right direction
-     top to bottom direction
+* Propiedades
+  + Un árbol es
+    - Un grafo no dirigido (/las aristas no tienen un sentido definido/)
+    - conexo (/todos sus veŕtices están conectados por un camino/)
+    - y sin ciclos (/sin bucles/)
+  + Un *grafo NO dirigido* es *árbol* <=> existe un único camino entre cada par de *vértices*
+  + Todo *grafo conexo* y *acíclico* (/sin ciclos/) es un árbol
+  + Un árbol está *balanceado* si
+    - todas sus hojas están en el nivel ~h~ (altura del árbol)
+    - ó están en el nivel ~h-1~
+* Altura / Nivel / Grado / Profundidad
+** Grado
+   - _Cantidad máxima de hijos_ que puede tener una estructura (/árbol, subárbol, nodo padre/)
+     (/la estructura puede ser el árbol, un subarbol ó un nodo padre/)
+   - Es cuanto va a crecer (cant. de hijos/sub-arboles que puede tener cada nodo)
+   - Siempre se necesita, para poder representarlo en cualquier lado (/Ej. en un vector/)
+  
+   #+BEGIN_EXAMPLE
+   Las pilas/colas tienen grado 1 por ser biunívocas (guardan referencia a un nodo, el siguiente)
+   Los árboles tienen un grado exponencial, porque puede tener varios hijos
+   #+END_EXAMPLE
+** Nivel
+*** Conceptos
+   - Es la posición donde está el nodo (como si fueran pisos)
+   - la raiz está en el nivel 0
+  
+   #+BEGIN_QUOTE
+   Un árbol busca por niveles, pero en un mismo nivel puede hacer muchas busquedas
 
+   En un vector busca por niveles, donde cada nivel es una posición
+   Ej. arr[4] tiene 4 niveles
+   #+END_QUOTE
+*** Ejemplo
+    #+BEGIN_SRC plantuml :file img/arbol-niveles.png :exports results
+      @startuml
+      'left to right direction
+      top to bottom direction
+
+      rectangle "Nivel 0" as A{
+      (a)
+      }
+
+      rectangle "Nivel 1" as B{
+      (b)
+      (c)
+      }
+
+      rectangle "Nivel 2" as C{
+      (d)
+      (e)
+      (f)
+      (g)
+      }
+
+
+      (a) --> (b)
+      (a) --> (c)
+
+      (b) --> (d)
+      (b) --> (e)
+
+      (c) --> (f)
+      (c) --> (g)
+
+      note left of A: Nodo Raiz
+
+      note bottom of B: Nodos
+
+      note bottom of C: Nodos Hojas
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/arbol-niveles.png]]
+
+** Altura
+   - La *altura* de un árbol es la _longitud del camino más largo_ desde la raíz a cualquier nodo
+   - Se puede estimar sumando ~nodo con mayor profundidad + 1~
+** Profundidad
+*** Conceptos
+   - Cantidad de niveles
+   - Indica que tan lejos estará un elemento del inicio (del nivel 0, de la raiz)
+   - La profundidad de un nodo es la longitud del camino (único) desde la raiz hasta el nodo
+  
+   #+BEGIN_EXAMPLE
+   La profundidad del nodo raiz es cero.
+
+   Si tenemos un árbol con 4 niveles, entonces tiene profundidad 4 
+   y el elemento más lejano al inicio (al nivel 0) estará a no más de 3 pasos
+   #+END_EXAMPLE
+*** Ejemplos
+**** Ejemplo 1
+** Ejemplo
+   #+BEGIN_SRC plantuml :file img/arbol-ejemplo1.png :exports results
+     @startuml
+     title Arbol (profundidad y altura)
+     'left to right direction
+     top to bottom direction 
+
+     cloud "Arbol con Altura 4"{
      rectangle "Nivel 0" as A{
-     (a)
+      (a)
      }
 
      rectangle "Nivel 1" as B{
-     (b)
-     (c)
+      (b)
+      (c)
+      (d)
      }
 
      rectangle "Nivel 2" as C{
-     (d)
-     (e)
-     (f)
-     (g)
+      (e)
+      (f)
+      (g)
      }
 
+     rectangle "Nivel 3" as D{
+      (h)
+     }
+     }
+
+     note right of (a): Profundidad 0\nno tiene predecesor\nes la raíz
+     note right of (b): Profundidad 1\ntiene 1 predecesor (la raíz)
+     note right of (e): Profundidad 2\ntiene 2 predecesores{b,a}
+     note right of (h): Profundidad 3\ntiene 3 predecesores{g,c,a}\nel nodo mayor profundidad del árbol
 
      (a) --> (b)
      (a) --> (c)
+     (a) --> (d)
 
-     (b) --> (d)
      (b) --> (e)
 
      (c) --> (f)
      (c) --> (g)
+     (g) --> (h)
 
-     note left of A: Nodo Raiz
-
-     note bottom of B: Nodos
-
-     note bottom of C: Nodos Hojas
      @enduml
    #+END_SRC
 
    #+RESULTS:
-   [[file:img/arbol-niveles.png]]
+   [[file:img/arbol-ejemplo1.png]]
 
-* Profundidad
-  - Cantidad de niveles
-  - Indica que tan lejos estará un elemento de inicio (nivel 0, la raiz)
-  
-  #+BEGIN_EXAMPLE
-  Si tenemos un árbol con 4 niveles, tiene profundidad 4
-  y el elemento más lejano al inicio (al nivel 0)
-  estará a no más de 3 pasos
-  #+END_EXAMPLE
-* Representación
+* Representación (Estática / Dinámica)
 ** Conceptos
    - Para existir debe estar representado computacionalmente
 ** Estática
@@ -135,11 +208,11 @@ sin importar si esta ok o no
 *** Ejemplo
     En el siguiente arreglo/vector de longitud 6, tiene sólo 1 nivel, y es de grado 1.
 
-    |---------+-----+-----+-----+-----+-----+------+-----|
-    | NIVELES | [0] | [1] | [2] | [3] | [4] | [5]  | [6] |
-    |---------+-----+-----+-----+-----+-----+------+-----|
-    |         |   1 |   2 |   3 |   4 |   5 | null |   6 |
-    |---------+-----+-----+-----+-----+-----+------+-----|
+    |-------+-----+-----+-----+-----+-----+------+-----|
+    | NIVEL | [0] | [1] | [2] | [3] | [4] | [5]  | [6] |
+    |-------+-----+-----+-----+-----+-----+------+-----|
+    |       |   1 |   2 |   3 |   4 |   5 | null |   6 |
+    |-------+-----+-----+-----+-----+-----+------+-----|
 ** Dinámica
 *** Conceptos
     - El árbol está _representado por una lista/estructura linkeada_
@@ -183,7 +256,7 @@ sin importar si esta ok o no
      entonces sólo a la posición 27 le restamos el grado=3, y lo dividimos por este también
 *** Ejemplo 3
      Si tenemos un árbol con 29 elementos, y queremos conocer la posición del elemento 29.
-* Carácteristicas
+* Carácteristicas (Completo / Balanceado)
 ** Completo
    - Cuando _todos los elementos cumplen el grado o son hojas_
    
@@ -207,9 +280,10 @@ sin importar si esta ok o no
    - tiene 4 niveles (cada nivel representa la posición de un nodo respecto a la raiz)
    #+END_EXAMPLE
 ** [TODO] Balanceado
-   - Si cada subarbol tiene misma cant. de elementos (/pesan lo mismo/)
-   - ó si _hay una diferencia indivisible_ entre el peso de ambos subarboles con el grado del arbol
-    (/que no se puede dividir por el grado, entre los subarboles/) 
+*** Conceptos
+   - Si cada subárbol tiene misma cant. de elementos (/pesan lo mismo/)
+   - ó si _hay una diferencia indivisible_ entre el *peso* de ambos subarboles
+     (/principio de atomicidad, cuando algo no se puede dividir en más partes/)
 
    #+BEGIN_QUOTE
    Si tenemos un arbol con
@@ -222,13 +296,63 @@ sin importar si esta ok o no
 
    si hacemos la diferencia entre los pesos de los subarboles
    y tratamos de dividirlo por el grado del arbol, no podremos
-   ~(2-1) / 4 = ?~ => esto nos indica que podria haber un *arbol balanceado*
+   ~(2-1) = 1 (?)~ => esto nos indica que podria haber un *árbol balanceado*
    porque no podemos dividir el valor 1 en más partes, es atómico
 
    Otro ejemplo sería, con el mismo árbol
    si tenemos 2 subarboles de peso=2 (osea ambos tienen 2 nodos)
-   entonces también da un indicio de que quizas haya un *arbol balanceado*
+   entonces también da un indicio de que quizas haya un *árbol balanceado*
    #+END_QUOTE
+*** Ejemplo
+    #+BEGIN_SRC plantuml :file img/arbol-balanceado1.png :exports results
+      @startuml
+      title Arbol Balanceado \n(grado=2, altura=4)
+      'left to right direction
+      top to bottom direction 
+
+      cloud "subárbol" as A{
+        (b)
+        (f)
+        (g)
+        (h)
+      }
+
+      cloud "subárbol" as B{
+        (c)
+        (d)
+        (e)
+      }
+
+      note left of A : grado=2 \npeso=4
+      note bottom of B : grado=2 \npeso=3
+
+      note bottom of (d) : en el nivel h-1
+      note bottom of (e) : en el nivel h-1
+
+      note bottom of (h) : en el nivel h
+
+      note as Z #aqua
+      1. Nodos en nivel h y h-1
+      2. **Diferencia indivisible** entre pesos de subárboles
+      (4-3 = 1 => el 1 no se puede dividir en más partes)
+      end note
+
+      (a) --> (b)
+      (a) --> (c)
+
+      (b) --> (f)
+      (b) --> (g)
+
+      (f) --> (h)
+
+      (c) --> (d)
+      (c) --> (e)
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/arbol-balanceado1.png]]
+
 ** Perfectamente balanceado
    - que no haya huecos en el grafo
    - _Puede haber un árbol completo pero que NO esté balanceado_
@@ -260,12 +384,19 @@ sin importar si esta ok o no
    - El 2 suponiendo que es grado 2 (por tanto es un árbol binario)
    - Se le resta ~1~ por la _imparidad de la raíz_
    #+END_QUOTE
-* Búsqueda
+* Búsqueda en un Arbol
 ** Conceptos
-  - la búsqueda _se hace por niveles y NO por elementos_
-    (/no buscará de manera secuencial como en un vector, que es elemento por elemento/)
-  - 
- 
+  La búsqueda _se hace por niveles y NO por elementos_
+  (/no buscará de manera secuencial como en un vector, que es elemento por elemento/)
+
+  #+BEGIN_QUOTE
+  La _búsqueda en un árbol es logarítmica porque su crecimiento es exponencial_
+  porque la busqueda es la inversa al crecimiento.
+  
+  - Listas: si el crecimiento es lineal => la búsqueda sera lineal
+  - Arboles: si el crecimiento es exponencial => la búsqueda será logarítmica
+  #+END_QUOTE
+** Ejemplo
   #+BEGIN_EXAMPLE
   En una lista, cada elemento se relaciona solo con uno (el siguiente)
   por tanto al buscar elementos en una lista estamos buscando en el 
@@ -281,71 +412,325 @@ sin importar si esta ok o no
   depende de la cant. de elementos
   SI tiene N elementos, buscará en N niveles.
   #+END_EXAMPLE
-  
-  #+BEGIN_EXAMPLE
-  La búsqueda en un árbol es logarítmica porque su crecimiento es exponencial
-  porque la busqueda es la inversa al crecimiento.
+* [DOING] (ABB) Arbol Binario de Búsqueda
+** Construcción del árbol
+   + Los elementos que se ingresan en el arbol, se comparan 
+     1. Con la raiz (/Si n < raiz => irá al subarbol izq, si n > raiz => irá al subarbol der./)
+     2. Luego con los nodos del subarbol correspondiente
+   + Los elementos menores se ingresan en el subarbol izq.
+   + Los elementos mayores se ingresan en el subarbol der.
+
+    *Observación:*
+    El arból binario de búsqueda, se va armando en base a como estén dispuestos
+    los valores en la lista. Donde _la raíz es el primer elemento de la lista_
+** Velocidad de búsqueda
+   + Su velocidad de búsqueda es mayor que a la de una *lista*
+     (/excepto que todos los elementos estén sólo un lado, osea en un subarbol izq. ó el der
+      /en ese caso tendrá la misma vel. que una lista/)
+   + Para que la búsqueda sea más rápida => debe estar *balanceado*
+     (/si tiene más elementos en un subarbol, que en el otro, tendrá mas niveles y tardará más/)
+** [DOING] Desplazamiento en Arbol Binario
+*** Conceptos
+    Encontrar 1 clave en un *árbol binario balanceado* busca en ~log_2(N+1)~ niveles del árbol,
+    siendo ~log_2(N+1)~ la cantidad de desplazamientos, donde ~N~ es la cantidad de *claves*
    
-  (listas) si el crecimiento es lineal => la busqueda sera lineal
-  (árboles) si el crecimiento es exponencial => la busqueda será logarítmica
-  #+END_EXAMPLE
-** Arbol Binario de Búsqueda (ABB)
-*** Construcción del árbol
-    + Los elementos que se ingresan en el arbol, se comparan 
-      1. Con la raiz (/Si n < raiz => irá al subarbol izq, si n > raiz => irá al subarbol der./)
-      2. Luego con los nodos del subarbol correspondiente
-    + Los elementos menores se ingresan en el subarbol izq.
-    + Los elementos mayores se ingresan en el subarbol der.
+    *Observación:*
+    Los desplazamientos en disco (dispositivo de almacenamiento secundario) son lentos,
+    mientras que en memoria principal es más rápido.
+    Por tanto el desplazamiento en disco es costoso en tiempo
 
-     *Observación:*
-     El arból binario de busqueda, se va armando en base a como estén dispuestos
-     los valores en la lista. Donde _la raiz es el primer elemento de la lista_
-*** Velocidad de búsqueda
-    + Su velocidad de busqueda es mayor que a la de una *lista*
-      (/excepto que todos los elementos estén sólo un lado, osea en un subarbol izq. ó el der
-       /en ese caso tendrá la misma vel. que una lista/)
-    + Para que la búsqueda sea aún mayor => debe estar *balanceado*
-      (/si tiene mas elementos en un subarbol, que en el otro, tendrá mas niveles y tardará más/)
-*** Corrección del Balanceo
-    _Si el árbol NO está *balanceado* es porque tiene mas niveles_ pero se puede corregir
-     - reduciendo los niveles
-     - y mejorando el algoritmo de busqueda.
-     (osea balanceamos por niveles, primero por la raiz, y seguimos...)
-*** Ejemplo - Corrección de balanceo
-    Nos basamos en el ejemplo de la página 15 de la ppt arboles.
+    #+BEGIN_QUOTE
+    Si tuvieramos un árbol completamente balanceado con ~1.000.000~ claves 
+    hará desplazamiento máximo de 20 niveles para buscar alguna clave
+    ~log_2(1.000.00 + 1) = 20~ osea 20 desplazamientos
+    #+END_QUOTE
+*** Ejemplo
+    #+BEGIN_SRC plantuml :file img/arbol-binario-lectura.png :exports results
+      @startuml
+      title Arbol Binario 
+      top to bottom direction
 
-    Supongamos un árbol que tiene mas elementos en el subarbol de la derecha
-    que del de la izquierda.
-    (osea la raiz tiene más elementos mayores a ella, para balancearlo habria a acomodar la raiz)
+      together {
+      (a) --> (b)
+      (a) --> (c)
 
-    Entonces agarramos el menor elemento del subarbol de la derecha,
-    y lo colocamos como nueva ráiz,
-    desplazando el que estaba como raiz hacia el sub-arbol izq
-    (/el sub-arbol de la der. es el que tiene los valores mayores al de la raiz/)
+      together {
+       (b) --> (e)
+       (b) --> (d)
 
-    Evaluamos nuevamente el subarbol de la derecha,
-    y revisamos si se puede balancear ese subarbol también
-* Barridos
+       (e) --> (h)
+       (e) --> (i)
+
+       (i) --> (k)
+       (i) --> (l)
+      }
+
+      together {
+       (c) --> (g)
+       (c) --> (f)
+
+       (g) --> (j)
+      }
+      }
+
+      note top of (d) : 3 accesos a disco \npara llegar a este nodo
+      note bottom of (l) : 5 accesos a disco \npara llegar a este nodo
+      note bottom of (f) : 3 accesos a disco \npara llegar a este nodo
+
+      (d) #lightgreen
+      (l) #lightgreen
+      (f) #lightgreen
+
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/arbol-binario-lectura.png]]
+** [DOING] Desplazamiento en Arbol Binario Paginado
+    - Si el árbol está paginado se tiene un máximo de ~log_{k+1}(N+1)~ desplazamientos
+      - siendo ~k~ la cantidad de claves por página
+      - y ~N~ la cantidad de claves
+
+    #+BEGIN_QUOTE
+    Si tuvieramos un árbol binario balanceado y paginado, con 511 páginas y 1.000.000 de claves
+    tendriamos ~log_{511+1}(+1)=3~ osea 3 desplazamientos
+
+    Si NO estuviese paginado, seria ~log_2(1.000.00 + 1) = 20~ osea 20 desplazamientos
+    #+END_QUOTE
+** Corrección del Balanceo
+   _Si el árbol NO está *balanceado* es porque tiene mas niveles_ pero se puede corregir
+    - reduciendo los niveles
+    - y mejorando el algoritmo de busqueda.
+    (osea balanceamos por niveles, primero por la raiz, y seguimos...)
+** Ejemplo - Corrección de balanceo
+   Nos basamos en el ejemplo de la página 15 de la ppt arboles.
+
+   Supongamos un árbol que tiene mas elementos en el subarbol de la derecha
+   que del de la izquierda.
+   (osea la raiz tiene más elementos mayores a ella, para balancearlo habria a acomodar la raiz)
+
+   Entonces agarramos el menor elemento del subarbol de la derecha,
+   y lo colocamos como nueva ráiz,
+   desplazando el que estaba como raiz hacia el sub-arbol izq
+   (/el sub-arbol de la der. es el que tiene los valores mayores al de la raiz/)
+
+   Evaluamos nuevamente el subarbol de la derecha,
+   y revisamos si se puede balancear ese subarbol también
+* Barridos (Preorden / Inorden / Postorden)
 ** Conceptos
-   - Barrido es como imprimo(lectura) el contenido de un árbol
-    (de arriba abajo, de izq. a der.)
+   - El barrido es el como recorro/imprimo(lectura) el contenido de un árbol
+    (/Ej. de arriba abajo, de izq. a der./)
    - Es la forma de leer (recorrer) por convención
 ** Preorden
-   - leo previo a leer
+   - leo previo a leer (/cuando ya paso por el nodo, la primera vez que pase por él/)
 ** Postorden
-   - leo despues de leerlo
+   - leo despues de leerlo (/la segunda vez que pase por el nodo/)
 ** Inorden
    - leo cuando se va a cambiar de rama
    - se lee ordenado (por el orden convencional)
 
    Ej. 3,4,5,7,8,9...
+** Ejemplos
+*** Ejemplo 1
+    #+BEGIN_SRC plantuml :file img/barrido1.png :exports results
+      @startuml
+      title Arbol - Barrido
+      top to bottom direction
+
+      together {
+      (a) --> (b)
+      (a) --> (c)
+
+      together {
+       (b) --> (e)
+       (b) --> (d)
+
+       (e) --> (h)
+       (e) --> (i)
+
+       (i) --> (k)
+       (i) --> (l)
+      }
+
+      together {
+       (c) --> (g)
+       (c) --> (f)
+
+       (g) --> (j)
+      }
+      }
+
+      (d) #lightgreen
+      (h) #lightgreen
+      (k) #lightgreen
+      (l) #lightgreen
+      (f) #lightgreen
+      (j) #lightgreen
+
+      note as N1
+      ,**Pre-orden:** {**a**,b,d,e,h,i,k,l,c,f,g,j}
+      ,**Post-orden:** {d,h,k,l,i,e,b,f,j,g,c,**a**}
+      ,**In-Orden:** {d,b,h,e,k,i,l,**a**,f,c,g,j}
+      end note
+
+      note bottom of N1
+      ,**Pre-orden**
+      1) Raiz => 2) Subarbol Izq => 3) Subarbol Der
+      ,**Post-orden**
+      1) Subarbol Izq => 2) Subarbol Der => 3) Raiz
+      ,**In-Orden**
+      1) Subarbol Izq => 2) Raiz => 3) Subarbol Der
+      end note
+
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/barrido1.png]]
+
 ** Referencias
    1. https://dev.to/abdisalan_js/4-ways-to-traverse-binary-trees-with-animations-5bi5
-* Arbol de expresion
+* Arbol de expresión
   - Es una expresion que puede representase a partir de un arbol
   - Si el árbol se barre en *inorden*, => se obtiene una expresión matemática (en notación infijo)
     (/lo mismo con postorden donde su notacion es postfijo ó polaca inversa/)
 
   Ej. 3 + 5 * 8 - 4 * 2
+* Arbol Binario - Arbol de Decisión
+** Conceptos
+  - Una aplicación de los *arboles binarios* son los *arboles de decisión*
+  - Cada *nodo interno* representan las preguntas si/no
+  - Cada *nodo hoja* representan las decisiones
+** Ejemplo 1 - Arbol de decisión
+   #+BEGIN_SRC plantuml :file img/arbol-de-decision.png :exports results
+     @startuml
+     title Arbol Binario / Arbol de Decisión
+     'left to right direction
+     top to bottom direction
+
+     (comida rapida) --> (rica) : SI
+     (comida rapida) --> (saludable) : NO
+
+     (rica) --> (pizza) : SI
+     (rica) --> (hamburgesa vegana) : NO
+
+     (saludable) --> (ensalada) : SI
+     (saludable) --> (helado) : NO
+     @enduml
+   #+END_SRC
+
+   #+RESULTS:
+   [[file:img/arbol-de-decision.png]]
+** Ejemplo 2 - Arbol binario completo
+    Un árbol m-ario con ~m=2~ es un *árbol binario*
+    En este ejemplo tenemos un árbol donde cada *vértice interno* tiene grado 2
+    osea un máximo de 2 nodos hijos. Esto incluye al *nodo raíz*
+
+    *Observación:*
+    Podemos ver que los nodos ~d~ y ~c~ no tienen grado 2, y está bien que así sea.
+    Porque son *nodos hojas*, la condición de que un árbol m-ario es completo si sólo
+    si los nodos son de grado=m, es para los *nodos internos* que no son *nodos hojas*
+
+    #+BEGIN_SRC plantuml :file img/arbol-binario.png :exports results
+      @startuml
+      title Arbol m-ario m=2 (Arbol Binario)
+      'left to right direction
+      top to bottom direction
+
+      (a) --> (b)
+      (a) --> (c)
+
+      (b) --> (d)
+      (b) --> (e)
+
+      (e) --> (f)
+      (e) --> (g)
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/arbol-binario.png]]
+* Ejemplos Arboles
+** Ejemplo 1 - Grafo que NO aparenta ser árbol
+   #+BEGIN_SRC plantuml :file img/arbol-grafo-1.png :exports results
+     @startuml
+     title Arbol (conexo y acíclico)
+
+     (a) -d- (c)
+     (c) -r- (d)
+     (c) -u- (b)
+     (c) -d- (f)
+     (f) -l- (e)
+     @enduml
+   #+END_SRC
+
+   #+RESULTS:
+   [[file:img/arbol-grafo-1.png]]
+
+** Ejemplo 2 - Grafo que NO aparenta ser árbol
+   #+BEGIN_SRC plantuml :file img/arbol-grafo-2.png :exports results
+     @startuml
+     title Arbol (conexo y acíclico)
+
+     (a) -d- (c)
+     (a) -r- (f)
+     (f) -d- (e)
+     (f) -u- (d)
+     (e) -l- (b)
+     @enduml
+   #+END_SRC
+
+   #+RESULTS:
+   [[file:img/arbol-grafo-2.png]]
+
+** Ejemplo 3 - NO es Arbol (no es conexo)
+   #+BEGIN_SRC plantuml :file img/no-es-arbol-1.png :exports results
+     @startuml
+     title NO es Arbol (no es conexo)
+
+     together {
+     (a) ---- (f)
+     (c) -d- (e)
+     }
+
+     (e) -r- (b)
+     (b) -d- (d)
+     @enduml
+   #+END_SRC
+
+   #+RESULTS:
+   [[file:img/no-es-arbol-1.png]]
+
+** Ejemplo 4 - NO es Arbol (existe ciclo)
+   #+BEGIN_SRC plantuml :file img/no-es-arbol-2.png :exports results
+     @startuml
+     title NO es Arbol (existe un ciclo)
+
+     (a) #red
+     (b) #red
+     (c) #red
+     (d) #red
+
+     (a) -r- (b)
+     (a) -d- (c)
+     (b) -d- (d)
+     (d) -l- (c)
+
+     (a) ---- (f)
+     (f) -r- (g)
+     (g) -u- (d)
+     @enduml
+   #+END_SRC
+
+   #+RESULTS:
+   [[file:img/no-es-arbol-2.png]]
+
 * Referencias
   1. https://www.oscarblancarteblog.com/2014/08/22/estructura-de-datos-arboles/
+     
+  #+BEGIN_COMMENT
+  Referencias a chequear
+  2. http://ocw.uc3m.es/cursos-archivados/ficheros/contenidos/ficheros_tema5.pdf
+  3. http://sedici.unlp.edu.ar/bitstream/handle/10915/4049/Tesis.pdf?sequence=3&isAllowed=y
+  4. https://slideplayer.es/slide/147587/
+  #+END_COMMENT
