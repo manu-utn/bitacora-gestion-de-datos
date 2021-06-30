@@ -152,80 +152,198 @@
 
      Ej. En instagram una relación puede NO ser bidireccional,
          yo puedo seguir a A, y él puede querer no seguirme.
-
-
-
-
-
-
-
 ** Caminos y Pasos
-**** [TODO] Conceptos de discreta
-***** Camino
-      - Si hay camino => existe una trayectoria para llegar de un extremo al otro
-        (interpretemos la trayectoria como una sucesión de aristas,
-         y cada extremo como vértices)
-      - Puede no haber *paso*
-      - Es *bidireccional*
-***** Paso
-      - Es un *camino con sentido*
-      - Es más *restricto* que el *camino*
-      - Sólo es aplicable para un *grafo dirigido*
-***** Ciclo
-** Busqueda
+*** [TODO] Conceptos de discreta
+**** Camino
+     - Si hay camino => existe una trayectoria para llegar de un extremo al otro
+       (interpretemos la trayectoria como una sucesión de aristas,
+        y cada extremo como vértices)
+     - Puede no haber *paso*
+     - Es *bidireccional*
+**** Paso
+     - Es un *camino con sentido*
+     - Es más *restricto* que el *camino*
+     - Sólo es aplicable para un *grafo dirigido*
+**** Ciclo
+*** Ejemplo 1 - Camino
+    #+BEGIN_SRC plantuml :file img/camino1.png :exports results
+      @startuml
+      title Camino {b,c,f,e}\nCamino {d,h,m}
+
+      (b) #green
+      (c) #green
+      (f) #green
+      (e) #green
+
+      (d) #blue
+      (h) #blue
+      (m) #blue
+
+      (a) -d- (c)
+      (c) -r- (d)
+      (c) -u- (b)
+      (c) -d- (f)
+      (f) -l- (e)
+
+      (d) -d- (h)
+      (h) -r- (m)
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/camino1.png]]
+
+** Búsqueda (BFS y DFS)
    Cual usar? depende del destino
 *** Búsqueda en profundidad (DFS, Depth first search)
+**** Conceptos
     - Es un *algoritmo recursivo*
     - Va siempre para adelante, busca el primero
     - Puede haber muchos pasos (porque puede haber muchas relaciones)
-   
+
     #+BEGIN_EXAMPLE
     Busca si la relación que tenía delante era la que buscaba,
     si NO era, le dice al siguiente que le pregunte si el que tiene delante era el que se buscaba,
     y asi se repite.. hasta llegar al final de ese camino elegido.
     Si ninguno del camino cumple, vuelve al principio y repite la búsqueda con otro cercano.
 
-    le pasa siempre el problema al siguiente,
-    si el siguiente no, vuelve atras y busca otro
+    le pasa siempre el problema al siguiente, si el siguiente no es, vuelve atrás y busca otro
     #+END_EXAMPLE
-    
+**** Requisitos
+     - La búsqueda es eficiente si hay _pocos niveles_
+     - El árbol debe estar *balanceado*
+**** Ejemplo
     #+BEGIN_SRC plantuml :file img/dfs.png
       @startuml
-      digraph foo{
-              B,C,D [fillcolor=red, style="filled"]
-              A -> B -> C -> D
-              A -> F -> G -> H 
-      }
+      title DFS - Búsqueda en profundidad
+      'left to right direction
+      top to bottom direction
+
+      (a) --> (b)
+      (a) --> (c)
+      (a) --> (d)
+
+      (b) --> (f)
+      (b) --> (g)
+      (b) --> (h)
+
+      (c) --> (i)
+      (c) --> (j)
+      (c) --> (k)
+
+      (i) --> (m)
+      (i) --> (n)
+      (i) --> (o)
+
+      (d) --> (p)
+      (p) --> (q)
+      (p) --> (r)
+      (p) --> (s)
+      (s) --> (t)
+
+      (j) #red
+      (a) #lightgreen
+      (b) #lightgreen
+      (f) #lightgreen
+
+
+      note top of (b) : Recorrido acá será {b,f,g,h}
+
+      note bottom of (j)
+      Buscamos este nodo.
+      el recorrido en el subárbol
+      será {c,i,m,n,o,**j**}
+      end note
+
+      note as N
+      Buscará en los nodos hijos de izquierda a derecha
+      1. Buscará en la raíz
+      2. Buscará en el nodo hijo izquierdo de la raiz
+      3. Buscará en los nodo hijo izquierdo del anterior
+      y asi... hasta que no haya más nodos hijos a la izq.
+      4. Retrocede hasta un nodo padre y busca los nodos
+      hijos a derecha, retrocede a otro nodo padre y repite..
+
+      El recorrido que hará es {a,b,f,g,h,c,i,m,n,o,**j**}
+      end note
       @enduml
     #+END_SRC
 
     #+RESULTS:
     [[file:img/dfs.png]]
-*** Búsqueda en anchura (BFS, Breath first search)
-    - Evalúa todos los destinos (relaciones) directas,
-      si alguna no lo es, busca otra
-    - Primero busca las de menor longitud,
-      Ej. las de longitud 1, luego las de longitud 2, y asi..
-    - El primero es el más corto
-    - Busca el camino más corto
+*** Búsqueda a lo ancho (BFS, Breath first search)
+**** Conceptos
+     - Evalúa todos los destinos (relaciones) directos, si alguna no lo es, busca otra
+     - Primero busca las de menor longitud
+       (/Ej. las de longitud 1, luego las de longitud 2, y asi../)
+     - Busca el camino más corto (el primero que esté a su alcance)
 
-    #+BEGIN_SRC plantuml :file img/bfs.png
-      @startuml
-      digraph foo{
-              B,F,I [fillcolor=red, style="filled"]
-              A -> B -> C -> D
-              A -> F -> G -> H 
-              A -> I -> J -> K
-      }
-      @enduml
-    #+END_SRC
+     *Observación:*
+     Cuando se refiere a longitud, es que tan distante están los nodos de la raíz,
+     menor longitud más cerca de la raíz.
+**** Requisitos
+     - La búsqueda es eficiente si hay _pocos niveles_
+     - El árbol debe estar *balanceado*
+**** Ejemplo
+     Supongamos que queramos encontrar el nodo ~f~ entonces
+     1. Comienza en el nivel 0, a buscar por la raíz, pero.. ~a~ != ~f~ entonces continúa
+     2. Sigue en el nivel 1, con los nodos hijos de la raíz de izquierda a derecha ~{d,c,b}~ 
+        pero ninguno es ~f~ continúa la búsqueda
+     3. Sigue con el nivel 2, de izquierda a derecha ~h~ luego ~g~ y encuentra a ~f~
 
-    #+RESULTS:
-    [[file:img/bfs.png]]
+     La idea entonces es buscar en cada nivel, de izquierda a derecha.
+
+      #+BEGIN_SRC plantuml :file img/bfs.png :exports results
+        @startuml
+        title BFS - Búsqueda a lo ancho
+        'left to right direction
+        top to bottom direction
+
+        rectangle "nivel 0" as A{
+         (a)
+        }
+
+        rectangle "nivel 1" as B{
+          (b)
+          (c)
+          (d)
+        }
+
+        rectangle "nivel 2" as C{
+          (f)
+          (g)
+          (h)
+        }
+
+        (a) --> (b)
+        (a) --> (c)
+        (a) --> (d)
+
+        (b) --> (f)
+        (c) --> (g)
+        (d) --> (h)
+
+        (f) #red
+
+        note right of (f): Buscamos este nodo
+
+        note as N
+        Buscará por cada nivel de izquierda a derecha
+        1. Buscará en la raíz (**nivel 0**)
+        2. Buscará en los nodos hijos de la raiz (**nivel 1**)
+        3. Buscará en el **nivel 2**
+
+        El recorrido que hará es {a,d,c,b,h,g,**f**}
+        end note
+        @enduml
+      #+END_SRC
+
+      #+RESULTS:
+      [[file:img/bfs.png]]
 *** Breath First Vs Depth First
     - Ninguno es más rapido que el otro
     - Depende de donde está destino (el elemento que estamos buscando)
-*** Ejemplos
+*** Ejemplo - GPS
     Google maps, se puede modelar con grafos donde cada lugar es un nodo
 
     Si queremos usar un GPS para llegar a un lugar
@@ -298,4 +416,8 @@
    - cola de impresión (para manejar la prioridad)
    - lista de interrupciones ()
    - arbol de directorios ()
-** Arboles
+* Referencias
+  #+BEGIN_COMMENT
+  Referencias a chequear
+  1. https://slideplayer.es/slide/8495965/
+  #+END_COMMENT
