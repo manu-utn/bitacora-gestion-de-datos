@@ -1,4 +1,4 @@
-#+TITLE: Clase 04 - Indices
+#+TITLE: Clase 04 y 05 - Indices + Clusters + Query Plan
 
 * Objetivo
   - Crear una *estructura de datos* adicional a la tabla (genera un espacio extra)
@@ -10,6 +10,96 @@
  - Por lo general los archivos se guardan de forma secuencial
  - Es otra estructura, para acceder más rapido a los datos (/similar a un acceso directo/)
  - Para no tener que evaluar dato por dato de manera secuencial
+* [DOING] Conceptos anteriores aplicados al Btree y Clusters
+** Niveles y Grado
+  NO olvidar que la cantidad total de elementos de un árbol es ~(grado_arbol^cant_niveles)-1~
+  - el *grado* la cant. max. nodos-hijos que puede tener cada nodo-padre
+  - la cant. de *niveles ó pisos* es la cant. de accesos que tendré a disco (sea lectura/escritura)
+  Por tanto a mayor grado => mayor es la cant. de nodos por nivel
+
+  #+BEGIN_QUOTE
+  un árbol binario (grado=2) con 3 niveles, puede tener hasta ~(2^3)-1 = 7~ => 7 nodos
+  un arbol ternario (grado=3) con 3 niveles, puede tener hasta ~(3^3)-1 = 26~ => 26 nodos
+
+  el grado por defecto de btree es de 200 => tendrá 200 nodos c/u con 200 claves (osea 200 filas)
+  si tenemos un Btree con 3 pisos/niveles => ~200^3 = 40.000*200 = 8.000.000~ el árbol tendrá 8 millones de accesos
+  #+END_QUOTE
+** Inserción elementos - Estabilidad
+   Cuando se insertan elementos en el *arbol b* (btree) que tienen misma *clave* 
+   entra el concepto de *estabilidad* de los *métodos de clasificación*.
+   Donde al insertar un elemento en un *nodo hoja* que ya contiene otro con misma clave,
+   usará este concepto, respetando el orden original, e insertando el nuevo elemento 
+   luego del que ya estaba.
+
+  - *Orden Estable* => Si se mantiene el *orden relativo* original para registros con misma *clave*
+  - *Orden Estable* => Si dos elementos con igual clave mantienen el mismo orden que al principio
+* [DOING] Cluster
+** Conceptos
+  - Suelen tener un tamaño de ~4 (K)ilobytes~ (4.000 Bytes)
+  - Es la menor unidad de medida de información para lectura/escritura en *Disco*
+  - Significa como un *conjunto de elementos*
+  - su tamaño depende del disco
+  - dentro de un *cluster* puede haber *fragmentación interna*
+    (/si se escribe información mas chica que el cluster, quedandole espacio libre/)
+  - si se graba información en tamaño del *cluster* => NO hay *fragmentación interna*
+    (/sucede en los sistemas operativos de Mainframe/)
+** Relación Fragmentación Interna con los nodos y clusters
+*** Tamaño del cluster
+   Si el cluster es muy grande => habrá fragmentación interna
+   (/Ej. si en el cluster escribimos "carlos" veremos lo sig. ~CARLOSXXXX~ donde cada ~X~ es espacio libre)
+*** Tamaño de los nodos y tamaño de la clave
+   1. Si tenemos *nodos* muy chicos (pocas filas/elementos) => habrá *fragmentación interna*
+      (xq voy a generar nodos de más para completar el cluster)
+   2. Si tenemos *nodos* con _clave muy grande_ => tendrá que hacer _más lecturas+lento_
+*** Tamaño clave del nodo y cluster
+   Si  tienen igual tamaño el *cluster* y la *Clave* del nodo hoja => NO habrá *fragmentación interna* (o será mínima) 
+   - el *Cluster* es minima unidad lectura/escritura de información en disco
+   - la *Clave* es valor del *nodo hoja* del *Btree* (de la tabla de indices del árbol b)
+** Conceptos relacionados
+*** Unidad de medida en MP y Disco
+    - El *byte* es la menor medida de información y asignación en *Memoria RAM (MP)*
+      (/siendo 1 byte equivalente a 8 bits/)
+    - las computadoras usan como alfabeto el *ascii* (cada caracter ocupa 1 byte)
+    - En *cluster* es la menor medida de información y asignación en *Disco*
+*** UNidades
+    - 1 (B)yte = 8 bits
+    - 1 (K)ilobyte = 1000 (B)ytes
+* [TODO] Query plan (Execution plan)
+** Conceptos
+   - es como el motor va a planificar el acceso a los datos (para resolver las queries, Ej. un select)
+   - el "como" es si hizo
+     - full index
+     - partial index
+     - ó secuencial
+   - busca el "como acceder" y  "la mejor forma de acceder" a los datos
+   - es el metodo que utiliza el motor de base de datos
+
+  #+BEGIN_QUOTE
+  Ej. si hacemos un ~SELECT * FROM clientes WHERE codCliente=100~
+  es un acceso directo
+
+  Ej. si hacemos un ~select nombre FROM clientes~
+  el acceso es full index, si la columna "nombre" de la tabla clientes tenia un indice,
+
+  Ej. si hacemos un ~SELECT nombre from clientes where edad<20~
+  el acceso es *partial index* porque
+  1. una parte la hace como *full index* (suponiendo que la columna nombre de esa tabla tiene indice)
+  2. la otra la hace de forma *secuencial* porque busco uno por uno (suponiendo que no hay un indice en 
+     la columa ~edad~)
+
+  Ej. si hacemos un ~SELECT nombre from clientes where edad<20~
+  el acceso es *full index*, si ambas columnas ~nombre~ y ~edad~ tienen cada una un *indice de acceso*
+  (porque se cargaron en memoria)
+  #+END_QUOTE
+** Partial index
+   cuando para hacer una busqueda una parte la hizo
+   - con índice (full index)
+   - otra con busqueda secuencial
+** Full index
+   accedió sin hacer una busqueda secuencial (hizo un acceso directo)
+* Evaluacion Sql Vs Lenguaje C
+  - el motor evalua de der. a izq
+  - lenguaje c evalua de izq a der.
 * Tipos de Acceso (Secuencial / Indexado / Directo)
 ** Secuencial
    - Es recorrer un conjunto de datos uno atrás del otro 1,2,3...
@@ -21,6 +111,10 @@
    - Acceder directamente a una posición, sin hacer una búsqueda
    - Acceder de forma directa a una *clave*, sin pasar por los elementos anteriores
      (/Ej. cuando usamos fseek en C, para acceder a una parte específica/)
+** [DOING] Ejemplo en SQL
+   Si hacés la sig. query "traeme al alumno codigo 101 y todas sus materias aprobadas"
+   1. La primera parte es un *acceso directo* porque le indica específicamente que alumno
+   2. La segunda parte es una *búsqueda secuencial indexada* porque debe lee materia por materia
 * Arbol M-Ario (Arbol Multicamino)
 ** Conceptos
    - Un árbol es m-ario si todos sus nodos tienen al menos ~m~ nodos hijos
@@ -198,8 +292,9 @@
       - Si NO es mayor a cero => NO se produce el salto ó se produce un *bucle infinito*
 * Método - Arbol B (Btree)
 ** Conceptos
-   + Es un tipo de *árbol M-ario*
+   + Es un tipo de *árbol M-ario* su grado ronda entre los 200
    + Arma un arbol *completo* y *balanceado* (/Para cumplir con ~log(n)~ que/)
+   + Tiene una *estructura vectorial* (si grado del arbol es 200, cada nodo tendrá [0,1,2,..,199] osea 200 hijos)
    + Crea *índices físicos* para el _acceso a la información_
    + Tiene dos tipos de *nodos* diferentes
      1. Un nodo hoja
@@ -215,6 +310,17 @@
      - de acceso LENTO a los datos
      - con mucho espacio de almacenamiento
      - los indices reducen el numero de accesos a disco
+** Crecimiento
+   - Se crea al reves de un árbol normal (no parte de la raíz)
+     - Se parte de un *nodo hoja* que temporalmente actúa de nodo raíz
+     - Cuando el árbol crece *nodo hoja* deja de ser raíz
+   - El primer nodo que se crea es un *nodo hoja* porque
+     - porque necesitamos guardar las *claves* y decir su *posición relativa* (de donde está)
+     - si fuese un *nodo rama* el puntero NO tendría ningún *nodo hoja* donde apuntar
+** Estructura Ordenada
+   Para aumentar la velocidad de búsqueda tiene que haber un ordenamiento
+   - _A nivel nodo_: los valores deben estar ordenados de menor a myor (por la clave)
+   - _A nivel árbol_: los nodos deben apuntar a nodos con claves menores o iguales que él
 ** Ventajas y Desventajas
    Tiene como *ventajas*:
    + Minimiza las operaciones de entrada/salida a disco (dispositivo de almacenamiento secundario)
@@ -244,9 +350,12 @@
    - El grado de un árbol, es la _cant. máx. de hijos/subarboles que puede tener cada nodo_
 ** Nodo - Hoja
 *** Conceptos
-    Está formado por dos *componentes*
-    1. Un componente de dato (la clave)
-    2. Un componente puntero (posición relativa de la clave)
+    - Es el primer nodo que se crea en un árbol *btree*
+      (temporalmente actúa como raíz, cuando crece el árbol, deja de ser raíz)
+    - Es un tanto similar a la *tabla de hashing*
+    - Está formado por dos *componentes*
+      1. Un componente de dato (la clave)
+      2. Un componente puntero (posición relativa de la clave)
 
     #+name: btree-nodo-hoja
     |-------+----------|
@@ -274,7 +383,7 @@
 *** Componente Dato
      - Tiene los valores de las *claves* (ordenados de menor a mayor)
 *** Componente Puntero
-    - Tiene la *posición relativa* de los datos de la *clave*
+    - Tiene la *posición relativa* de donde están los datos de la *clave* 
     - A diferencia de una *lista enlazada* este no apunta al siguiente elemento,
       sino a la *posición relativa*
     - A mayor el *grado* del árbol => mayor cant. de *componentes punteros*
@@ -329,7 +438,10 @@
 ** Ejemplo
    #+BEGIN_SRC plantuml :file img/btree-1.png :exports results
      @startuml
+     'skinparam defaultTextAlignment center
+
      note as nodoRaiz
+     <<Nodo Raiz>>
      |= Clave |= Link |
      | 5  |  * |
      | 50 |  * |
@@ -337,6 +449,7 @@
 
 
      note as nodoHojaIzq
+     <<Nodo Hoja>>
      |= Clave |= Link |
      | 2 |  1 |
      | 3 |  5 |
@@ -344,18 +457,57 @@
      end note
 
      note as nodoHojaDer
+     <<Nodo Hoja>>
      |= Clave |= Link |
      | 15 |  3 |
      | 18 |  7 |
      | 50 |  4 |
      end note
 
-     nodoRaiz-d->nodoHojaDer
-     nodoRaiz-d->nodoHojaIzq
 
-     note top of nodoRaiz : Nodo Raiz
-     note left of nodoHojaIzq: **Nodo Hoja** \nTiene elementos con claves \nmenor o igual que 5
-     note right of nodoHojaDer: **Nodo Hoja** \nTiene elementos con claves \nmenor o igual que 50
+     '================
+     '==== NOTAS =====
+     '================
+
+     note as N1
+     ,* Tiene elementos con __claves menor o igual que 50__
+     ,* El **nodo raíz** accede directamente a este nodo
+     ,* Dentro del nodo hace una **búsqueda secuencial**
+     end note
+
+     note as N2
+     ,* Tiene elementos con __claves menor o igual que 5__
+     ,* El **nodo raíz** accede directamente a este nodo
+     ,* Dentro del nodo hace una **búsqueda secuencial**
+     end note
+
+
+     note as N3 #lightgreen
+     ,* El **nodo hoja** tendrá tantos elementos/filas
+       como claves que tenga.
+     ,* Si tiene grado 50 => tendrá 50 elementos
+     end note
+
+     note as N4
+     ,* Esta estructura contiene claves de las hojas
+       (para acceder más rápido a los elementos)
+     ,* El árbol sólo tiene 6 claves {2,3,5,15,18,50}
+     ,* Dentro del nodo hace una **búsqueda secuencial**
+       cuando encuentra la clave **accede directamente**
+       al nodo que apuntado
+     end note
+
+     '================
+     '== RELACIONES ==
+     '================
+
+     nodoRaiz -down-> nodoHojaDer : acceso directo
+     nodoRaiz -down-> nodoHojaIzq : acceso directo
+
+     N1      .up.  nodoHojaDer
+     N2      .up.   nodoHojaIzq
+     N4      .right. nodoRaiz
+
      @enduml
    #+END_SRC
 
@@ -364,6 +516,7 @@
 * Arbol B - Búsqueda/Inserción/Eliminación
 ** Búsqueda
    - La *búsqueda* en un *árbol b* es similar al de un (ABB) *Arbol Binario de Búsqueda*
+   - Se busca desde la *raíz* hacia las *hojas*
    - Se tienen *decisiones multicamino* en base al número de hijos del nodo
 
    *Obsevaciones:*
@@ -375,13 +528,19 @@
    - Ocurre el proceso [[Split Page]] cuando no hay espacio en un nodo hoja para insertar elementos
    - Aparece el concepto de [[Fill Factor]] (factor de ocupamiento)
    - Asumiendo que el elemento a insertar es ~x~ y no existe en el árbol aún
-     1. Se comienza por la *raíz*
+     1. Se comienza a buscar por la *raíz*
      2. Se llega hasta a un *nodo hoja* (si no encontrara el elemento ~x~)
      3. Se inserta el elemento ~x~ en ese nodo hoja
+
+   *Observación:*
+   Recorda el criterio de ordenamiento (a nivel nodo/arbol).. Parte de la raiz, pero el algoritmo evalúa el 
+   valor de la clave del nodo para saber que camino tomar, es decir selecciona aquellos nodos donde la clave
+   sea menor o igual al valor de la clave a insertar.
 ** Eliminación
    - Ocurre el proceso [[Fusión]] cuando al eliminar un *elemento*, un *nodo* queda vacío, este debe eliminarse.
+     (/esto afecta a los nodos padres, porque este pierde una referencia donde apuntaba/)
    - Asumiendo que el elemento a insertar es ~x~ y existe en el árbol
-     1. Se comienza por la *raíz*
+     1. Se comienza a buscar por la *raíz*
      2. Se llega hasta a un *nodo hoja* donde esté
      3. Se elimina el elemento ~x~ de ese nodo hoja
 ** Split Page
@@ -469,9 +628,11 @@
     que ocurren por la expansión de la tabla de índice.
 ** Fusión
 *** Conceptos
-    + Cuando al eliminar un *elemento* de un *nodo hoja*, este queda vacío y se debe eliminar
-    + Al eliminar el *nodo hoja* se podria generar una baja de los *nodos* que le anteceden
+    + Se fusionan _nodos que estén al mismo nivel_
+    + Cuando al eliminar un *elemento* de un *nodo hoja*, este _nodo queda vacío y se debe eliminar_
+    + Al eliminar el *nodo hoja* se podria generar una baja de los *nodos* que le anteceden (nodos padres)
       - porque el arbol queda *desbalanceado* y al corregir el *balanceo* ocurre eso
+      - porque se pierde la referencia a donde apuntaba el nodo padre (referencia del nodo eliminado)
 *** Ejemplo 1 - Antes de eliminar nodo
     En este ejemplo si eliminamos algun nodo de nivel 2, el arbol queda desbalanceado.
     Al corregir el balanceo, se eliminan los nodos del nivel 1, para que todos los nodos
@@ -643,7 +804,7 @@
    que apunta a otro *nodo hoja* y.. si hay 2 nodos que tienen *componentes punteros* apuntando
    no son también *nodo raiz*?
    Un ejemplo es la pag. 32
-* Referencias
+* Referencias Web
   1. https://ccia.ugr.es/~jfv/ed1/tedi/cdrom/docs/tablash.html
   2. https://www.geeksforgeeks.org/sql-ddl-dql-dml-dcl-tcl-commands/
   3. https://www.guru99.com/what-is-dbms.html
@@ -656,3 +817,5 @@
   10. https://social.technet.microsoft.com/wiki/contents/articles/13796.sql-server-fragmentacion-y-desfragmentacion-de-indices-es-es.aspx
   11. https://miblogtecnico.wordpress.com/tag/fill-factor/
   12. https://www.sqlshack.com/es/operaciones-de-indices-sql-server/
+
+  https://www.guru99.com/b-tree-example.html

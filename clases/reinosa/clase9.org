@@ -1,0 +1,354 @@
+#+TITLE: Clase 09 - Estructura Base de Datos
+#+STARTUP: inlineimages
+* Conceptos
+** DB
+   Conjunto de _datos interrelacionados_, que se ajustan a un _modelo preestablecido_
+** DBMS
+   - Es el *Data Base Management System*
+   - Gestiona los datos de la Base de Datos
+   - Proporciona mecanismos para acceder a los datos
+* [TODO] Propiedades - Siglas ACID (reforzar con lo de zaffa)
+** Conceptos
+   La siglas ACID nombra 4 propiedades de todo motor de base de datos que debe tener
+** (A)tomicidad
+   - Permite agrupar un conjunto de *instrucciones* como una única operación
+   - Permite realizar *transacciones*
+     - ejecutar varias instrucciones como única operación
+     - si una instrucción falla, el resto también
+** (C)onsistencia
+   - Asegura la *Integridad referencial*
+     (/Ej. NO crear una factura sin un cliente asociado/)
+   - Asegura la *Integridad de la información*
+     - Si alguna instrucción falla, el modelo se mantiene
+     - si en una transacción, una instrucción falla => se vuelve a su estado anterior (/no modifica por la mitad/)
+     - Cualquier transacción lleva a la DB de un estado seguro a otro estado seguro
+** (I)solation - Aislamiento
+   - Aisla las instrucciones que operan sobre la misma información para evitar errores
+** (D)urabilidad
+   - Permite *persistir/guardar* el resultado de una operación
+     (/apesar de que el sistema luego falle, esta información persiste en la DB/)
+   - Permite *recuperar/leer* el resultado de aquellas operaciones
+* Arquitectura ANSI de un DBMS
+** Conceptos
+   - Las siglas *ANSI* significan *American National Standards Institute* 
+     (/son reglas estándar y aprobadas que cumple para ser un DBMS/)
+   - Se compone por 3 capas/niveles
+** Objetivos
+*** Vistas Independientes de los datos
+    - Los usuarios tienen vistas independientes de los datos
+    - Una vista no debería afectar a otra vista
+      (/Ej. si un admin modifica la vista de almacenamiento => no deberia afectar la vista de usuario/)
+*** Ocultar detalles fisicos de almacenamiento
+    Evita que *usuarios* lidien con problemas de almacenamiento
+** Niveles/Capas de un DBMS
+*** Vista desde el Almacenamiento
+**** Nivel Externo (Vistas de los usuarios)
+     - _Restringir acceso a datos_ que no tiene autorizado el usuario
+     - Muestra solo los datos que necesita el usuario
+**** Nivel Conceptual (Vista diseño)
+     - Podria parecerse a un (DER) a nivel lógico
+     - Describe los datos que se almacenan
+     - Muestra como están relacionados los datos
+**** Nivel interno (Vista de almacenamiento)
+     - Determina como va a *persistir/guardar* la información
+     - Tiene en cuenta las propiedades de la siglas *ACID*
+     - Es la representación física de la base de datos
+     - Describen como se almacenan los datos en la db y en el equipo (a nivel hardware)
+*** Vista desde la Funcionalidad
+**** Nivel Externo
+     - El usuario interactúa en este nivel (/Tanto un usuario final como una aplicación PL_SQL/)
+     - Es el (SSMS) SQL Server Management Studio (?)
+**** Nivel Conceptual
+     - Maneja la lógica de la DB (que se puede o no hacer)
+     - Un desarrollador y DBA trabaja en este nivel
+       - El desarollador realiza modelos lógicos para desarrollar aplicaciones
+       - El DBA realiza elije mejor modelo desde el punto de vista del DBMS
+     - Tiene un *analizador sintático* (parser) y un *analizador semántico* (scanner)
+**** Nivel interno
+     - Se maneja la *persistencia* de la información en el DBMS
+     - El DBA decide se guardarán los datos
+     - El DBA decide que se puede hacer o no
+       (/a nivel de programación según la configuración del DBMS/)
+*** Diagrama conceptual
+    #+BEGIN_SRC plantuml :file img/capas-dbms.png :exports results
+      @startuml
+      'skinparam defaultTextAlignment center
+      title Capas de un DBMS
+
+      [Nivel Externo] <-> [Nivel Conceptual]
+
+      [Nivel Conceptual] <-> [Nivel Interno]
+
+      rectangle "Vista desde el Almacenamiento"{
+          note bottom of [Nivel Externo]
+          ,* Restringir acceso a datos
+          end note
+
+          note bottom of [Nivel Conceptual]
+          ,* Como se almacenan los datos
+          ,* Como se relacionan los datos
+          end note
+
+          note bottom of [Nivel Interno]
+          ,* Representación física de la db
+          ,* Se aplican las siglas **ACID**
+          end note
+      }
+
+      rectangle "Vista desde la Funcionalidad"{
+          note top of [Nivel Externo]
+          ,* Interacción con el usuario
+          ,* SQL Server Managment Studio
+          end note
+
+          note top of [Nivel Conceptual]
+          ,* Logica de la DB, que se puede hacer o no
+          ,* Analizador Sintáctico y Semántico
+          end note
+
+          note top of [Nivel Interno]
+          ,* Manejar como persistir los datos
+          ,* El DBA decide según la config del DBMS
+          end note
+      }
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/capas-dbms.png]]
+
+* Componentes de un DBMS
+** IPL
+   - Las siglas son de *Initial Program Loader*
+   - Programa que _levanta el servicio_ del DBMS
+   - _Carga las estructuras_ de la DB en MP, Caché y disco
+** User Manager
+   - Gestiona la seguridad del DBMS
+   - Administra los perfiles/usuarios/roles de acceso
+** File Manager
+   - Gestiona la lógica de almacenamiento de los archivos del DBMS
+   - Se encarga de la ~FAT~ que refiere a *File Allocation Table*
+     (/El motor tiene su propia FAT, al igual que un SO/)
+   - Una DB es un SO pero sin el manejo de periféricos (dispositivos de E/S)
+     (/Ej. no imprime en pantalla, no usa el disco, .../)
+** Disk Manager
+   - Gestiona el espacio físico del DBMS (/los archivos lógicos del File Manager/)
+   - Se comunica con el SO para el acceso a disco
+* Técnicas de administración de memoria
+** Conceptos
+   - Esto es a *Nivel Interno Almacenamiento*
+   - Existen dos técnicas para la administración de MP
+
+   #+BEGIN_COMMENT
+   <<DUDA 1>> Se refiere a la vista de almacenamiento del nivel interno?
+   #+END_COMMENT
+** Segmentación
+   - Divide la memoria en segmentos
+   - Cada segmento es _tamaño variable_
+** Paginación
+*** Conceptos
+    - Divide la memoria en paginas
+    - Las paginas son todas de _igual tamaño_ (longitud fija y misma longitud)
+*** Página (estructura)
+**** Componentes
+     UNa página tiene 3 componentes
+     - id page
+     - body page
+     - footer offset
+
+     #+BEGIN_SRC plantuml :file img/paginacion.png :exports results
+       @startuml
+       'skinparam defaultTextAlignment center
+       title Paginación
+
+       note as N1
+       ,**Id Pagina**
+       | 9 |
+
+       ,**Body**
+       (renglones)
+       | 123 Carlos... |
+       | 123 Perez... |
+       | 123 Samuel... |
+
+       ,**Footer offset**
+       (posiciones relativas)
+       | 0 | 1 | 2 |
+       end note
+
+       note as N2
+       Filas a guardar en páginas
+       |= Pos |= Id |= Nombre |
+       | 0    | 123 | Carlos  |
+       | 1    | 123 | Perez   |
+       | 2    | 123 | Samuel  |
+       end note
+
+
+       @enduml
+     #+END_SRC
+
+     #+RESULTS:
+     [[file:img/paginacion.png]]
+
+**** ID
+     - identifica las páginas (que están numeradas y son contiguas)
+**** Body
+    - está dividido en *renglones* (/representan registros/)
+    - acá _se almacenan los datos_ (/en cada renglón/)
+**** Footer offset
+    - Tiene _tantas entradas como registros_ (renglones) tenga la página
+    - Actua como un indice pero de cada página
+    - se _registra la posicion relativa de la fila_ (relativo al inicio)
+      (/Ej. la 2da posicion es distante a la primera, por eso es relativa/)
+** Fragmentación
+*** Conceptos
+    - Si el tamaño de la fila es chico => habrá espacio disponible => habrá fragmentación
+*** Fragmentacion externa
+    - Cuando el _tamaño de página_ es menor al _tamaño del cluster_
+*** Fragmentacion interna
+    - se da por la distancia entre los cluster
+    - Cuando el _tamaño de la fila_ es menor  que la _longitud del renglón_
+      (/la fila que se va a guardar en el cuerpo de la página/)
+
+    #+BEGIN_SRC plantuml :file img/paginacion-fragmentacion-interna.png :exports results
+      @startuml
+      'skinparam defaultTextAlignment center
+      title Paginación - Fragmentación interna
+
+      note as N1
+      ,**Id Pagina**
+      | 9 |
+
+      ,**Body**
+      (renglones)
+      | 123 Carlos XXXXXXXXXXXX |
+      | 123 Perez  XXXXXXXXXXXX |
+      | 123 Samuel XXXXXXXXXXX |
+
+      ,**Footer offset**
+      (posiciones relativas)
+      | 0 | 1 | 2 |
+      end note
+
+      note as N2
+      Filas a guardar en páginas
+      |= Pos |= Id |= Nombre |
+      | 0    | 123 | Carlos  |
+      | 1    | 123 | Perez   |
+      | 2    | 123 | Samuel  |
+      end note
+
+      note as N3 #lightgreen
+      ,**Fragmentación interna**
+      Cuando el __tamaño de las filas__ es menor
+      que la __longitud de los renglones__ 
+      de la página.
+
+      Los renglones de página tienen espacio
+      de sobra/disponible que no se está usando
+      end note
+
+
+      N3 .up. N1
+      N3 .up. N2
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/paginacion-fragmentacion-interna.png]]
+
+*** Otro problema
+    - Si el _tamaño de la fila es mayor_ que la _longitud de renglon_ => cada fila usará 2 o más renglones
+
+    #+BEGIN_SRC plantuml :file img/paginacion-problema.png :exports results
+      @startuml
+      'skinparam defaultTextAlignment center
+      title Paginación - Problema
+
+      note as N1
+      ,**Id Pagina**
+      | 9 |
+
+      ,**Body**
+      (renglones)
+      | 123 Carlos  |
+      | Gimenez de las Flores... |
+      | 123 Perez   |
+      | Gimenez de las Ostias... |
+      | 123 Samuel |
+      | Fernandez de las algo... |
+
+      ,**Footer offset**
+      (posiciones relativas)
+      | 0 | 0 | 1 | 1 | 2 | 2 |
+      end note
+
+      note as N2
+      Filas a guardar en páginas
+      |= Pos |= Id |= Nombre |= Apellido |
+      | 0    | 123 | Carlos  | Gimenez de las Flores |
+      | 1    | 123 | Perez   | Gimenez de las Ostias |
+      | 2    | 123 | Samuel  | Fernandez de las algo |
+      end note
+
+      note as N3 #lightgreen
+      ,**Problema**
+      Cuando el __tamaño de la fila es mayor__ que la
+      __longitud de renglon__ ...
+
+      Entonces cada fila ocupará dos  o más renglones
+      end note
+
+
+      N3 .up. N1
+      N3 .up. N2
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/paginacion-problema.png]]
+
+* [TODO] Clustering
+** Conceptos
+   - Su traducción es un "conjunto" de algo
+   - Es una _técnica de agrupamiento_ que _unifica objetos_ en función algún criterio
+   - A nivel de redes, un cluster seria un conjunto de servidores que actúan como uno solo
+   - Un DBMS (motor) usa dos técnicas de clustering (/para almacenar cosas distintas/)
+     - Intra file --> prioriza pertenencia
+     - Inter file --> prioriza relación
+** Intra file
+   - Intra significa "dentro de"
+   - _Prioriza la pertenencia_ a un conjunto
+     (/Ej. solo guardar los clientes, ó solo los productos, pero por separado/)
+   - Almacena cada *tabla* en una *página* diferente (/para no mezclar las filas/)
+   - NO guarda los indices (??)
+** Inter file
+   - Inter signica "entre"
+   - _Prioriza la relación_ entre objetos (/por más que pertenezcan a conjuntos diferentes/)
+   - Almacena los *índices* y las *PK* asociadas a las *FK*
+* Almacenamiento y Tipos de archivos
+** Archivos
+   #+BEGIN_QUOTE
+   el único _formato de archivo_ existente y manejable por un SO
+   está formado por un _conjunto de caracteres ASCII_
+   #+END_QUOTE
+** Header
+   - Es un _conjunto de caracteres_ que se agrega al inicio de archivo (/para saber como leer/)
+   - Define el contenido del archivo
+   - Es la estructuracion del archivo y del tipo de archivo
+   - El motor de DB necesita un *header* para cada *tabla*
+** Extensión
+   - Dice que tipo de *header* tiene (/para que el motor ó programa sepa como leer/)
+   - de la misma manera se comporta un motor de DB
+** Header de tablas
+   El motor va a guardar 
+   - Cuantas tablas, filas, columnas
+   - Necesita saber el tamaño de la columna para hacer el ~fread~
+     (/Ej. cada columna representan campos que definimos al crear una tabla en sql/)
+   - _Una cabecera debe ser de tamaño fija_ para que sepa como leerla (/Ej. char nombre[256]/)
+   - El _tamaño de una fila es cuanto ocupa todos los campos/columnas_
+     (/Ej. cada fila de un resultado de una consulta sql, está formada por varias columnas, los campos que definimos al crea la tabla/)
+* Referencias Web
+  1. https://docs.oracle.com/database/121/CNCPT/tablecls.htm#CNCPT609
+  2. https://shafiq2410.wordpress.com/2012/04/22/what-do-you-mean-by-cluster-in-oracle/

@@ -1,8 +1,5 @@
 #+TITLE: Clase 8 - Inteligencia de negocios
 
-parcial: .. pendiente, el 28 queda cancelado, quizas para el 5 de julio
-porque faltan 
-
 #+BEGIN_COMMENT
 DUDAS...
 
@@ -37,13 +34,6 @@ DUDAS...
 4. Pag. 11: Como es el tema de *depuracion*..? osea como verifica la calidad de los datos?
    Rta: En la pag 17. lo detalla
 #+END_COMMENT
-* Referencias
-** Base de datos de texto completo
-   Algunas son.. EBSCO, PROQUEST, E-LIBRO, 
-  1. http://scielo.sld.cu/scielo.php?script=sci_arttext&pid=S1024-94352008001000007
-  2. https://www.ebsco.com/es/productos/bases-de-datos/bases-de-datos-gratuitas
-  3. https://es.slideshare.net/BiblioSher/base-de-datos-2636450
-
 * Sistemas de Data Warehouse
   - Es un gran sistema de datos
   - SE alimenta de muchos sistemas (propios/externos de la empresa)
@@ -152,3 +142,10 @@ DUDAS...
   - no genera colisiones cuando el dominio de entrada es igual al universo de salida
     (mas chico o igual)
     
+* Referencias Web
+** Base de datos de texto completo
+   Algunas son.. EBSCO, PROQUEST, E-LIBRO, 
+  1. http://scielo.sld.cu/scielo.php?script=sci_arttext&pid=S1024-94352008001000007
+  2. https://www.ebsco.com/es/productos/bases-de-datos/bases-de-datos-gratuitas
+  3. https://es.slideshare.net/BiblioSher/base-de-datos-2636450
+

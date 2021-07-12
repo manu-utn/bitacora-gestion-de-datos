@@ -9,6 +9,8 @@ donde la *complejidad P* que se resuelve como una funcion lineal (porque lo resu
 y la *complejidad NP* como un *arbol de decisión* (porque lo resuelve una maquina NO determinista)
 #+END_COMMENT
 
+* Relación con SQL
+  El ordenamiento con ~ORDER BY~ está relacionado con los *métodos de clasificación*
 * Objetivo
   + Objetivo principal es *ordenar* elementos
   + Dado un conjunto desordenado, la idea es devolverlo ordenado

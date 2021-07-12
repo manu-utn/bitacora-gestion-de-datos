@@ -1,21 +1,5 @@
 #+TITLE: Clase 06 - Compresión
 
-+ Fecha PARCIAL TEORICO: 28 de junio
-+ Fecha PARCIAL PRACTICO: 
-
-EN NEUQUEN
-
-Pag 7 y 9
-|--------------------+----+----+-----+----+----+----+-----+----+----+----|
-| Posicion (en bits) | 00 | 01 | 110 | 01 | 00 | 10 | 111 | 10 | 00 | 01 |
-|--------------------+----+----+-----+----+----+----+-----+----+----+----|
-| caracter leido     |  E |  N |     |  N |  E |  U |   Q |  U |  E |  N |
-|--------------------+----+----+-----+----+----+----+-----+----+----+----|
-
-0: izq
-1: der
-Compresión de los datos en disco
-
 #+BEGIN_COMMENT
 DUDAS
 Pag. 12: porque no se comprimen al ser archivos muy pequeños?
@@ -24,59 +8,95 @@ Pag. 9: Como seria eso de "apagar" potencias?
 Pag. 10: diferencias incompensables que.?
 #+END_COMMENT
 
-* Referencias
-** checksum y crc
-   habla de esto en la pag. 4 de integridad/encriptación
-   1. https://es.wikipedia.org/wiki/Suma_de_verificaci%C3%B3n
-   2. https://www.vozidea.com/verificar-integridad-de-archivos-en-linux
+* Algoritmos de compresión
+** Conceptos
+   Existen dos tipos de _algoritmos para comprimir archivos_
+   - Sin pérdida -> son reversibles
+   - Con pérdida -> NO son reversibles
+** Con pérdida 
+   - Se pierde información al comprimir, y NO se puede recuperar (/NO son reversibles/)
+   - NO son *reversibles* (/por NO poder recuperar parte de la información/)
+   - Cuando la única forma de comprimir/achicar, es perder algo de información
+     (/Ej. es común con archivos multimedia, con el audio/video con la codificación y recodificación/)
+** Sin pérdida
+   - Son *reversibles* (/permiten volver al estado original del archivo/)
+   - Ej. cuando usamos programas como winzip,winrar, no tiene perdida de informacion
+* Alfabeto ASCII
+  - En el alfabeto *ASCII* cada caracter ocupa ~1 byte~ osea ~8 bits~
+  - Cada caracter tiene una longitud fija (/longitud=1/)
+  - Si un caracter se repite varias veces, su longitud no variará
+  - Si un archivo no utiliza los 256 caracteres => se despediciarán bits
+    (/es lo que comunmente sucede, ningún archivo utiliza los 256 caracteres/)
+* Algoritmo de Huffman
+** Conceptos
+  - es un _algoritmo de compresión sin pérdida_
+  - evalua la repetición de caracteres
+  - crea una tabla de *frecuencia* (un vector) para saber cuantas veces se repite c/caracter
+  - en la tabla/vector se le asigna un código de longitud variable
+    (/es variable porque crece o no según el número de repeticiones/)
 
-* TIpos de compresion
-** Con perdida 
-   - se pierde algo de información, que no se puede recuperar
-   - cuando la unica forma de comprimir/achicar, es perder algo de informacion
-   (Ej. en multimedia suele suceder, con el audio/video con la codificación y recodificación)
-** SIn pedida
-   - cuando usamos programas como winzip,winrar, no tiene perdida de informacion
-* Como es posible
-  EL alfabeto *ascii* cada caracter de este pesa 1 byte osea 8 bits
-  tiene como limitante que su longitud es de 1 
-* ALgoritmo de huffman
-  + es un algoritmo sin pérdida
-  + caracteres de longitud variable
-  + evalua la repetición
-  + se crea una tabla de *frecuencia* para saber (cuantas veces lo usas)
-  + cuando se creó, se agregaron caracteres de más (Ej. caritas, ..)
-    porque no alcanzaba a tener 8 bytes
-* Proceso de compresión
-  - Se ordenan los caracteres de mayor a menor, según la cant. de veces que se repiten
-    (le da prioridad a los que más se repitan)
-  - se arma un árbol (porque es mas...) lo más desbalanceado posible
-    porque a más balanceado..
-  - se genera el árbol para cambiar el alfabeto de representación en el mismo orden que aparecia
-    quedando un vector con binarios, luego itera sobre ese vector de binarios.
-    (se lee mas rapido, porque es lo q usa la computadora los 0 y 1)
+  #+BEGIN_QUOTE
+  al principio no se alcanzaba a cubrir los 8 bits (1 byte)
+  por tanto se agregaron caracteres de extras como caritas, ...
+  #+END_QUOTE
+** Proceso de Compresión
+*** 1. Construcción de árbol binario (desbalanceado)
+   1. En el vector se ordenan los caracteres de mayor a menor de izq. a der. según la cant. de veces que se repiten
+     (/se da prioridad a los que más se repitan/)
+   2. Se genera un *arbol binario* (desbalanceado) dividiendo el vector en dos, en función de la cant. de repeticiones
+      - La raíz del árbol es el vector completo
+      - Las ramas están formadas por más de un caracter, agrupa pares de caracteres según que tanto se repetían
+      - Las hojas representan un solo caracter
 
-  #+BEGIN_EXAMPLE
-  EN NEUQUEN
+   *Observaciones:*
+   - Se usa un *árbol binario* porque es más rápido que recorrer/leer que sólo un vector
+   - El árbol debe ser lo más desbalanceado posible, porque...
+*** 2. Lectura del árbol binario (desbalanceado)
+    - Se lee el archivo nuevamente usando el árbol generado, quedando un vector con binarios
+    - Por cada lectura de caracter se genera un *código de bits* que representará a ese caracter
+    - El vector con binarios resultante se completa con 0 ó 1 para llegar al tamaño de *byte*
+ 
+    *Observaciones:*
+    - Por convención la lectura a izq. se representa con ~0~ y la der. con ~1~
+*** 3. Archivo comprimido
+    El vector con binarios generado al leer el arból binario, resulta ser el archivo comprimido
+*** Ejemplo
+    Si tenemos un archivo que contiene la palabra ~EN NEUQUEN~ y queremos comprimirlo
+    lo pasa a un vector: ~ENU''Q~ siendo la ~E~ el primer elemento, por ser el que más se repite,
+    luego la N, y asi..
+    Luego se arma la tabla con la cant. de repeticiones por caracter
+    Luego se arma el árbol binario desbalanceado, 
+    Luego al leer el el arbol se genera el siguiente vector
 
-  Lo pasa a un vector: ENU''Q
-  porque E es e que más se repite, luego la N, y asi..
-  apareciendo en el vector la cant. de repeticiones por caracter
+    |--------------------+----+----+-----+----+----+----+-----+----+----+----|
+    | Posicion (en bits) | 00 | 01 | 110 | 01 | 00 | 10 | 111 | 10 | 00 | 01 |
+    |--------------------+----+----+-----+----+----+----+-----+----+----+----|
+    | caracter leido     |  E |  N |     |  N |  E |  U |   Q |  U |  E |  N |
+    |--------------------+----+----+-----+----+----+----+-----+----+----+----|
 
-  Luego a traves de un algoritmo (ej. hoffman) cambia el alfabeto de representación
-  a traves de un árbol desbalanceado, quedando luego un vector
-  dl tipo: 001:010:100:... 
-  #+END_EXAMPLE
-* Condiciones a tener en cuenta
-  + Se puede tener problemas con el *EOF* porque es un conjunto de caracteres
-    y la idea del fin de archivo en realidad se determina cuando se terminó
-     
-* otros
+    Luego se pasa el vector en caracteres (tamaño de 8 bits ó 1 byte)
+    yse completa con 0 y 1 para llegar al tamaño de byte (tamaño de cada caracter ascii)
+    el resultado final  será el achivo comprimido,
+
+    0: izq
+    1: der
+** [TODO] Proceso de Descompresión
+   - Se realiza la lectura de archivo leyendo el vector que tiene contiene binarios
+     como un árbol binario binario.
+   - Usamos de referencia que el 0 son lecturas hacia la izq. y el 1 lecturas hacia la der.
+   - En función de abol se obtiene los caracteres originales
+** [TODO] Condiciones a tener en cuenta
+   - Se puede tener problemas con los caracteres *EOF* porque es un conjunto de caracteres
+     y la idea del fin de archivo en realidad se determina cuando se terminó
+* [TODO] otros
   la compresión tarda más, porque lee el archivo 2 veces
   1ro para identificar los caracteres repetidos
   2do para ..
-   
-* compresión multimedia
-  se achica la *resolución* ó *definición*
-  - resolucion es la cant. de bytes
-  - definicion es la 
+* [TODO] Compresión multimedia
+  - Se modifica su *codificación*
+  - Se recodifica la codificación de la *resolución* ó *definición* (/bajando la calidad/)
+    - *Resolución:* es la cant. de bytes
+    - *Definicion:* es la 
+* Referencias Web
+   1. https://es.wikipedia.org/wiki/Suma_de_verificaci%C3%B3n
+   2. https://www.vozidea.com/verificar-integridad-de-archivos-en-linux

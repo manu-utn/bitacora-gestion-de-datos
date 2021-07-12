@@ -1,38 +1,74 @@
-#+TITLE: INtegridad y encriptación
+#+TITLE: Integridad y encriptación
 * Integridad
-  - validar que un archivo no sufrió cambios
+  Es un proceso para _validar que un archivo no sufrió cambios_ 
+  ante un proceso que lo modificó
+  (/Ej. como en la compresión y descompresión de archivos/)
 * Encriptación
 ** Conceptos
-  - Para ocultar información 
+  - Proceso que modifica el contenido de un archivo
+  - El _contenido NO es visibile en un formato tradicional_
+  - El objetivo es ocultar información del archivo, para que NO sea legible
+  - El archivo debe ser _modificado sin cambiar su tamaño y espacio_
 ** Procesos de encriptación
-*** Desplazamiento
-    - mover las posiciones (ej.. rompecabezas, sopa de letra)
-    - se desplazan en bits
-*** Reemplazo
-    - reemplazar el contenido
+*** Desplazamiento (los caracteres)
+    - Se _desplazan los caracteres_ en función de algún patrón (se desplazan en ~bits~)
+    - Mover las posiciones de los valores (/Ej. como un rompecabezas, sopa de letra, .../)
+    - Al desplazar por ~bits~ en vez de *caracteres*  modifica completamente el contenido del archivo
+*** Reemplazo (el contenido)
 **** Reemplazo fijo
-     poque lo fija el algoritmo
+     - Porque lo fija el algoritmo
+     - Se _reemplazan determinados caracteres por un valor_ (/de acuerdo a un patrón/)
+     Ej. reemplazar el contenido de todas las posiciones pares, por un valor ascii preestablecido
 **** Reemplazo variable
-     cuando el valor que voy a usar depende de.. usuario
+     - Cuando el valor a reemplazar _depende de una *clave* elegida por el usuario_
 *** Mixto
-    - en cualquier orden reemplaza y desplaza
-    - 
+    - Se aplican ambas formas de *encriptación* en cualquier orden
+    - en cualquier orden se aplica *reemplazar* y *desplazar*
 * Problema
   #+BEGIN_EXAMPLE
   Archivo origen -> PRoceso -> Archivo Destino
   #+END_EXAMPLE
 * Control de integridad
 ** Necesidad
+   - Cuando se produce una modificación sobre un archivo
+   - Se verifica si el nuevo archivo obtenido es igual al original
 ** Procedimiento
-** algo
-*** CONCEPTOS
-*** tamaño
-*** contenido
-*** posición
-** checksum
-   - utiliza los *polinomios*
-   - chequea como su nombre, una suma
-   - compara dos sumas
+   Herramientas tecnológicas permiten validar si el archivo es el mismo
+   sin necesidad de contar con el archivo original
+   (/Ej. checksum, crc, .../)
+** Controlar igualdad de archivos origen/destino
+*** Conceptos
+    Para validar la igualdad de los archivos *origen* y *destino*
+    se debe controlar el
+    - tamaño
+    - contenido
+    - posición
+*** Tamaño
+    Ambos deben tener el _mismo tamaño en cantidad de caracteres_
+*** Contenido
+    Ambos deben tener _misma cantidad de caracteres_
+*** Posición
+    Los _caracteres deben estar en la misma posición_
+** Checksum
+*** Conceptos
+   - Utiliza los *polinomios*
+   - Compara dos sumas
+*** Tamaño
+    Es el grado del *polinomio*
+*** Contenido
+    Son los *coeficientes* del polinimio
+*** Posición
+    Es el *grado del que acompaña la x* del polinimio
+*** Procedimiento
+    1. Se calcula el polinomio, aplicando una raíz específica
+    2. El resultado se agrega en el archivo destino (ya generado)
+    3. Se vuelve a generar el polinomio (/con el contenido de archivo destino/)
+    4. Se resuelve el polinomio y se compara con el almacenado en el archivo
+       (/si los resultados son iguales => los archivos son iguales/)
+*** Posibilidad de error
+    - El polinomio se arma usando como coeficientes los bits que componen los caracteres
+      (/Ej. si ~H~ es ~00110011~ se haría ~0x^0+0x^1+1x^2+0x^3+0x^4+...~ y asi con el resto/)
+    - El valor de la raíz elegida es entre los valores ~0~ y ~1~
 ** CRC - Integridad
    - CRC significa *control de redundancia ciclica*
      (no hace caracter a caracter poque haria un polinomio muy grande,

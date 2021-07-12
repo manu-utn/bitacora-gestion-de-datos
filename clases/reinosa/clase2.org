@@ -730,7 +730,8 @@ sin importar si esta ok o no
      
   #+BEGIN_COMMENT
   Referencias a chequear
-  2. http://ocw.uc3m.es/cursos-archivados/ficheros/contenidos/ficheros_tema5.pdf
-  3. http://sedici.unlp.edu.ar/bitstream/handle/10915/4049/Tesis.pdf?sequence=3&isAllowed=y
-  4. https://slideplayer.es/slide/147587/
+  1. http://ocw.uc3m.es/cursos-archivados/ficheros/contenidos/ficheros_tema5.pdf
+  2. http://sedici.unlp.edu.ar/bitstream/handle/10915/4049/Tesis.pdf?sequence=3&isAllowed=y
+  3. https://slideplayer.es/slide/147587/
+  4. https://slideplayer.es/slide/3617827/
   #+END_COMMENT
