@@ -82,12 +82,12 @@ sin importar si esta ok o no
    - Es la posición donde está el nodo (como si fueran pisos)
    - la raiz está en el nivel 0
   
-   #+BEGIN_QUOTE
+   #+BEGIN_COMMENT
    Un árbol busca por niveles, pero en un mismo nivel puede hacer muchas busquedas
 
    En un vector busca por niveles, donde cada nivel es una posición
-   Ej. arr[4] tiene 4 niveles
-   #+END_QUOTE
+   Ej. arr[4] tiene 4 niveles <-- si no me equivoco en realidad tiene sólo 1 nivel.. (???)
+   #+END_COMMENT
 *** Ejemplo
     #+BEGIN_SRC plantuml :file img/arbol-niveles.png :exports results
       @startuml
@@ -207,6 +207,12 @@ sin importar si esta ok o no
    - Los guarda como una estructura de datos por [[Nivel][niveles]] (/osea en las *posiciones* del vector/)
 *** Ejemplo
     En el siguiente arreglo/vector de longitud 6, tiene sólo 1 nivel, y es de grado 1.
+
+    #+BEGIN_COMMENT
+    Puede ser de grado 1, porque cada elemento podría estar conectado sólo con un elemento (el siguiente) [0]->[1]->[2]->...
+    Tiene sólo 1 nivel porque..
+    #+END_COMMENT
+    
 
     |-------+-----+-----+-----+-----+-----+------+-----|
     | NIVEL | [0] | [1] | [2] | [3] | [4] | [5]  | [6] |
@@ -372,6 +378,14 @@ sin importar si esta ok o no
    2. seguimos con el hijo izq. (tiene otros 2 hijos)
    3. seguimos con el hijo der. (tiene otros 2 hijos)
    #+END_EXAMPLE
+
+   #+BEGIN_COMMENT
+   Dato a chequear...
+   Cada nivel se puede ver como un vector, donde la raíz es [0]
+   el nivel 1 es [1][x] y se revisa cada elemento del nodo [1][0],[1][1],... 
+   donde [1] es la fila y [x] la columna del vector bidimensional o matriz 
+   idem con nivel 2, 3, ... porque? porque el arbol busca elementos por nivel
+   #+END_COMMENT
 ** Crecimiento
    - El crecimiento es en _función al grado del árbol_
      (/por cada nivel crece en función al grado/)
@@ -398,7 +412,7 @@ sin importar si esta ok o no
   #+END_QUOTE
 ** Ejemplo
   #+BEGIN_EXAMPLE
-  En una lista, cada elemento se relaciona solo con uno (el siguiente)
+  En una lista enlazada, cada elemento se relaciona solo con uno (el siguiente)
   por tanto al buscar elementos en una lista estamos buscando en el 
   mismo nivel (porque tiene solo 1 nivel, y cada nivel soporta solo 1 elemento)
 
