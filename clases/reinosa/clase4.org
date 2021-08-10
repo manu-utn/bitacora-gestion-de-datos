@@ -5,7 +5,7 @@
   - Ordena los datos en función a una *clave*
   - Se guardan los datos de manera secuencial
   - El índice es un *componente físico* trata de acceder *fisicamente* a los datos
-    (/NO lógicamente, sinó fisicamente/)
+    (/NO ordenado lógicamente, sino el acceso físico/)
 
   #+BEGIN_QUOTE
   "chequear"
@@ -90,18 +90,31 @@
     |-------------------+----+---------+-----------|
 * [DOING] Cluster
 ** Conceptos
+  - Es la _menor unidad de medida de información_ para lectura/escritura en *Disco*
   - Suelen tener un tamaño de ~4 (K)ilobytes~ (4.000 Bytes)
-  - Es la menor unidad de medida de información para lectura/escritura en *Disco*
   - Significa como un *conjunto de elementos*
   - su tamaño depende del disco
   - dentro de un *cluster* puede haber *fragmentación interna*
     (/si se escribe información mas chica que el cluster, quedandole espacio libre/)
   - si se graba información en tamaño del *cluster* => NO hay *fragmentación interna*
     (/sucede en los sistemas operativos de Mainframe/)
+
+  #+BEGIN_QUOTE
+  Supongamos que las *claves* tienen un tamaño de ~20 Bytes~
+  si le sumamos el tamaño *puntero* de ~4 Bytes~
+  y lo multiplicamos por el *grado* del árbol que suele ser ~200~ (/cada _nodo padre_ tiene hasta un max. de 200 _nodos hijos_./)
+
+  ~(20 Bytes + 4 Bytes) * 200 = 4800 Bytes~ <-- cada nodo ocuparía más de 1 cluster (lo supera por 800 Bytes)
+
+  Como un cluster equivale aprox. 4000 Bytes, y.. 4800 Bytes > 4000 Bytes
+  por cada nodo deberiamos leer en 2 clusters.
+  Leyendo una parte del nodo en el primer cluster, y la otra en el segundo cluster.
+  y esto equivale a hacer 2 lecturas en disco
+  #+END_QUOTE
 ** Relación Fragmentación Interna con los nodos y clusters
 *** Tamaño del cluster
-   Si el cluster es muy grande => habrá fragmentación interna
-   (/Ej. si en el cluster escribimos "carlos" veremos lo sig. ~CARLOSXXXX~ donde cada ~X~ es espacio libre)
+    Si el cluster es muy grande => habrá *fragmentación interna*
+    (/Ej. si en el cluster escribimos "carlos" veremos lo sig. ~CARLOSXXXX~ donde cada ~X~ es espacio libre)
 *** Tamaño de los nodos y tamaño de la clave
    1. Si tenemos *nodos* muy chicos (pocas filas/elementos) => habrá *fragmentación interna*
       (xq voy a generar nodos de más para completar el cluster)
@@ -110,12 +123,18 @@
    Si  tienen igual tamaño el *cluster* y la *Clave* del nodo hoja => NO habrá *fragmentación interna* (o será mínima) 
    - el *Cluster* es minima unidad lectura/escritura de información en disco
    - la *Clave* es valor del *nodo hoja* del *Btree* (de la tabla de indices del árbol b)
+*** Ejemplo
+    Supongamos que cada fila equivale a un cluster
+    
+    SAMUELXXXXXXXXXXXXXX <- SAMUEL = 6 Bytes, las X que le siguen que son 12, son espacio libre de 12 Bytes
+    PEDROXXXXXXXXXXXXXXX <- PEDRO = 5 Bytes, las trece X equivalen a 13 Bytes
+    NAHUELXXXXXXXXXXXXXX <- idem
 ** Conceptos relacionados
 *** Unidad de medida en MP y Disco
-    - El *byte* es la menor medida de información y asignación en *Memoria RAM (MP)*
+    - El *cluster* es la _menor medida de información y asignación en_ *Disco*
+    - El *byte* es la _menor medida de información y asignación_ en *Memoria RAM (MP)*
       (/siendo 1 byte equivalente a 8 bits/)
-    - las computadoras usan como alfabeto el *ascii* (cada caracter ocupa 1 byte)
-    - En *cluster* es la menor medida de información y asignación en *Disco*
+    - las computadoras usan el alfabeto *ascii* (cada caracter ocupa 1 byte)
 *** UNidades
     - 1 (B)yte = 8 bits
     - 1 (K)ilobyte = 1000 (B)ytes
@@ -151,10 +170,26 @@
    - con índice (full index)
    - otra con busqueda secuencial
 ** Full index
-   accedió sin hacer una busqueda secuencial (hizo un acceso directo)
+   accedió sin hacer una busqueda secuencial (hizo un *acceso directo*)
 * Evaluacion Sql Vs Lenguaje C
-  - el motor evalua de der. a izq
-  - lenguaje c evalua de izq a der.
+  - el motor de sql evalua de izq. a derecha (Ej. declarmos la variable edad en SQL ~edad INTEGER,~)
+  - lenguaje c evalua de derecha a izq. (Ej. En SQL la declaramos al revés ~int edad;~)
+
+  Si probamos en lenguaje C las siguientes sentencias, y evaluamos de der. a izq. no arrojan error.
+
+  #+BEGIN_SRC c
+    // C evalúa de derecha a izquierda
+
+    // 1. una variable 'a'
+    // 2. que es una constante entera
+    // (si trataramos de cambiar el valor de 'a' arrojaría error)
+    int const a;
+
+    // 1. una variable 'a'
+    // 2. que es un entero constante
+    // (podemos cambiar el valor de 'a', pero no la podemos castear a otro tipo)
+    const int a;
+  #+END_SRC
 * Tipos de Acceso (Secuencial / Indexado / Directo)
 ** Secuencial
    - Es recorrer un conjunto de datos uno atrás del otro 1,2,3...
@@ -178,10 +213,11 @@
      -- entonces hará una búsqueda secuencial indexada (porque lo hará en la tabla del índice)
      SELECT nombre
        FROM alumnos
-      WHERE legajo>1034522;
+      WHERE legajo > 1034522;
    #+END_SRC
 ** Directo o Aleatorio
    - Acceder directamente a una posición, sin hacer una búsqueda
+   - Sucede siempre que haya una igualdad (/Ej. legajo=101019, dni=3512, producto_cod=10, .../)
    - Acceder de forma directa a una *clave*, sin pasar por los elementos anteriores
      (/Ej. cuando usamos ~fseek~ (fileSeek) en C, para acceder a una posición específica del archivo/)
 
@@ -243,10 +279,17 @@
         return 0;
       }
     #+END_SRC
-*** [DOING] Ejemplo 3 - Con SQL
+*** Ejemplo 3 - SQL - Busqueda secuencial indexada + Acceso Directo
     Si hacés la sig. query "traeme al alumno codigo 101 y todas sus materias aprobadas"
     1. La primera parte es un *acceso directo* porque le indica específicamente que alumno
     2. La segunda parte es una *búsqueda secuencial indexada* porque debe lee materia por materia
+
+    #+BEGIN_SRC sql
+      -- Esta podría ser una búsqueda secuencial indexada y de acceso directo
+      SELECT nombre
+        FROM alumnos a JOIN materias m a.legajo = m.legajo
+       WHERE legajo=101 AND materia.estado='aprobada';
+    #+END_SRC
 * Cuando usar Constraint Identity
   - El ~constraint~ IDENTITY es valor autonumérico (genera valores númericos de forma incremental)
   - Se utiliza cuando no basta solo con la PK identificar unívocamente a un registro
@@ -264,7 +307,7 @@
 ** Conceptos
    - Un árbol es m-ario si todos sus nodos tienen al menos ~m~ nodos hijos
    - Tienen un *grado* mayor ó igual a un *árbol binario* (/si m=2 es un árbol binario/)
-   - Mayor cant. de elementos => menos *niveles* => la busqueda es más rápido
+   - Mayor cant. de elementos => menos *niveles* => la busqueda es más rápida
 
    *Observaciones:*
    - Un árbol m-ario no necesariamente es *completo* (puede haber un nodo que no tiene grado ~m~)
@@ -401,8 +444,8 @@
     - La PC tiene una *estructura estática* porque sus recursos ó componentes físicos son limitados
       (/Ej. Si tenemos un disco de 10GB éste no va a crecer más/)
     - Si la PC tiene *distribución estática* de los recursos se puede tener una *asignación dinámica*
-** Ejemplos
-*** Ejemplo 1 - Acceso al SIGA UTN
+** [TODO] Ejemplos
+*** [TODO] Ejemplo 1 - Acceso al SIGA UTN
     - El acceso al SIGA es mediante el *número de legajo* del alumno
     - El número de legajo sería la  ~PK, Primary key~ porque identifica unívocamente a cada alumno
       (al menos en la regional)
@@ -486,7 +529,6 @@
    - Para evitar *colisiones* la función debe ser *biyectiva* (ó inversible)
    - En general el *dominio de entrada* es mayor
 ** Colisiones
-*** Conceptos
     - Cuando *función de hash* ante una *clave*, devuelve una *posición* ya ocupada en la tabla
     - Surje cuando para un mismo valor de entrada devuelve la misma posición
 
@@ -538,35 +580,43 @@
      - No ocupa espacio extra, al no generar estructuras adicionales
 * Método - Arbol B (Btree)
 ** Conceptos
-   + Es un tipo de *árbol M-ario* su grado ronda entre los 200
-   + Arma un arbol *completo* y *balanceado* (/Para cumplir con ~log(n)~ que/)
-   + Tiene una *estructura vectorial* (si grado del arbol es 200, cada nodo tendrá [0,1,2,..,199] osea 200 hijos)
+   + Es un tipo de *árbol M-ario* su grado ronda entre 50 y 2000 pero su valor suele ser ~200~
+   + Arma un arbol *completo* y *balanceado* (/Para cumplir con ~log(n)~./)
+   + Tiene una *estructura vectorial* (/si grado del árbol es 200, cada nodo tendrá un vector [0,1,2,..,199] osea 200 hijos/)
    + Crea *índices físicos* para el _acceso a la información_
+   + Según el tipo de árbol el primer nodo puede ser
+     - _nodo raíz_ (/si es un árbol común/)
+     - _nodo hoja_ y _nodo raíz_ (/Ej. se cumple si es un árbol-b, donde temporalmente es nodo raíz/)
    + Tiene dos tipos de *nodos* diferentes
      1. Un nodo hoja
      2. Un nodo rama
 
    *Observaciones:*
-   + La (MP) Memoria Principal se considera 
+   + Toda búsqueda computacional es *secuencial* un árbol sólo reduce número de búsquedas
+     - Cuanto mayor *grado* tenga el árbol => más elementos en menos niveles => se accede a los elementos con menos preguntas
+       (/resulta de hacer ~grado^niveles - 1~ donde cada nivel sería cada piso del árbol/)
+     - Si tiene un grado=2 (binario)  y tiene 3 niveles => tiene (2^³)-1 = 8-1  = 7 nodos en cada nivel
+     - Si tiene un grado=3 (ternario) y tiene 3 niveles => tiene (3^³)-1 = 27-1 = 26 nodos por nivel
+   + La _(MP) Memoria Principal_ se considera
      - un dispositivo de almacenamiento principal
      - de acceso rápido a los datos
      - con poco espacio de almacenamiento
-   + El (HDD) Disco Duro se considera 
+   + El _(HDD) Disco Duro_ se considera 
      - un dispositivo de almacenamiento secundario
-     - de acceso LENTO a los datos
-     - con mucho espacio de almacenamiento
+     - de acceso LENTO a los datos (/suponiendo que es _disco mecánico_, y no uno de _estado sólido_./)
+   + con mucho espacio de almacenamiento
      - los indices reducen el numero de accesos a disco
 ** Crecimiento
-   - Se crea al reves de un árbol normal (no parte de la raíz)
+   + Se crea al revés de un árbol normal (no parte de la raíz)
      - Se parte de un *nodo hoja* que temporalmente actúa de nodo raíz
      - Cuando el árbol crece *nodo hoja* deja de ser raíz
-   - El primer nodo que se crea es un *nodo hoja* porque
+   + El primer nodo que se crea es un *nodo hoja* porque
      - porque necesitamos guardar las *claves* y decir su *posición relativa* (de donde está)
      - si fuese un *nodo rama* el puntero NO tendría ningún *nodo hoja* donde apuntar
 ** Estructura Ordenada
    Para aumentar la velocidad de búsqueda tiene que haber un ordenamiento
-   - _A nivel nodo_: los valores deben estar ordenados de menor a myor (por la clave)
-   - _A nivel árbol_: los nodos deben apuntar a nodos con claves menores o iguales que él
+   + _A nivel nodo_: los valores deben estar ordenados de menor a mayor (por la clave)
+   + _A nivel árbol_: los nodos deben apuntar a nodos con claves menores o iguales que él
 ** Ventajas y Desventajas
    Tiene como *ventajas*:
    + Minimiza las operaciones de entrada/salida a disco (dispositivo de almacenamiento secundario)
@@ -598,10 +648,13 @@
 *** Conceptos
     - Es el primer nodo que se crea en un árbol *btree*
       (temporalmente actúa como raíz, cuando crece el árbol, deja de ser raíz)
-    - Es un tanto similar a la *tabla de hashing*
     - Está formado por dos *componentes*
       1. Un componente de dato (la clave)
       2. Un componente puntero (posición relativa de la clave)
+
+    *Observación:*
+    - El _nodo hoja_ es equivalente a la *tabla de hashing* porque tiene las *claves* y una *posición relativa*
+      de donde están los datos
 
     #+name: btree-nodo-hoja
     |-------+----------|
@@ -646,7 +699,6 @@
 
     #+name: btree-nodo-rama
     |-------+------|
-    |  <c>  | <c>  |
     | Clave | Link |
     |-------+------|
     |   5   |  *   |
@@ -658,7 +710,6 @@
 
     #+name: btree-nodo-1
     |-------+------|
-    |  <c>  | <c>  |
     | Clave | Link |
     |-------+------|
     |   2   |  1   |
@@ -761,6 +812,8 @@
    [[file:img/btree-1.png]]
 * Arbol B - Búsqueda/Inserción/Eliminación
 ** Búsqueda
+   - La búsqueda dentro del árbol y de los nodos es *secuencial*
+     (/Cuando encuentra la clave, usa el valor de _componente puntero_ para ir a un _nodo hoja_ ó a la _posición relativa_./)
    - La *búsqueda* en un *árbol b* es similar al de un (ABB) *Arbol Binario de Búsqueda*
    - Se busca desde la *raíz* hacia las *hojas*
    - Se tienen *decisiones multicamino* en base al número de hijos del nodo
@@ -770,6 +823,7 @@
      un extremo al otro (vértices unidos por un conjunto de aristas)
    - En un (ABB) *árbol binario de búsqueda* se tienen *decisiones binarias*
      (por ser de grado=2, max. cant de hijos/subarboles que puede tener cada nodo)
+   - El único que tiene un _acceso directo_ natural es el *hashing*
 ** Inserción
    - Ocurre el proceso [[Split Page]] cuando no hay espacio en un nodo hoja para insertar elementos
    - Aparece el concepto de [[Fill Factor]] (factor de ocupamiento)
@@ -793,6 +847,7 @@
 *** Conceptos
     + *Split* significa separar/dividir
     + *Split page* es dividir/romper las páginas en otras dos del mismo tamaño (/páginas de memoria/)
+    + Pueden ocurrir 1 o varios _split page_ según el tamaño del árbol
     + Ocurre cuando se intenta *insertar* un elemento ~x~ en un *nodo hoja* que no tiene espacio (/en memoria/)
     + Divide al *nodo hoja* en otros dos *nodos hojas* de igual tamaño (/misma cant. de elementos/)
       - Cada nodo hoja tendrá la mitad de elementos (/se mantiene el orden de los elementos/)
@@ -834,7 +889,7 @@
     - Realiza una *desfragmentación* _a nivel de hoja de la página_
     - Reorganiza a nivel físico las hojas, para que coincidan con el orden lógico de las páginas de los indices
     - También se *compactan* las páginas según la configuración del *fill factor*
-** Algunos conceptos de SISOP
+** Conceptos de SISOP
 *** Compactación
     Cuando se desplazan los segmentos en memoria
     - Cuando se consolidan particiones (procesos en ejecución) separadas por huecos (particiones libres, por pocesos que finalizaron) en una patición
