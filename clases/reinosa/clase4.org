@@ -1,15 +1,24 @@
 #+TITLE: Clase 04 y 05 - Indices + Clusters + Query Plan
 
 * Objetivo
-  - Crear una *estructura de datos* adicional a la tabla (genera un espacio extra)
+  - Crear una *estructura de datos* adicional a la tabla (/esto genera un espacio extra/)
   - Ordena los datos en función a una *clave*
   - Se guardan los datos de manera secuencial
+  - El índice es un *componente físico* trata de acceder *fisicamente* a los datos
+    (/NO lógicamente, sinó fisicamente/)
+
+  #+BEGIN_QUOTE
+  "chequear"
+  Cuando se habla de un acceso lógico, se tiende hacer referencia *ordenar los datos*
+  que es lo que implementa el ~ORDER BY~ a través de los *métodos de clasificación*
+  (que son algoritmos para ordenamiento)
+  #+END_QUOTE
 * Conceptos
  - Tener índices, NO quiere decir que los datos estén ordenados
    (/lo están pero por las claves de los indices/)
  - Por lo general los archivos se guardan de forma secuencial
  - Es otra estructura, para acceder más rapido a los datos (/similar a un acceso directo/)
- - Para no tener que evaluar dato por dato de manera secuencial
+ - Evita evaluar los datos de manera secuencial (/Ej. evita leer dato por dato, si no acceder directamente/)
 * [DOING] Conceptos anteriores aplicados al Btree y Clusters
 ** Niveles y Grado
   NO olvidar que la cantidad total de elementos de un árbol es ~(grado_arbol^cant_niveles)-1~
@@ -33,6 +42,52 @@
 
   - *Orden Estable* => Si se mantiene el *orden relativo* original para registros con misma *clave*
   - *Orden Estable* => Si dos elementos con igual clave mantienen el mismo orden que al principio
+* Conceptos relacionados de AyED
+** Posición relativa - Desplazamiento
+*** Conceptos
+   - Un arreglo/vector es *autoreferencial* su identificador hace referencia a la posición de inicio del vector
+   - El operador de dirección ~*~ seguido del identificador del vector (Ej. ~*ptr~) trae el valor
+     del elemento que está en la primera posición
+   - Cuando hacemos ~*(ptr+0)~ ó ~*(ptr+1)~ ó ~*(ptr+2)~ y nos estamos desplazando en las posiciones del vector,
+     esas posiciones 0,1,2 son *relativas* a la posición de inicio, a que distancia están del inicio.
+*** Ejemplo 1 - Vectores
+   #+BEGIN_QUOTE
+   0, 1, 2, 3, 4, ... las posiciones 1,2,3,.. son *posiciones relativas* a la *posicion de inicio*
+
+   Cuando nos desplazamos sumando un valor N (Ej. ~puntero+N~) estas son *posiciones relativas al inicio* 
+   porque están a una distancia ~N~ de la posición inicial ~puntero+0~
+
+   ~ptr+0~ nos desplazamos 0 de la posición inicial, osea es lo mismo que no poner el cero
+
+   ~ptr+1~ nos desplazamos 1 de la posición inicial, esa posición relativa está a una distancia de 1 del principio
+   ~ptr+2~ nos desplazamos 2 unidades de la posición de inicio, estamos distantes del principio 2 unidades
+   ~*(ptr+3)~ nos desplazamos 3 unidades de la posición inicial y obtenemos el valor del elemento
+   #+END_QUOTE
+*** Ejemplo 2 - Tabla de Indice y Tabla de Hash
+    En las siguientes tablas vemos como la primera tabla guarda la *posición relativa* de un registro 
+    que guarda los datos en otra tabla. Son posiciones *relativas al inicio* (1,2,3,...) son distantes de la posicion=0
+
+    Observamos que en la primera tabla las posiciones relativas están en desorden, porque sólo se ordenan por la *clave*
+
+    #+name: tabla-de-indices
+    |-------+-------------------|
+    | clave | posicion relativa |
+    |-------+-------------------|
+    |     1 |                 3 |
+    |     2 |                 0 |
+    |     3 |                 1 |
+    |     4 |                 2 |
+    |-------+-------------------|
+
+    #+name: tabla
+    |-------------------+----+---------+-----------|
+    | posicion relativa | id | nombre  | apellido  |
+    |-------------------+----+---------+-----------|
+    |                 0 | 14 | carlos  | ramirez   |
+    |                 1 | 19 | pedro   | fernandez |
+    |                 2 |  5 | maria   | perez     |
+    |                 3 |  2 | ernesto | perez     |
+    |-------------------+----+---------+-----------|
 * [DOING] Cluster
 ** Conceptos
   - Suelen tener un tamaño de ~4 (K)ilobytes~ (4.000 Bytes)
@@ -104,17 +159,107 @@
 ** Secuencial
    - Es recorrer un conjunto de datos uno atrás del otro 1,2,3...
    - Los índices evitaran esto, porque es lento
+
+   #+BEGIN_SRC sql
+     -- Esto hará una búsqueda secuencial
+     -- porque seguramente no se creó un índice por el campo/columna "edad"
+     -- sobre la tabla 'alumnos'
+     SELECT nombre
+       FROM alumnos
+      WHERE edad > 18;
+   #+END_SRC
 ** Secuencial Indexado
    - En función a alguna *clave*
    - Recorrer secuencialmente los indices
+   - Hace una búsqueda secuencial pero en el índice, es decir en las claves
+
+   #+BEGIN_SRC sql
+     -- Suponiendo que se creó un índice sobre la tabla "alumnos" sobre el campo/columna "legajo"
+     -- entonces hará una búsqueda secuencial indexada (porque lo hará en la tabla del índice)
+     SELECT nombre
+       FROM alumnos
+      WHERE legajo>1034522;
+   #+END_SRC
 ** Directo o Aleatorio
    - Acceder directamente a una posición, sin hacer una búsqueda
    - Acceder de forma directa a una *clave*, sin pasar por los elementos anteriores
-     (/Ej. cuando usamos fseek en C, para acceder a una parte específica/)
-** [DOING] Ejemplo en SQL
-   Si hacés la sig. query "traeme al alumno codigo 101 y todas sus materias aprobadas"
-   1. La primera parte es un *acceso directo* porque le indica específicamente que alumno
-   2. La segunda parte es una *búsqueda secuencial indexada* porque debe lee materia por materia
+     (/Ej. cuando usamos ~fseek~ (fileSeek) en C, para acceder a una posición específica del archivo/)
+
+   #+BEGIN_SRC sql
+     -- Este es un acceso directo, porque indicamos que registro queremos
+     SELECT nombre
+       FROM alumnos
+      WHERE legajo=1034522;
+   #+END_SRC
+** Ejemplos
+*** Ejemplo 1 - fseek
+    Cuando hacemos ~fseek(punteroArchivo, 10, SEEK_SET)~ nos ubicamos directamente en la posición=10
+    porque nos desplazamos 10 bytes desde el inicio que es ~SEEK_SET~
+
+    Si hacemos ~fseek(punteroArchivo, 0, SEEK_END)~ nos ubicamos directamente al final del archivo
+    no colocamos el ~offset~ de desplazamiento, porque pusimos que se ubique al final de archivo
+    con ~SEEK_END~
+*** Ejemplo 2 - Código C con fseek
+    #+BEGIN_SRC c
+      #include <stdio.h>
+
+      int main()
+      {
+        FILE *fp;
+        fp = fopen("test1.txt", "r");
+
+        // Movemos el puntero al final del archivo
+        fseek(fp, 0, SEEK_END);
+
+        // Imprimimos la posición en donde quedó el puntero
+        // (será la cant. de caracteres que tiene el archivo)
+        printf("%ld\n", ftell(fp));
+        fclose(fp);
+
+        //------------------------------------
+
+        fp = fopen("test2.txt","w+");
+        fputs("This is org mode", fp);
+
+        // 1. Se ubica al principio de archivo con SEEK_SET
+        // 2. Se desplaza 8 bytes desde la posición de inicio, offset=8
+        // (reemplazará "org mode" por "emacs mode")
+        fseek( fp, 8, SEEK_SET );
+        fputs("emacs mode", fp);
+        fclose(fp);
+
+        //------------------------------------
+
+        // la 'a' refiere a 'append' es decir agregar/insertar
+        fp = fopen("test2.txt","a+");
+
+        // 1. Se ubica al final del archivo con SEEK_END
+        // 2. NO se desplaza ninguna posición offset=0
+        // y agrega el texto "chau xd"
+        fseek(fp, 0, SEEK_END);
+        fputs("chau xd", fp);
+        fclose(fp);
+
+        return 0;
+      }
+    #+END_SRC
+*** [DOING] Ejemplo 3 - Con SQL
+    Si hacés la sig. query "traeme al alumno codigo 101 y todas sus materias aprobadas"
+    1. La primera parte es un *acceso directo* porque le indica específicamente que alumno
+    2. La segunda parte es una *búsqueda secuencial indexada* porque debe lee materia por materia
+* Cuando usar Constraint Identity
+  - El ~constraint~ IDENTITY es valor autonumérico (genera valores númericos de forma incremental)
+  - Se utiliza cuando no basta solo con la PK identificar unívocamente a un registro
+
+  #+BEGIN_QUOTE
+  Supongamos que un Supermercado un cliente compra 4 unidades del mismo producto,
+  entonces para generar la *Factura* (ticket) la PK ~cod_producto~ no es suficiente
+  para identificar cada unidad por separado. Además.. que lanzaría un error,
+  porque NO puede haber en la factura, dos registros con misma PK
+
+  Podemos crear un Identity que identifique unívocamente cada renglón de la *Factura*
+  para diferenciar cada unidad comprada del mismo producto.
+  #+END_QUOTE
 * Arbol M-Ario (Arbol Multicamino)
 ** Conceptos
    - Un árbol es m-ario si todos sus nodos tienen al menos ~m~ nodos hijos
@@ -222,18 +367,72 @@
     #+RESULTS:
     [[file:img/arbol-no-m-ario.png]]
 
-* [TODO] Métodos para crear índices
+* Métodos para crear índices
 ** Conceptos
    Para crear *índices* en un (DBMS, Data Base Management System) se utiliza
-   - Hashing
-   - Arbol B (btree)
+   + Tablas de Hashing
+     - tienen una *estructura estática* (/es más rápida que una dinámica/)
+     - se utilizan en minicomputadores/mainframes (/los recursos se asignan al inicio/)
+   + Arbol B ó Btree
+     - tienen una *estructura dinámica* (/es más lenta que una estática/)
+     - se utilizan en pc (/los recursos se asignan en función de como se usan osea on-demand/)
 
    *Observación:*
-   - Un (DBMS) Data Base Management System, es un software que permite realizar
-     - Operaciones (DML) Data Manipulation Language (select/update/delete)
      - Operaciones (DDL) Data Definition Language (create/alter/drop)
-   - DML es un conjunto de operaciones para manipular los datos de una base de datos
-   - DDL es un conjunto de operaciones para definir estructuras de datos para una base de datos
+     - DML es un conjunto de operaciones para manipular los datos de una base de datos
+     - DDL es un conjunto de operaciones para definir estructuras de datos para una base de datos
+** Estructura-Distribución-Asignación (Estática/Dinámica)
+*** Asignación Estática/Dinámica
+    - Una asignación estática de los recursos es más rápida, porque ya los tiene preasignados al inicio
+    - Una asignación dinámica es más lenta, porque se hace on-demand (a medida que se necesita)
+*** Estructura Estática/Dinámica
+    - Una estructura estática NO cambia (Ej. un disco con capacidad de 10gb, una ram de 4g, ...)
+*** Mainframe Vs. PC
+    + Los mainframes/minicomputadores
+      - tienen una estructura estática (porque los recursos se asignan al principio, tiene una *asignación estática*)
+      - los datos que se almacenan están sectorizados (se sabe donde se guardará)
+      - buscar información en los mainframes es más rápido porque están sectorizados, se sabe donde están
+    + Las PC
+      - tienen una estructura estática (pero con una *distribución estática* se tiene una *asignación dinámica*)
+      - los recursos se asignan on-demand, en función de como se usan
+      - los datos se almacenan fragmentados (se guardan en distintas partes)
+      - buscar información en las PC es más lento porque la información está fragmentada, y se guarda en distintas partes
+*** Ejemplo 1
+    - La PC tiene una *estructura estática* porque sus recursos ó componentes físicos son limitados
+      (/Ej. Si tenemos un disco de 10GB éste no va a crecer más/)
+    - Si la PC tiene *distribución estática* de los recursos se puede tener una *asignación dinámica*
+** Ejemplos
+*** Ejemplo 1 - Acceso al SIGA UTN
+    - El acceso al SIGA es mediante el *número de legajo* del alumno
+    - El número de legajo sería la  ~PK, Primary key~ porque identifica unívocamente a cada alumno
+      (al menos en la regional)
+    - Es conveniente crear un índice sobre ese campo, para acceder más rápido a los datos de los alumnos
+
+    *Observaciones:*
+    1. La tabla del índice es una estructura en MP, por eso su velocidad de acceso es mayor
+       (/a diferencia del acceso a disco que es más lento, suponiendo que NO es un disco de estado sólido/)
+    2. Cuando creamos un índice sobre un campo
+       - La DB debe guardar los datos en dos estructuras (la del índice y la de los datos)
+       - La velocidad de escritura es más lenta
+       - La estructura de los datos está en disco
+       - La estructura del índice está en MP
+    3. Cuando creamos un índice, estamos creando una estructura adicional que contiene
+       - la *clave* de la tabla del indice, campo por el cual está ordenado
+       - la *posición relativa* a la tabla que contiene los datos (puede estar en desorden)
+    
+    #+BEGIN_SRC sql
+      -- Supongamos que queremos obtener datos de los alumnos
+      -- y la tabla NO tiene un índice sobre la columna 'legajo'
+      -- que es la PK, Primary Key de la tabla..
+      -- La consulta a la DB podría demorar 30 segundos ó más
+      SELECT nombre, apellido FROM alumnos;
+
+      -- Si creamos el índice sobre la PK, y repetimos la instrucción
+      CREATE INDEX alumno_legajo
+        ON alumnos (legajo);
+      -- esta consulta podría demorar sólo 1 ó 2 segundos a lo mucho
+      SELECT nombre, apellido FROM alumnos;
+    #+END_SRC
 * Método Hashing
 ** Conceptos
   + Trabaja sobre una *tabla* y una *función hash* (función de dispersión)
@@ -241,25 +440,55 @@
     - En la 1ra dimensión se colocan las *claves* (ordenadas)
     - En la 2da dimensión se colocan las *posiciones relativas*
       (en la tabla donde se encuentran los datos de esa clave)
-  + En la tabla adiciona, mantiene las *claves* ordenadas
+  + En la tabla adicional, mantiene las *claves* ordenadas  
 ** Función Hash (ó de Dispersión)
 *** Conceptos
     - Convierte un tipo de dato en un pequeño número entero (código hash)
     - Recibe como entrada la *clave* a almacenar
     - Devuelve la *posición* de la tabla en donde guardar la *clave*
     - A partir de un algoritmo genera un valor ó código hash
+
+    *Observación:*
+    El motor de DB elige la *función de hash* según el *dominio de entrada*
 *** Cualidades
 **** Evita Colisiones
      + Si devuelve un *conjunto de salida* diferente al *conjunto de entrada*
+       (/Ej. si se ingresa una clave, debe devolver una posicion relativa diferente/)
+     + Con dominios diferentes es muy probable que exista colisión, por más buena
+       que sea la función de hash
 **** Distribuye las claves uniformemente
-**** Facil de calcular
+**** Fácil de calcular
      + Si el *tiempo de ejecución* es ~O(1)~ (poca complejidad)
+** Dominios
+*** Conceptos
+*** Dominio de Entrada
+    - Son las *claves* a almacenar
+    - Es el valor que recibe la funcion de hash
+    - Tiende a ser mayor que el dominio del vector donde se van a almacenar las claves
+
+    #+BEGIN_QUOTE
+    Supongamos que el dominio de entrada (de la Primary Key) son los Reales (Ej. char)
+    y el dominio de donde se va a guardar es los Naturales...
+
+    Para la conversión de Reales a Naturales dicho valor se debe *truncar*,
+    y ahi es donde se pierde la efectividad
+    #+END_QUOTE
+*** Dominio de Salida
+    - Son las *posiciones relativas* en donde se van a guardar esas *claves*
+    - Es el retorno de la función de hash
+    - Es un valor numérico entero (posición relativa)
 ** Código Hash
    - Se utilizan como *indices* para las *tablas hash*
    - Sirven como *control de integridad* (para datos ó archivos)
+** Conceptos de AMI
+   - Toda función tiene un *dominio* (entrada) y *codominio* (salida, en función del dominio)
+   - Una función es *inversible* cuando se cumple que dominio=codominio
+   - Para evitar *colisiones* la función debe ser *biyectiva* (ó inversible)
+   - En general el *dominio de entrada* es mayor
 ** Colisiones
 *** Conceptos
     - Cuando *función de hash* ante una *clave*, devuelve una *posición* ya ocupada en la tabla
+    - Surje cuando para un mismo valor de entrada devuelve la misma posición
 
     *Observación:*
     - La función de hash recibe como entrada una clave
@@ -269,27 +498,44 @@
       en donde se guardará un registro
 ** Técnicas de resolución de Colisiones
 *** Encadenamiento
-    + Cada celda del vector tiene una referencia a una *lista enlazada*
-    + En las *listas enlazadas* se insertan los registros que colisionan en esa *posición*
+**** Conceptos
+      + Cada celda del vector tiene una referencia a una *lista enlazada*
+      + En las *listas enlazadas* se insertan los registros que colisionan en esa *posición*
+      + Crea una *estructura* adicional (las listas enlazadas)
+**** Ventajas
+     - El acceso es más directo
+     - Mantiene el concepto de *secuencialidad indexada*
+       (/sirve para acceso directo, mantiene un orden/)
+**** Desventajas
+     - Ocupa más espacio (/por la estructura adicional de lisas enlazadas/)
 *** Direccionamiento Abierto
 **** Conceptos       
      - Se busca otra *posición* dentro de la tabla
+     - Evita agregar *estructuras* adicionales de encadenamiento
+       (/esto aplica para los tres métodos/)
 **** Metodo - Sondeo lineal
-     + Es el método más simple
+     + Es el método más simple, busca en pequeñas distancias
      + Busca *secuencialmente* en la tabla, hasta encontrar una *posición* vacía
      + Si llega al final de la tabla => vuelve a la primera posición y retoma la búsqueda
 **** Método - Sondeo Cuadrático
+     + Distribuye más los valores, busca con una distancia mayor
      + Busca una posición a una distancia específica, desde donde empieza el sondeo
      + Permite una mejor distribución de las claves *colisionadas*
      + Deriva de la fórmula ~F(i)=i^²~
      + Si se llega a una posición ocupada => cambia la fórmula del cálculo de la posición
-       (de esta manera ~H+1^¹, H+2^², H+3^²,...,H+i^²~)
+       (de esta manera ~H+1^¹, H+2^², H+3^²,...,H+i^²~ donde la ~H~ es la posición
+       y el ~i^²~ es el desvío
 **** Método - Hashing Doble
     + Aplica la *función de hash* dos veces
+    + La entrada sería la *posición* que devolvió la primera vez que se aplicó
     + La 2da *función de hash* (secundaria)
       - Debe ser distinta a la primaria
       - Usa el resultado como tamaño de salto (posible posición de la clave)
       - Si NO es mayor a cero => NO se produce el salto ó se produce un *bucle infinito*
+**** Desventajas
+     - No tiene *secuencialidad indexada*
+**** Ventajas
+     - No ocupa espacio extra, al no generar estructuras adicionales
 * Método - Arbol B (Btree)
 ** Conceptos
    + Es un tipo de *árbol M-ario* su grado ronda entre los 200
