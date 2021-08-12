@@ -197,10 +197,10 @@ Pag. 10: diferencias incompensables que.?
     Por último el *árbol binario* (desbalanceado) teniendo en cuenta lo dicho anteriormente de los subarboles, sería
 
     [[./img/huffman-arbol.png]]
-*** Ejemplo 2 - Comprimir archivo pequeño Con Zip en Linux
-    Supongamos que tenemos un archivo ~pepe.txt~ que tiene el texto ~lala lala lala~ 
+*** Ejemplo 4 - Comprimir archivo pequeño Con Zip en Linux
+    Supongamos que tenemos un archivo ~notas.txt~ que contiene el texto ~lala lala lala~ 
     repetido 10 veces tenemos ~(15Bytes) * 10 = 150 Bytes~ 
-    Si tratamos de comprimir sucederá lo siguiente
+    Si tratamos de comprimir sucederá lo siguiente en la terminal
 
     #+BEGIN_SRC sh
       # preguntamos cuantos bytes pesa el archivo original sin comprimir
@@ -221,10 +221,10 @@ Pag. 10: diferencias incompensables que.?
       $ du --bytes archivo.zip
       180     archivo.zip
     #+END_SRC
-*** Ejemplo 3 - Comprimir archivo mediano Con Zip en Linux
-    Supongamos que tenemos un archivo ~pepe.txt~ que tiene el texto ~lala lala lala lala lala lala~ 
-    repetido 10 veces tenemos ~(30 Bytes) * 20 = 600 Bytes~  (/los saltos de línea y los espacios también cuentan/)
-    Si tratamos de comprimir sucederá lo siguiente
+*** Ejemplo 5 - Comprimir archivo mediano Con Zip en Linux
+    Supongamos que tenemos un archivo ~notas.txt~ que tiene el texto ~lala lala lala lala lala lala~ 
+    repetido 20 veces tenemos ~(30 Bytes) * 20 = 600 Bytes~  (/los saltos de línea y los espacios también cuentan/)
+    Si tratamos de comprimir sucederá lo siguiente en la terminal
 
     #+BEGIN_SRC sh
       # preguntamos cuantos bytes pesa el archivo original sin comprimir
