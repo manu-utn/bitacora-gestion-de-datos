@@ -2,8 +2,6 @@
 
 #+BEGIN_COMMENT
 DUDAS
-Pag. 12: porque no se comprimen al ser archivos muy pequeños?
-el programa no lo comprime ó por costumbre dice?
 Pag. 9: Como seria eso de "apagar" potencias?
 Pag. 10: diferencias incompensables que.?
 #+END_COMMENT
@@ -13,8 +11,13 @@ Pag. 10: diferencias incompensables que.?
    Existen dos tipos de _algoritmos para comprimir archivos_
    - Sin pérdida -> son reversibles
    - Con pérdida -> NO son reversibles
-** Con pérdida 
-   - Se pierde información al comprimir, y NO se puede recuperar (/NO son reversibles/)
+
+   #+BEGIN_QUOTE
+   Se utiliza el árbol binario porque mantiene el orden y permite
+   manejar valores binarios, que es lo que entiende/lee la máquina.
+   #+END_QUOTE
+** Con pérdida (multimedia)
+   - Se _pierde información al comprimir_, y _NO se puede recuperar_ (/NO son reversibles/)
    - NO son *reversibles* (/por NO poder recuperar parte de la información/)
    - Cuando la única forma de comprimir/achicar, es perder algo de información
      (/Ej. es común con archivos multimedia, con el audio/video con la codificación y recodificación/)
@@ -24,79 +27,247 @@ Pag. 10: diferencias incompensables que.?
 * Alfabeto ASCII
   - En el alfabeto *ASCII* cada caracter ocupa ~1 byte~ osea ~8 bits~
   - Cada caracter tiene una longitud fija (/longitud=1/)
-  - Si un caracter se repite varias veces, su longitud no variará
-  - Si un archivo no utiliza los 256 caracteres => se despediciarán bits
+  - Si un caracter se repite varias veces, su longitud no variará seguirá siendo 1
+  - Si un archivo no utiliza los ~256 caracteres~ => se despediciarán bits
     (/es lo que comunmente sucede, ningún archivo utiliza los 256 caracteres/)
+
+  #+BEGIN_QUOTE
+  El alfabeto ASCII es la representación de nuestro alfabeto a un lenguaje nivel máquina, osea al binario
+  que es el único lenguaje que ésta entiende y utiliza.
+  
+  Donde cada caracter (a,b,1,3,?,!,-, ...) está representado por un valor binario
+  donde el ~0~ equivale al ~110000~, el ~1~ el ~110001~, la ~'a'~ el ~1100001~, ...
+  #+END_QUOTE
 * Algoritmo de Huffman
 ** Conceptos
   - es un _algoritmo de compresión sin pérdida_
-  - evalua la repetición de caracteres
+  - identifica cada caracter de los archivos a comprimir, y evalúa su repetición
   - crea una tabla de *frecuencia* (un vector) para saber cuantas veces se repite c/caracter
+  - Los caracteres del nuevo alfabeto que se genera
+    - tienen una longitud variable (según su repetición)
+    - a mayor longitud => menor es su representación
   - en la tabla/vector se le asigna un código de longitud variable
     (/es variable porque crece o no según el número de repeticiones/)
 
+  *Obsevaciones:*
+  - Se _recodifica el archivo_ cambiando su representación, codificandolo a _un nuevo alfabeto diferente al ASCII_
+  - _Se codifica en función a la repetición de los caracteres_
+  - Cada caracter va a tener una longitud variable (/mayor es su repetición => menor es su representación en bits/)
+   
   #+BEGIN_QUOTE
-  al principio no se alcanzaba a cubrir los 8 bits (1 byte)
+  Al principio no se alcanzaba a cubrir los 8 bits (1 byte)
   por tanto se agregaron caracteres de extras como caritas, ...
+  quedando un alfabeto *redundante* (/tiene caracteres innecesarios/)
+  para llegar a una potencia de 2 osea ~2^3~ (8bits)
+
+  Los caracteres se pueden codificar mediante ASCII ó Unicode,
+  se utiliza un tamaño fijo para ambos, 1 Bytes para ASCII
+  y 4 Bytes para Unicode
   #+END_QUOTE
 ** Proceso de Compresión
-*** 1. Construcción de árbol binario (desbalanceado)
-   1. En el vector se ordenan los caracteres de mayor a menor de izq. a der. según la cant. de veces que se repiten
-     (/se da prioridad a los que más se repitan/)
+*** 1. Construcción del árbol binario (desbalanceado)
+   1. En el vector _se ordenan los caracteres por repetición de forma descendente_ es decir de mayor a menor de izq. 
+      a der. según la cant. de veces que se repiten (/se da prioridad a los que más se repitan/)
    2. Se genera un *arbol binario* (desbalanceado) dividiendo el vector en dos, en función de la cant. de repeticiones
-      - La raíz del árbol es el vector completo
-      - Las ramas están formadas por más de un caracter, agrupa pares de caracteres según que tanto se repetían
-      - Las hojas representan un solo caracter
+      - _La raíz_: es el vector completo
+      - _Las ramas_: están formadas por más de un caracter, _agrupa pares de caracteres por repetición_ (/según que tanto se repetían/)
+      - _Las hojas_: representan _un solo caracter_
+   3. Cada nodo rama se vuelve a dividir en 2 hasta tener solo nodos hojas
+
+   #+BEGIN_QUOTE
+   Más *desbalanceado* está el árbol => mayor es la *compresión* del archivo
+   porque habrán caracteres que van a tener mayor repetición
+   (siendo esos caracteres que más se repiten del nuevo alfabeto generando, los que menor representación tengan en ~bits~,
+   y aquellos que menos se repitan mayor será su representación en ~bits~)
+   #+END_QUOTE
 
    *Observaciones:*
-   - Se usa un *árbol binario* porque es más rápido que recorrer/leer que sólo un vector
-   - El árbol debe ser lo más desbalanceado posible, porque...
+   - Se usa un *árbol binario* porque es más rápido para recorrer/leer que un vector
 *** 2. Lectura del árbol binario (desbalanceado)
     - Se lee el archivo nuevamente usando el árbol generado, quedando un vector con binarios
     - Por cada lectura de caracter se genera un *código de bits* que representará a ese caracter
     - El vector con binarios resultante se completa con 0 ó 1 para llegar al tamaño de *byte*
  
     *Observaciones:*
-    - Por convención la lectura a izq. se representa con ~0~ y la der. con ~1~
+    - Por convención la lectura a izq. se representa con ~0~ y a der. con ~1~
 *** 3. Archivo comprimido
-    El vector con binarios generado al leer el arból binario, resulta ser el archivo comprimido
-*** Ejemplo
-    Si tenemos un archivo que contiene la palabra ~EN NEUQUEN~ y queremos comprimirlo
-    lo pasa a un vector: ~ENU''Q~ siendo la ~E~ el primer elemento, por ser el que más se repite,
-    luego la N, y asi..
-    Luego se arma la tabla con la cant. de repeticiones por caracter
-    Luego se arma el árbol binario desbalanceado, 
-    Luego al leer el el arbol se genera el siguiente vector
+    El vector con binarios generado al leer el árbol binario, resulta ser el archivo comprimido
+*** Comprimir Archivos Pequeños y Tamaño del Vector Tabla de Frecuencia
+    Para archivos pequeños NO se realiza compresión porque el *vector* tiende pesar más que el archivo original
 
+    Si tenemos un archivo que contiene la palabra ~EN NEUQUEN~ tenemos
+    - 1 Byte por cada caracter (por ser de tipo ~char~)
+    - el tamaño del archivo es ~10 * 1 Byte = 10 Bytes~
+
+    En el vector que representa la *tabla de frecuencia*, tenemos
+    - 1 Byte por cada caracter (por ser de tipo ~char~)
+    - 4 Bytes de cada cant. de repetición de cada caracter (/suponiendo que es de tipo ~long~./)
+    - el tamaño del vector es ~5 * 1Byte + (3+3+2+1+1) * 4 Bytes = 45 Bytes~
+
+    Observamos como al intentar comprimir un archivo muy pequeño, el archivo comprimido sería más pesado
+    que el archivo sin comprimir. Por esa razón el programa para comprimir, NO lo comprimirá.
+
+    #+NAME: vector-tabla-de-frecuencia
+    |---+---+---+---+---|
+    | N | E | U |   | Q |
+    |---+---+---+---+---|
+    | 3 | 3 | 2 | 1 | 1 |
+    |---+---+---+---+---|
+*** Ejemplo 1 - Caso hipotético
+    Partamos que en realidad este archivo NO lo comprimirá, es solo a modo de ejemplo
+
+    Si tenemos un archivo que contiene la palabra ~EN NEUQUEN~ y queremos comprimirlo
+    crea un vector: ~ENU Q~ siendo la ~E~ el primer elemento, por ser el que más se repite,
+    luego la N, y asi.. en forma descendente. (/el espacio también cuenta/)
+    Ese vector representa la *tabla de frecuencia* que tiene la cant. de repeticiones por caracter
+    Luego se arma el árbol binario desbalanceado (/xq puede haber caracteres que se repiten más que otros/)
+    y al leer el árbol se genera su representación computacional (/se recodifica a binario/)
+    (/recordando que _el 0 indica una posición a izquierda_, y _el 1 una posición a derecha_./)
+
+    #+NAME: representacion-computacional
     |--------------------+----+----+-----+----+----+----+-----+----+----+----|
     | Posicion (en bits) | 00 | 01 | 110 | 01 | 00 | 10 | 111 | 10 | 00 | 01 |
     |--------------------+----+----+-----+----+----+----+-----+----+----+----|
     | caracter leido     |  E |  N |     |  N |  E |  U |   Q |  U |  E |  N |
     |--------------------+----+----+-----+----+----+----+-----+----+----+----|
 
-    Luego se pasa el vector en caracteres (tamaño de 8 bits ó 1 byte)
-    yse completa con 0 y 1 para llegar al tamaño de byte (tamaño de cada caracter ascii)
-    el resultado final  será el achivo comprimido,
+    +Luego se pasa el vector en caracteres (tamaño de 8 bits ó 1 byte)+
+    y se completa con 0 y 1 para llegar al tamaño de byte
+    (/tamaño de cada caracter ASCII, ya que un ~char~ equivale a ~1 byte~./)
+    donde el resultado final será el achivo comprimido,
 
-    0: izq
-    1: der
-** [TODO] Proceso de Descompresión
-   - Se realiza la lectura de archivo leyendo el vector que tiene contiene binarios
-     como un árbol binario binario.
-   - Usamos de referencia que el 0 son lecturas hacia la izq. y el 1 lecturas hacia la der.
-   - En función de abol se obtiene los caracteres originales
-** [TODO] Condiciones a tener en cuenta
-   - Se puede tener problemas con los caracteres *EOF* porque es un conjunto de caracteres
-     y la idea del fin de archivo en realidad se determina cuando se terminó
-* [TODO] otros
-  la compresión tarda más, porque lee el archivo 2 veces
-  1ro para identificar los caracteres repetidos
-  2do para ..
-* [TODO] Compresión multimedia
+    ~00:01:110:01:00:10:111:10:00:01~ <- +este es el *vector* generado+ (/representa el nuevo alfabeto/)
+    ~[00011100][10010111][10000100]~  <- al final le agrega ~2 bits~ para llegar a los ~8 bits~ (1 Byte)
+    es decir a un mútiplo de 8
+
+    ~8 bits + 8 bits + 8 bits = 24 bits~ (3*1 Byte = 3 Bytes)
+    el archivo comprimido pesa ~3 Bytes~ (24 bits)
+
+    Finalmente vemos como el texto "EN NEUQUEN" que tenía 10 caracteres
+    se convirtió en uno de 3 caracteres que en binario es ~[00011100][10010111][10000100]~
+*** Ejemplo 2 - Comprimir archivo pequeño Con Zip en Linux
+    Supongamos que tenemos un archivo ~pepe.txt~ que tiene el texto ~lala lala lala~ 
+    repetido 10 veces tenemos ~(15Bytes) * 10 = 150 Bytes~ 
+    Si tratamos de comprimir sucederá lo siguiente
+
+    #+BEGIN_SRC sh
+      # preguntamos cuantos bytes pesa el archivo original sin comprimir
+      $ du --bytes pepe.txt
+      150     pepe.txt
+
+      # hacemos una compresión estandar (al indicar parámetro el -6)
+      # nos dice que redujo el tamaño del archivo original en un 91%
+      $ zip -6 pepeComprimido pepe.txt
+      adding: pepe.txt (deflated 91%)
+
+      # preguntamos cuantos bytes pesa el archivo comprimido
+      # Archivo original: 150 Bytes
+      # Archivo comprimido: 180 Bytes
+      #
+      # El comprimido pesa más porque el archivo original es muy chico
+      # y dentro de este también se guarda el vector que representa la "tabla de frecuencia"
+      $ du --bytes pepeComprimido.zip
+      180     pepeComprimido.zip
+    #+END_SRC
+*** Ejemplo 3 - Comprimir archivo mediano Con Zip en Linux
+    Supongamos que tenemos un archivo ~pepe.txt~ que tiene el texto ~lala lala lala lala lala lala~ 
+    repetido 10 veces tenemos ~(30 Bytes) * 20 = 600 Bytes~  (/los saltos de línea y los espacios también cuentan/)
+    Si tratamos de comprimir sucederá lo siguiente
+
+    #+BEGIN_SRC sh
+      # preguntamos cuantos bytes pesa el archivo original sin comprimir
+      $ du --bytes pepe.txt
+      600     pepe.txt
+
+      # hacemos una compresión estandar (al indicar parámetro el -6)
+      # nos dice que redujo el tamaño del archivo original en un 97%
+      $ zip -6 pepeComprimido pepe.txt
+      adding: pepe.txt (deflated 97%)
+
+      # preguntamos cuantos bytes pesa el archivo comprimido
+      # Archivo original: 150 Bytes
+      # Archivo comprimido: 185 Bytes
+      $ du --bytes pepeComprimido.zip
+      185     pepeComprimido.zip
+    #+END_SRC
+** Proceso de Descompresión
+   + Se realiza la _lectura del archivo leyendo el vector que tiene contiene los binarios_
+      como un árbol binario binario.
+   + Para finalizar la lectura del archivo usa el vector de repetición de cada caracter (/para saber cuantos debe leer/)
+     - caso contrario leería caracteres de más (/porque al comprimir se agregaban bits para redondear a 8 bits/)
+     - al comprimir se completaba el vector para tener mútiplos de 8 ya que ~1 Byte~ equivale a 8 bits
+   + Para generar el árbol usamos de referencia
+     - el ~0~ son _lecturas hacia la izq._ del árbol
+     - el ~1~ son _lecturas hacia la der._ del árbol
+   + En función del árbol se obtiene los caracteres originales
+
+   #+BEGIN_QUOTE
+   Se necesita
+   1. la tabla de frecuencia (/que está ordenada descendente por la cant. de repeticiones/)
+   2. y su representación computacional (/el nuevo alfabeto generado en binario ~[00011100][10010111][10000100]~./)
+   #+END_QUOTE
+
+   #+NAME: vector-tabla-de-frecuencia
+   |---+---+---+---+---|
+   | E | N | U |   | Q |
+   |---+---+---+---+---|
+   | 3 | 3 | 2 | 1 | 1 |
+   |---+---+---+---+---|
+
+   #+NAME: representacion-computacional
+   |--------------------+----+----+-----+----+----+----+-----+----+----+----|
+   | Posicion (en bits) | 00 | 01 | 110 | 01 | 00 | 10 | 111 | 10 | 00 | 01 |
+   |--------------------+----+----+-----+----+----+----+-----+----+----+----|
+   | caracter leido     |  E |  N |     |  N |  E |  U |   Q |  U |  E |  N |
+   |--------------------+----+----+-----+----+----+----+-----+----+----+----|
+** Condiciones a tener en cuenta
+   - Se debe guardar el vector (/la tabla de frecuencia/) en el archivo comprimido
+   - Determinar donde finaliza el vector (/se determina por la cant. de repeticiones de los caracteres/)
+   - Identificar los caracteres *EOF* (ó *end of file* que es un ~short~ de ~2 Bytes~)
+
+   #+BEGIN_QUOTE
+   Si al comprimir un archivo se trata de leer el archivo hasta un *EOF* se puede llegar a tener problemas,
+   porque estos son un conjunto de caracteres y en archivos grandes se pueden llegar a generar varios *EOF*.
+
+   Los programas que comprimen leen hasta que se termina el archivo, NO revisan si es un *EOF*
+   #+END_QUOTE
+** Conceptos de AyED (por EOF)
+*** Archivos - Modo de lectura/escritura
+    - Existe sólo un tipo de archivo, cuando lo abrimos solo indicamos de que manera lo vamos a leer
+    - Cuando en ~C~ abrimos un archivo con ~fopen~ sólo indicamos el "COMO" lo abrimos, pero NO el tipo del archivo
+      - ~rb~ para leerlo en modo binario
+      - ~r~ para leerlo modo de texto plano
+*** Secuencia de Escape
+    - Una *secuencia de escape* está representado por 2 caracteres (/cada uno del tipo ~char~ que equivalen a ~1 Byte~./)
+      1. un caracter ~\~ slash invertido
+      2. otro caracter (/luego del slash invertido/)
+    - Cada *secuencia de escape* equivale a un entero del tipo ~short~ que equivalen a ~2 Bytes~
+
+    #+BEGIN_QUOTE
+    Si tenemos un salto de línea ~\n~ son dos caracteres el ~\~ y el ~n~
+    El fin de un archivo ~\0~ también son dos caracteres ~\~ y el ~0~
+    #+END_QUOTE
+*** Archivo en Modo Binario/Texto
+    Según el "modo" en que abramos un archivo
+    + En _modo binario_:
+      - archivo NO interpreta las *secuencias de escape* ni los *caracteres de control*
+    + En _modo texto_:
+      - archivo interpreta las *secuencias de escape* ni los *caracteres de control*
+        (/Ej. NO muestra la secuencia de escape de salto de linea ~\n~ lo interpreta y hace el salto/)
+* Compresión multimedia
   - Se modifica su *codificación*
-  - Se recodifica la codificación de la *resolución* ó *definición* (/bajando la calidad/)
-    - *Resolución:* es la cant. de bytes
-    - *Definicion:* es la 
+  - Se _recodifica la codificación_ de la *resolución* ó *definición* (/bajando la calidad/)
+    - *Resolución:* es la _cantidad de pixeles activos_ en resolución gráfica
+    - *Definicion:* es la _cantidad de colores para representar los pixeles activos_
+* Tiempo de Compresión Vs. Descompresión
+  La compresión tarda más que la descompresión, porque al comprimir lee el archivo 2 veces
+
+  _Al comprimir_: (/hace dos lecturas de disco/) 
+  1. Lee el archivo para armar el vector (/la tabla de frecuencia/)
+  2. Lee de nuevo el archivo para comprimir
+
+  _Al descomprimir_:
+  1. Lee el archivo comprimido y graba el descomprimido
 * Referencias Web
    1. https://es.wikipedia.org/wiki/Suma_de_verificaci%C3%B3n
    2. https://www.vozidea.com/verificar-integridad-de-archivos-en-linux
