@@ -1,4 +1,5 @@
 #+TITLE: Clase 06 - Compresión
+#+STARTUP: inlineimages
 
 #+BEGIN_COMMENT
 DUDAS
@@ -74,6 +75,15 @@ Pag. 10: diferencias incompensables que.?
       - _Las hojas_: representan _un solo caracter_
    3. Cada nodo rama se vuelve a dividir en 2 hasta tener solo nodos hojas
 
+    El siguiente vector es la *tabla de frecuencia* donde los caracteres están ordenados descendentemente por cant. de repetición
+
+    #+NAME: vector-tabla-de-frecuencia
+    |---+---+---+---+---|
+    | N | E | U |   | Q |
+    |---+---+---+---+---|
+    | 3 | 3 | 2 | 1 | 1 |
+    |---+---+---+---+---|
+
    #+BEGIN_QUOTE
    Más *desbalanceado* está el árbol => mayor es la *compresión* del archivo
    porque habrán caracteres que van a tener mayor repetición
@@ -114,15 +124,41 @@ Pag. 10: diferencias incompensables que.?
     | 3 | 3 | 2 | 1 | 1 |
     |---+---+---+---+---|
 *** Ejemplo 1 - Caso hipotético
-    Partamos que en realidad este archivo NO lo comprimirá, es solo a modo de ejemplo
+    Partamos que en realidad este archivo quizás NO lo comprimirá (por tener poco texto), es solo a modo de ejemplo
 
     Si tenemos un archivo que contiene la palabra ~EN NEUQUEN~ y queremos comprimirlo
-    crea un vector: ~ENU Q~ siendo la ~E~ el primer elemento, por ser el que más se repite,
-    luego la N, y asi.. en forma descendente. (/el espacio también cuenta/)
-    Ese vector representa la *tabla de frecuencia* que tiene la cant. de repeticiones por caracter
-    Luego se arma el árbol binario desbalanceado (/xq puede haber caracteres que se repiten más que otros/)
-    y al leer el árbol se genera su representación computacional (/se recodifica a binario/)
-    (/recordando que _el 0 indica una posición a izquierda_, y _el 1 una posición a derecha_./)
+    1. Se crea la *tabla de frecuencia* en este caso es ~ENU Q~ junto con las repeticiones de c/caracter
+       - se lee el archivo por primera vez
+       - la tabla de frecuencia está representada por *vector*
+       - donde la ~E~ el primer elemento, por ser el que más se repite,
+       - seguido de la ~E~ la ~N~, y asi.. en forma descendente
+       - el espacio y los saltos de linea también cuentan como caracter, xq forman parte del alfabeto ASCII
+    2. Luego se arma el *árbol binario* desbalanceado (/el árbol es sólo una abstracción, éste nunca se guarda/)
+       - se lee el archivo por segunda vez para usar de referencia la *tabla de frecuencia*
+       - el árbol debe estar *desbalanceado* porque puede haber caracteres que se repiten más que otros
+       - el árbol generado es la representación computacional (/se recodifica a binario/)
+       - el binario generado se completa con ~0~ y/o ~1~ para llegar al tamaño de ~Byte~ osea tener múltiplos de ~8 bits~
+         (/porque cada caracter ASCII es del tipo ~char~ y el tamaño de esté es ~8 bits~./)
+
+    Finalmente tenemos
+    1. La representación computacional de ~EN NEQUEN~ en binario ~00:01:110:01:00:10:111:10:00:01~ 
+       este binario representa el _nuevo alfabeto_, se _recodificó_ el texto original a *binario*
+    2. Agregamos al final ~2 bits~ para llegar a los ~8 bits~ (1 Byte) y nos queda ~[00011100][10010111][10000100]~
+    3. Si sumamos el tamaño de cada caracter  ~8 bits + 8 bits + 8 bits = 24 bits~ (3*1 Byte = 3 Bytes)
+       el archivo comprimido pesaría aprox. ~3 Bytes~ (24 bits) sin tener en cuenta el header,crc, ...
+
+    Vemos como el texto "EN NEUQUEN" que tenía 10 caracteres se _recodificó_ en otro nuevo
+    que contiene 3 caracteres, y que en binario es ~[00011100][10010111][10000100]~ (/separamos con corchetes para diferenciar/)
+    
+    *Observaciones:*
+    - Al comprimir el archivo se lee veces el archivo (dos accesos a disco)
+    - la primera lectura para generar la *tabla de frecuencia*
+    - la segunda lectura para generar el *árbol* (para su recodificacion a binario)
+    - en el barrido del árbol recordamos que
+      - el ~0~ indica una lectura a izquierda
+      - el ~1~ indica una lectura a derecha
+
+    Separamos como sería la lectura del árbol al *descomprimir* (/recordando que el árbol es solo una abstracción, y no se guarda en el archivo/)
 
     #+NAME: representacion-computacional
     |--------------------+----+----+-----+----+----+----+-----+----+----+----|
@@ -131,20 +167,36 @@ Pag. 10: diferencias incompensables que.?
     | caracter leido     |  E |  N |     |  N |  E |  U |   Q |  U |  E |  N |
     |--------------------+----+----+-----+----+----+----+-----+----+----+----|
 
-    +Luego se pasa el vector en caracteres (tamaño de 8 bits ó 1 byte)+
-    y se completa con 0 y 1 para llegar al tamaño de byte
-    (/tamaño de cada caracter ASCII, ya que un ~char~ equivale a ~1 byte~./)
-    donde el resultado final será el achivo comprimido,
+    El siguiente vector es la *tabla de frecuencia* donde los caracteres están ordenados descendentemente por cant. de repetición
 
-    ~00:01:110:01:00:10:111:10:00:01~ <- +este es el *vector* generado+ (/representa el nuevo alfabeto/)
-    ~[00011100][10010111][10000100]~  <- al final le agrega ~2 bits~ para llegar a los ~8 bits~ (1 Byte)
-    es decir a un mútiplo de 8
+    #+NAME: vector-tabla-de-frecuencia
+    |---+---+---+---+---|
+    | N | E | U |   | Q |
+    |---+---+---+---+---|
+    | 3 | 3 | 2 | 1 | 1 |
+    |---+---+---+---+---|
+*** Ejemplo 2 - Basado en el ejemplo (1)   
+    Probamos el mismo texto del ejemplo anterior en un generador online con el *algoritmo de huffman*,
+    donde la única diferencia es que el *subárbol derecho* contiene los caracteres ~e~ y ~n~ 
+    en vez del *subarbol izquierdo*. Por eso veremos que el binario empieza con ~10 11~ en vez de ~00 01~
 
-    ~8 bits + 8 bits + 8 bits = 24 bits~ (3*1 Byte = 3 Bytes)
-    el archivo comprimido pesa ~3 Bytes~ (24 bits)
+    Considerando lo anterior, el *binario* que representa el archivo comprimido es ~1011010111000011001011~
+    y la *tabla de frecuencia* es la siguiente
+    
+    #+name:tabla-de-frecuencia
+    |----------+------------+---------|
+    | Caracter | Frecuencia | Binario |
+    |----------+------------+---------|
+    | e        |          3 |      10 |
+    | n        |          3 |      11 |
+    | u        |          2 |      00 |
+    | space    |          1 |     010 |
+    | q        |          1 |     011 |
+    |----------+------------+---------|
 
-    Finalmente vemos como el texto "EN NEUQUEN" que tenía 10 caracteres
-    se convirtió en uno de 3 caracteres que en binario es ~[00011100][10010111][10000100]~
+    Por último el *árbol binario* (desbalanceado) teniendo en cuenta lo dicho anteriormente de los subarboles, sería
+
+    [[./img/huffman-arbol.png]]
 *** Ejemplo 2 - Comprimir archivo pequeño Con Zip en Linux
     Supongamos que tenemos un archivo ~pepe.txt~ que tiene el texto ~lala lala lala~ 
     repetido 10 veces tenemos ~(15Bytes) * 10 = 150 Bytes~ 
@@ -284,5 +336,7 @@ Pag. 10: diferencias incompensables que.?
   _Al descomprimir_:
   1. Lee el archivo comprimido y graba el descomprimido
 * Referencias Web
-   1. https://es.wikipedia.org/wiki/Suma_de_verificaci%C3%B3n
-   2. https://www.vozidea.com/verificar-integridad-de-archivos-en-linux
+   1. https://resources.nerdfirst.net/huffman.html
+   2. https://people.ok.ubc.ca/ylucet/DS/Huffman.html
+   3. https://es.wikipedia.org/wiki/Suma_de_verificaci%C3%B3n
+   4. https://www.vozidea.com/verificar-integridad-de-archivos-en-linux
