@@ -152,13 +152,13 @@ Pag. 10: diferencias incompensables que.?
 
     #+BEGIN_SRC sh
       # preguntamos cuantos bytes pesa el archivo original sin comprimir
-      $ du --bytes pepe.txt
-      150     pepe.txt
+      $ du --bytes notas.txt
+      150     notas.txt
 
       # hacemos una compresión estandar (al indicar parámetro el -6)
-      # nos dice que redujo el tamaño del archivo original en un 91%
-      $ zip -6 pepeComprimido pepe.txt
-      adding: pepe.txt (deflated 91%)
+      # nos dice que del archivo original se removió un 91% de contenido redundante
+      $ zip -6 archivo.zip notas.txt
+      adding: notas.txt (deflated 91%)
 
       # preguntamos cuantos bytes pesa el archivo comprimido
       # Archivo original: 150 Bytes
@@ -166,8 +166,8 @@ Pag. 10: diferencias incompensables que.?
       #
       # El comprimido pesa más porque el archivo original es muy chico
       # y dentro de este también se guarda el vector que representa la "tabla de frecuencia"
-      $ du --bytes pepeComprimido.zip
-      180     pepeComprimido.zip
+      $ du --bytes archivo.zip
+      180     archivo.zip
     #+END_SRC
 *** Ejemplo 3 - Comprimir archivo mediano Con Zip en Linux
     Supongamos que tenemos un archivo ~pepe.txt~ que tiene el texto ~lala lala lala lala lala lala~ 
@@ -176,19 +176,34 @@ Pag. 10: diferencias incompensables que.?
 
     #+BEGIN_SRC sh
       # preguntamos cuantos bytes pesa el archivo original sin comprimir
-      $ du --bytes pepe.txt
-      600     pepe.txt
+      $ du --bytes notas.txt
+      600     notas.txt
 
       # hacemos una compresión estandar (al indicar parámetro el -6)
-      # nos dice que redujo el tamaño del archivo original en un 97%
-      $ zip -6 pepeComprimido pepe.txt
-      adding: pepe.txt (deflated 97%)
+      # nos dice que del archivo original se removió un 97% de contenido redundante
+      $ zip -6 archivo.zip notas.txt
+      adding: notas.txt (deflated 97%)
 
       # preguntamos cuantos bytes pesa el archivo comprimido
-      # Archivo original: 150 Bytes
+      # Archivo original: 600 Bytes
       # Archivo comprimido: 185 Bytes
-      $ du --bytes pepeComprimido.zip
-      185     pepeComprimido.zip
+      $ du --bytes archivo.zip
+      185     archivo.zip
+
+      # si queremos conocer el tamaño real al que se comprimió,
+      # sin el header,crc, etc..  que también ocupa espacio usamos 'unzip -v archivo.zip'
+      #
+      # 1. menciona que el archivo tenía una longitud de 600 caracteres
+      # 2. el método que usó para comprimir
+      # 3. el tamaño real (en este caso 19 Bytes)
+      # 4. que % del contenido redundante se removió del archivo original
+      $ unzip -v archivo.zip
+      Archive:  archivo.zip
+      Length   Method    Size  Cmpr    Date    Time   CRC-32   Name
+      --------  ------  ------- ---- ---------- ----- --------  ----
+      600  Defl:N       19  97% 2021-08-11 19:05 af4c6b66  notas.txt
+      --------          -------  ---                            -------
+      600               19  97%                            1 file
     #+END_SRC
 ** Proceso de Descompresión
    + Se realiza la _lectura del archivo leyendo el vector que tiene contiene los binarios_
