@@ -66,14 +66,10 @@ Pag. 10: diferencias incompensables que.?
   y 4 Bytes para Unicode
   #+END_QUOTE
 ** Proceso de Compresión
-*** 1. Construcción del árbol binario (desbalanceado)
-   1. En el vector _se ordenan los caracteres por repetición de forma descendente_ es decir de mayor a menor de izq. 
-      a der. según la cant. de veces que se repiten (/se da prioridad a los que más se repitan/)
-   2. Se genera un *arbol binario* (desbalanceado) dividiendo el vector en dos, en función de la cant. de repeticiones
-      - _La raíz_: es el vector completo
-      - _Las ramas_: están formadas por más de un caracter, _agrupa pares de caracteres por repetición_ (/según que tanto se repetían/)
-      - _Las hojas_: representan _un solo caracter_
-   3. Cada nodo rama se vuelve a dividir en 2 hasta tener solo nodos hojas
+*** 1. Construcción de la Tabla de Frecuencia
+    - Se crea el vector de la *tabla de frecuencia* y _se ordenan los caracteres por repetición de forma descendente_ 
+    - El criterio de ordenar de forma descendente (/de mayor a menor/) de izq. a der. es según la cant. de veces que se repiten los caracteres
+    - se da prioridad a los que más se repitan
 
     El siguiente vector es la *tabla de frecuencia* donde los caracteres están ordenados descendentemente por cant. de repetición
 
@@ -83,39 +79,45 @@ Pag. 10: diferencias incompensables que.?
     |---+---+---+---+---|
     | 3 | 3 | 2 | 1 | 1 |
     |---+---+---+---+---|
+*** 2. Construcción de la abstracción del Arbol binario (desbalanceado)
+      1. Se lee el archivo nuevamente usando el vector de la *tabla de frecuencia* generada
+      2. Se genera la abstracción de un *árbol binario* (desbalanceado) dividiendo el vector en dos, en función de la *cant. de repeticiones*
+         - _La raíz_: es el vector completo (Ej. ~NEU Q~)
+         - _Las ramas_: están formadas por más de un caracter, _agrupa pares de caracteres por repetición_ (/según que tanto se repetían/)
+         - _Las hojas_: representan _un solo caracter_
+      3. Cada nodo rama se vuelve a dividir en 2 hasta tener solo *nodos hojas*
+      4. Por cada caracter se genera un *código de bits* que lo representará
+      5. Finalizado el árbol binario, éste será la representación computacional del archivo comprimido
+         (/donde lo único que se hizo fue cambiar la codificación a binario, lenguaje que entiende la máquina/)
 
-   #+BEGIN_QUOTE
-   Más *desbalanceado* está el árbol => mayor es la *compresión* del archivo
-   porque habrán caracteres que van a tener mayor repetición
-   (siendo esos caracteres que más se repiten del nuevo alfabeto generando, los que menor representación tengan en ~bits~,
-   y aquellos que menos se repitan mayor será su representación en ~bits~)
-   #+END_QUOTE
+      #+BEGIN_QUOTE
+      Más *desbalanceado* está el árbol => mayor es la *compresión* del archivo
+      porque habrán caracteres que van a tener mayor repetición
+      (siendo esos caracteres que más se repiten del nuevo alfabeto generando, los que menor representación tengan en ~bits~,
+      y aquellos que menos se repitan mayor será su representación en ~bits~)
+      #+END_QUOTE
 
-   *Observaciones:*
-   - Se usa un *árbol binario* porque es más rápido para recorrer/leer que un vector
-*** 2. Lectura del árbol binario (desbalanceado)
-    - Se lee el archivo nuevamente usando el árbol generado, quedando un vector con binarios
-    - Por cada lectura de caracter se genera un *código de bits* que representará a ese caracter
-    - El vector con binarios resultante se completa con 0 ó 1 para llegar al tamaño de *byte*
- 
-    *Observaciones:*
-    - Por convención la lectura a izq. se representa con ~0~ y a der. con ~1~
-*** 3. Archivo comprimido
-    El vector con binarios generado al leer el árbol binario, resulta ser el archivo comprimido
+      *Observaciones:*
+      - El binario resultante se completa con ~0~ ó ~1~ para llegar al tamaño de *byte*
+      - Por convención la lectura del árbol a izq. se representa con ~0~ y a der. con ~1~
+      - Se usa un *árbol binario* porque es más rápido para recorrer/leer que un vector
+      - El *árbol* es solo una *abstracción* porque NO se guarda físicamente, es sólo para representar la codificación en binario
 *** Comprimir Archivos Pequeños y Tamaño del Vector Tabla de Frecuencia
-    Para archivos pequeños NO se realiza compresión porque el *vector* tiende pesar más que el archivo original
+    Para archivos pequeños NO se realiza compresión porque la *tabla de frecuencia* (el vector) tiende pesar más que el archivo original
 
-    Si tenemos un archivo que contiene la palabra ~EN NEUQUEN~ tenemos
+    Si tenemos un archivo que contiene el texto ~EN NEUQUEN~ tenemos
     - 1 Byte por cada caracter (por ser de tipo ~char~)
-    - el tamaño del archivo es ~10 * 1 Byte = 10 Bytes~
+    - el tamaño de *la cadena* es ~10 * 1 Byte = 10 Bytes~
 
-    En el vector que representa la *tabla de frecuencia*, tenemos
+    En la *tabla de frecuencia* que está representada por un vector, que se guarda físicamente en el archivo comprimido, tenemos
     - 1 Byte por cada caracter (por ser de tipo ~char~)
     - 4 Bytes de cada cant. de repetición de cada caracter (/suponiendo que es de tipo ~long~./)
     - el tamaño del vector es ~5 * 1Byte + (3+3+2+1+1) * 4 Bytes = 45 Bytes~
 
-    Observamos como al intentar comprimir un archivo muy pequeño, el archivo comprimido sería más pesado
-    que el archivo sin comprimir. Por esa razón el programa para comprimir, NO lo comprimirá.
+    Observamos como al intentar comprimir un archivo muy pequeño, la *tabla de frecuencia* (el vector) pesa más que 
+    *la cadena* de texto a comprimir. Por esa razón el programa para comprimir, NO lo comprimirá.
+
+    Dejamos de referencia la *tabla de frecuencia* del texto ~EN NEQUEN~
 
     #+NAME: vector-tabla-de-frecuencia
     |---+---+---+---+---|
@@ -123,6 +125,7 @@ Pag. 10: diferencias incompensables que.?
     |---+---+---+---+---|
     | 3 | 3 | 2 | 1 | 1 |
     |---+---+---+---+---|
+** Ejemplos de Compresión
 *** Ejemplo 1 - Caso hipotético
     Partamos que en realidad este archivo quizás NO lo comprimirá (por tener poco texto), es solo a modo de ejemplo
 
@@ -175,7 +178,7 @@ Pag. 10: diferencias incompensables que.?
     |---+---+---+---+---|
     | 3 | 3 | 2 | 1 | 1 |
     |---+---+---+---+---|
-*** Ejemplo 2 - Basado en el ejemplo (1)   
+*** Ejemplo 2 - Basado en el ejemplo (1)
     Probamos el mismo texto del ejemplo anterior en un generador online con el *algoritmo de huffman*,
     donde la única diferencia es que el *subárbol derecho* contiene los caracteres ~e~ y ~n~ 
     en vez del *subarbol izquierdo*. Por eso veremos que el binario empieza con ~10 11~ en vez de ~00 01~
@@ -197,7 +200,7 @@ Pag. 10: diferencias incompensables que.?
     Por último el *árbol binario* (desbalanceado) teniendo en cuenta lo dicho anteriormente de los subarboles, sería
 
     [[./img/huffman-arbol.png]]
-*** Ejemplo 4 - Comprimir archivo pequeño Con Zip en Linux
+*** Ejemplo 3 - Comprimir archivo pequeño Con Zip en Linux
     Supongamos que tenemos un archivo ~notas.txt~ que contiene el texto ~lala lala lala~ 
     repetido 10 veces tenemos ~(15Bytes) * 10 = 150 Bytes~ 
     Si tratamos de comprimir sucederá lo siguiente en la terminal
@@ -221,7 +224,7 @@ Pag. 10: diferencias incompensables que.?
       $ du --bytes archivo.zip
       180     archivo.zip
     #+END_SRC
-*** Ejemplo 5 - Comprimir archivo mediano Con Zip en Linux
+*** Ejemplo 4 - Comprimir archivo mediano Con Zip en Linux
     Supongamos que tenemos un archivo ~notas.txt~ que tiene el texto ~lala lala lala lala lala lala~ 
     repetido 20 veces tenemos ~(30 Bytes) * 20 = 600 Bytes~  (/los saltos de línea y los espacios también cuentan/)
     Si tratamos de comprimir sucederá lo siguiente en la terminal
@@ -258,9 +261,9 @@ Pag. 10: diferencias incompensables que.?
       600               19  97%                            1 file
     #+END_SRC
 ** Proceso de Descompresión
-   + Se realiza la _lectura del archivo leyendo el vector que tiene contiene los binarios_
-      como un árbol binario binario.
-   + Para finalizar la lectura del archivo usa el vector de repetición de cada caracter (/para saber cuantos debe leer/)
+   + Se lee del archivo el *binario* que contiene usando de referencia la *tabla de frecuencia* que es un vector
+     (/la lectura se realiza como el barrido de un árbol binario/)
+   + Para saber cuando finalizar la lectura del archivo usa de la *tabla de frecuencia* la cant. de repeticiones de cada caracter (/para saber cuantos debe leer/)
      - caso contrario leería caracteres de más (/porque al comprimir se agregaban bits para redondear a 8 bits/)
      - al comprimir se completaba el vector para tener mútiplos de 8 ya que ~1 Byte~ equivale a 8 bits
    + Para generar el árbol usamos de referencia
@@ -269,10 +272,12 @@ Pag. 10: diferencias incompensables que.?
    + En función del árbol se obtiene los caracteres originales
 
    #+BEGIN_QUOTE
-   Se necesita
+   Para descomprimir el archivo, se necesita
    1. la tabla de frecuencia (/que está ordenada descendente por la cant. de repeticiones/)
-   2. y su representación computacional (/el nuevo alfabeto generado en binario ~[00011100][10010111][10000100]~./)
+   2. y su representación computacional (/el nuevo alfabeto codificado en binario 000111001001011110000100/)
    #+END_QUOTE
+
+   La siguiente sería la *tabla de frecuencia*
 
    #+NAME: vector-tabla-de-frecuencia
    |---+---+---+---+---|
@@ -280,6 +285,9 @@ Pag. 10: diferencias incompensables que.?
    |---+---+---+---+---|
    | 3 | 3 | 2 | 1 | 1 |
    |---+---+---+---+---|
+
+   y los siguiente la representación computacional de nuevo alfabeto codificado en binario
+   (/éste binario le fatan 2 bytes al final para ser múltiplo de 8 bits/)
 
    #+NAME: representacion-computacional
    |--------------------+----+----+-----+----+----+----+-----+----+----+----|
@@ -331,10 +339,10 @@ Pag. 10: diferencias incompensables que.?
 
   _Al comprimir_: (/hace dos lecturas de disco/) 
   1. Lee el archivo para armar el vector (/la tabla de frecuencia/)
-  2. Lee de nuevo el archivo para comprimir
+  2. Lee de nuevo el archivo para comprimir (/genera una abstracción de un árbol binario para generar la codificación en binario/)
 
   _Al descomprimir_:
-  1. Lee el archivo comprimido y graba el descomprimido
+  1. Lee del archivo comprimido la *codificación en binario* usando de referencia la *tabla de frecuencia* y graba el descomprimido
 * Referencias Web
    1. https://resources.nerdfirst.net/huffman.html
    2. https://people.ok.ubc.ca/ylucet/DS/Huffman.html
