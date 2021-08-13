@@ -7,28 +7,45 @@
 ** Conceptos
   - Proceso que modifica el contenido de un archivo
   - El _contenido NO es visibile en un formato tradicional_
-  - El objetivo es ocultar información del archivo, para que NO sea legible
-  - El archivo debe ser _modificado sin cambiar su tamaño y espacio_
+  - El objetivo es _ocultar información del archivo_, para que NO sea legible
+  - El archivo debe ser _modificado sin cambiar su tamaño ni espacio_
+  - Se suele encriptar solo una parte de los archivos
+    (/si se encriptara todo => se demoraría demasiado desencriptar/)
 ** Procesos de encriptación
-*** Desplazamiento (los caracteres)
-    - Se _desplazan los caracteres_ en función de algún patrón (se desplazan en ~bits~)
-    - Mover las posiciones de los valores (/Ej. como un rompecabezas, sopa de letra, .../)
-    - Al desplazar por ~bits~ en vez de *caracteres*  modifica completamente el contenido del archivo
-*** Reemplazo (el contenido)
+*** Desplazamiento (de los caracteres)
+    - Se desplazan ~bits~ en vez de *caracteres* en función de algún patrón
+    - Al desplazar por ~bits~ en vez de *caracteres* modifica completamente el contenido del archivo
+    - Mueve las posiciones de los valores (/Ej. como un rompecabezas, sopa de letra, .../)
+*** Reemplazo (del contenido)
 **** Reemplazo fijo
-     - Porque lo fija el algoritmo
+     - Lo fija el algoritmo
      - Se _reemplazan determinados caracteres por un valor_ (/de acuerdo a un patrón/)
-     Ej. reemplazar el contenido de todas las posiciones pares, por un valor ascii preestablecido
+
+     #+BEGIN_EXAMPLE
+     Un ejemplo sería el reemplazar el contenido de todas las posiciones pares, 
+     por un valor ASCII preestablecido
+     #+END_EXAMPLE
 **** Reemplazo variable
      - Cuando el valor a reemplazar _depende de una *clave* elegida por el usuario_
+
+     *Observación:*
+     En estos caso para poder *desencriptar* el archivo, se necesita de la *clave*
+     que eligió el usuario
 *** Mixto
     - Se aplican ambas formas de *encriptación* en cualquier orden
-    - en cualquier orden se aplica *reemplazar* y *desplazar*
+    - en cualquier orden se aplica el *reemplazar* y *desplazar*
 * Problema
+  Archivo origen -> PROCESO -> Archivo Destino
+
   #+BEGIN_EXAMPLE
-  Archivo origen -> PRoceso -> Archivo Destino
+  Supongamos que pasamos un archivo por un compresor para comprimir/descomprimir
+  si éste nos dice "CRC OK" es que pasó el proceso de integridad
   #+END_EXAMPLE
-* Control de integridad
+
+  Suponiendo que no disponemos del *archivo origen* porque este fue eliminado,
+  NO podemos comparar entre dos archivos (origen/destino).
+  Para estos casos...
+* [TODO] Control de integridad
 ** Necesidad
    - Cuando se produce una modificación sobre un archivo
    - Se verifica si el nuevo archivo obtenido es igual al original
@@ -46,37 +63,84 @@
 *** Tamaño
     Ambos deben tener el _mismo tamaño en cantidad de caracteres_
 *** Contenido
-    Ambos deben tener _misma cantidad de caracteres_
+    Ambos deben tener los _mismos caracteres_
 *** Posición
     Los _caracteres deben estar en la misma posición_
 ** Checksum
 *** Conceptos
    - Utiliza los *polinomios*
-   - Compara dos sumas
+   - Compara una suma
 *** Tamaño
     Es el grado del *polinomio*
 *** Contenido
-    Son los *coeficientes* del polinimio
+    Son los *coeficientes* del polinomio
 *** Posición
-    Es el *grado del que acompaña la x* del polinimio
+    Es el *grado del que acompaña la x* del polinomio
 *** Procedimiento
-    1. Se calcula el polinomio, aplicando una raíz específica
-    2. El resultado se agrega en el archivo destino (ya generado)
+    Si tenemos un archivo que contiene la cadena ~HOLA~ => el polinomio sería ~Hx^⁰ + Ox^¹ + Lx^² + Ax^³~
+
+    Usando de referencia dicho polinomio, el procedimiento sería:
+    1. Se calcula el polinomio, aplicando una raíz específica (/valores entre 0 y 1/)
+    2. El resultado se agrega en el archivo destino (del que se partió, que ya estaba generado)
     3. Se vuelve a generar el polinomio (/con el contenido de archivo destino/)
     4. Se resuelve el polinomio y se compara con el almacenado en el archivo
        (/si los resultados son iguales => los archivos son iguales/)
-*** Posibilidad de error
+
+    *Observaciones:*
+    - El resultado siempre será positivo, porque los valores serían de 1 a 256 (por el alfabeto ASCII)
+    - El utilizar caracteres ASCII como valor sería probable de que se repitan resultados con diferentes valores
+      (/para evitar este error se utilizan los bits de los caracteres/)
+*** [TODO] Como Reducir la Posibilidad de error
     - El polinomio se arma usando como coeficientes los bits que componen los caracteres
-      (/Ej. si ~H~ es ~00110011~ se haría ~0x^0+0x^1+1x^2+0x^3+0x^4+...~ y asi con el resto/)
+      (Ej. si ~H~ es ~00110011~ se haría ~0x^⁰+0x^¹+1x^²+...+1x^⁷~ y asi con el resto)
+    - tomar valores binarios (0 y 1) como coeficientes => evita posibilidad de combinación entre potencias
     - El valor de la raíz elegida es entre los valores ~0~ y ~1~
+
+    #+BEGIN_QUOTE
+    Si la cadena era ~HOLA~ y el polinomio generado es ~Hx^⁰ + Ox^¹ + Lx^² + Ax^³~
+    para reducir la probabilidad de resultados iguales con diferenes caracteres
+    
+    reemplazaríamos el polinomio de caracteres ASCII por el valor binario de cada
+    caracter, para el ejemplo de ~HOLA~ tendríamos un polinomio de ~grado 32~
+
+    por tener una longitud de 4, y cada uno ser del tipo ~char~ cada uno son ~8 bits~
+    quedando ~4 * 8bits = 32 bits~
+    #+END_QUOTE
 ** CRC - Integridad
-   - CRC significa *control de redundancia ciclica*
-     (no hace caracter a caracter poque haria un polinomio muy grande,
-      por eso lo hace por ciclos)
-   - Siempre agarra el último caracter para terminar el ciclo
-   - Tiende a variar entre 32 a 128 bits
-   - si toma más caracteres
-     - mas tarda en hacer el calculo
-     - más precisión
-   - se toman paquetes más chicos =>
-   - 
+*** Conceptos
+    - CRC significa *control de redundancia cíclica*
+    - NO controla caracter a caracter poque haria un polinomio muy grande
+    - El tamaño del *CRC* tiende a variar entre ~32 bits~ a ~128 bits~
+    - Si el ~CRC~ es de ~32 bits~ => agarró ~4 caracteres~ => partió el archivo en ~4 ciclos~
+    - Más caracteres agarra
+      - se producen *ciclos* más chicos
+      - más preciso + mayor control
+      - más demora el cálculo
+      - mayor es el *polinomio*
+*** Validar CRC
+    - El *CRC* está incluido en el archivo generado
+    - Dos archivos archivos son distintos => si difiere el *número de control* de ambos
+*** Ciclos
+    - El *CRC* controla por *ciclos*
+    - En cada ciclo pueden tomarse caracteres al azar que estén en cualquier posición (/al principio, al final, .../)
+    - Siempre se agarra el último caracter para terminar el ciclo
+*** Posibilidad de Error
+    - Si uno de los paquetes falla => se propaga el error (por ser a nivel de ~bits~)
+    - Si llegase a darse algún error en la transmisión, éste será a nivel de ~bits~
+    - Si toman paquetes más chicos => se cree que el riesgo es menor
+
+    #+BEGIN_QUOTE
+    Supongamos que queremos mandar un archivo que contiene la cadena de caracteres ~bue~ 
+    que a nivel de ~bits~ es ~01100010 01110101 01100101~.
+
+    Esta cadena tiene un tamaño de ~32 bits~ porque ~8 bits + 8 bits + 8 bits = 32 bits~
+
+    Si trataramos de mandar el contenido del archivo en 3 paquetes de a ~8 bits~
+    y hubiese alguna falla en la transmisión (Ej. ruido, caída de internet, ...)
+    el error sería a nivel de ~bits~ y el archivo final sería distinto.
+
+    Por ejemplo, si NO se hubiesen mandado los primeros 2 bits quedaría
+    ~100010 01110101 01100101~ que en ASCII es ~"ue~ el contenido cambiaría totalmente
+    #+END_QUOTE
+
+
