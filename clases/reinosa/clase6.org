@@ -1,12 +1,5 @@
 #+TITLE: Clase 06 - Compresión
 #+STARTUP: inlineimages
-
-#+BEGIN_COMMENT
-DUDAS
-Pag. 9: Como seria eso de "apagar" potencias?
-Pag. 10: diferencias incompensables que.?
-#+END_COMMENT
-
 * Algoritmos de compresión
 ** Conceptos
    Existen dos tipos de _algoritmos para comprimir archivos_
