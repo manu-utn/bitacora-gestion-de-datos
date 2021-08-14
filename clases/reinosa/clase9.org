@@ -4,26 +4,29 @@
 ** DB
    Conjunto de _datos interrelacionados_, que se ajustan a un _modelo preestablecido_
 ** DBMS
-   - Es el *Data Base Management System*
+   - Es el *Data Base Management System* (un gestor para db)
    - Gestiona los datos de la Base de Datos
    - Proporciona mecanismos para acceder a los datos
 * [TODO] Propiedades - Siglas ACID (reforzar con lo de zaffa)
 ** Conceptos
    La siglas ACID nombra 4 propiedades de todo motor de base de datos que debe tener
 ** (A)tomicidad
-   - Permite agrupar un conjunto de *instrucciones* como una única operación
+   - Permite agrupar un conjunto de *instrucciones* como una *única operación*
    - Permite realizar *transacciones*
      - ejecutar varias instrucciones como única operación
-     - si una instrucción falla, el resto también
+     - si una instrucción falla => el resto también
 ** (C)onsistencia
    - Asegura la *Integridad referencial*
-     (/Ej. NO crear una factura sin un cliente asociado/)
+     (/Ej. NO crear una factura sin un cliente asociado a través de una FK/)
    - Asegura la *Integridad de la información*
-     - Si alguna instrucción falla, el modelo se mantiene
-     - si en una transacción, una instrucción falla => se vuelve a su estado anterior (/no modifica por la mitad/)
-     - Cualquier transacción lleva a la DB de un estado seguro a otro estado seguro
-** (I)solation - Aislamiento
+     - Si alguna *instrucción* falla => el modelo se mantiene
+     - si en una *transacción*, una *instrucción* falla => se vuelve a su *estado anterior* (/no modifica por la mitad/)
+     - Cualquier *transacción* lleva a la DB de un *estado seguro* a otro *estado seguro*
+** (I)solation - Aislamiento - Concurrencia
    - Aisla las instrucciones que operan sobre la misma información para evitar errores
+   - Asegura que cada transaccion es independiente
+   - Asegura que una operación NO pueda afectar a otras
+   - Permite que el motor sea *concurrente*
 ** (D)urabilidad
    - Permite *persistir/guardar* el resultado de una operación
      (/apesar de que el sistema luego falle, esta información persiste en la DB/)
@@ -40,7 +43,7 @@
       (/Ej. si un admin modifica la vista de almacenamiento => no deberia afectar la vista de usuario/)
 *** Ocultar detalles fisicos de almacenamiento
     Evita que *usuarios* lidien con problemas de almacenamiento
-** Niveles/Capas de un DBMS
+** [WAITING] Niveles/Capas de un DBMS
 *** Vista desde el Almacenamiento
 **** Nivel Externo (Vistas de los usuarios)
      - _Restringir acceso a datos_ que no tiene autorizado el usuario
@@ -52,18 +55,27 @@
 **** Nivel interno (Vista de almacenamiento)
      - Determina como va a *persistir/guardar* la información
      - Tiene en cuenta las propiedades de la siglas *ACID*
-     - Es la representación física de la base de datos
+     - Es la *representación física* de la base de datos
      - Describen como se almacenan los datos en la db y en el equipo (a nivel hardware)
 *** Vista desde la Funcionalidad
 **** Nivel Externo
-     - El usuario interactúa en este nivel (/Tanto un usuario final como una aplicación PL_SQL/)
-     - Es el (SSMS) SQL Server Management Studio (?)
+     - El usuario interactúa en este nivel (/Tanto un usuario final como una aplicación PL-SQL/)
+     - Es el (SSMS) SQL Server Management Studio (/gestor de base de datos/)
+     - Es cualquier programa que interactúe con la DB
+     
+     *Observaciones:*
+     - ~PL-SQL~ y ~T-SQL~ son lenguajes procedurales propietarios, agregan caraterísticas a ~SQL~
+     - ~T-SQL~ (Transact SQL) es utilizado por *Microsoft* adiciona nuevas caraterísticas a ~SQL~
+     - ~PL-SQL~ es utilizado por *Oracle* y permite crear aplicaciones
 **** Nivel Conceptual
      - Maneja la lógica de la DB (que se puede o no hacer)
-     - Un desarrollador y DBA trabaja en este nivel
-       - El desarollador realiza modelos lógicos para desarrollar aplicaciones
+     - Un desarrollador y un DBA trabaja en este nivel
+       - El desarollador realiza *modelos lógicos* para desarrollar aplicaciones
        - El DBA realiza elije mejor modelo desde el punto de vista del DBMS
      - Tiene un *analizador sintático* (parser) y un *analizador semántico* (scanner)
+
+     *Observación:*
+     - El desarrollador sólo utiliza las capas superiores, NO necesita conocer la implementación del sistema
 **** Nivel interno
      - Se maneja la *persistencia* de la información en el DBMS
      - El DBA decide se guardarán los datos
@@ -116,24 +128,48 @@
 
     #+RESULTS:
     [[file:img/capas-dbms.png]]
+*** [WAITING] Ejemplo - Capas DBMS
+    Supongamos que queremos hacer ~SELECT * FROM clientes WHERE id_cliente=101~ el motor hará lo sig.:
 
+    1. Lo recibe la *capa externa* (el sql server managment studio)
+    2. Lo recibe la *capa de usuario* (para revisar los roles, permisos, etc..)
+    3. Se lo pasa a la *capa lógica/conceptual*
+       1. analiza la *sintáxis* (/chequea que la sintáxis de la instrucción SQL esté OK/)
+       2. analiza la *semántica* (/chequea que exista la tabla clientes, que exita el campo id_cliente en esa tabla, si id_cliente es integer,../)
+    4. busca los datos en la *FAT* (/la FAT actúa como índice de páginas, así como el footer offset actúa como índice de los renglones de página/)
+       - chequea en que número de *página* están los datos (supongamos que devuelve la página N)
+    5. El *file manager* se comunica con el *disk manager* y le pide de la información de la ~página N~ y ~posición X~
+    6. Luego *disk manager* busca la información en la ~página N~, ~posición X~
 * Componentes de un DBMS
 ** IPL
    - Las siglas son de *Initial Program Loader*
    - Programa que _levanta el servicio_ del DBMS
-   - _Carga las estructuras_ de la DB en MP, Caché y disco
+   - *Carga las estructuras de la DB* en MP, Caché y Disco
 ** User Manager
-   - Gestiona la seguridad del DBMS
+   - *Gestiona la seguridad* (vertical y horizontal) del DBMS
    - Administra los perfiles/usuarios/roles de acceso
+
+   #+BEGIN_QUOTE
+   La *seguridad vertical* es poder ver o no las tablas
+   mientras que la *seguridad horizontal* es poder crear o no esquemas
+   #+END_QUOTE
 ** File Manager
    - Gestiona la lógica de almacenamiento de los archivos del DBMS
-   - Se encarga de la ~FAT~ que refiere a *File Allocation Table*
+   - Se encarga de acceder a los archivos/información del motor
+   - Se encarga de acceder a la ~FAT~ que refiere a *File Allocation Table* 
      (/El motor tiene su propia FAT, al igual que un SO/)
    - Una DB es un SO pero sin el manejo de periféricos (dispositivos de E/S)
      (/Ej. no imprime en pantalla, no usa el disco, .../)
+   - Pemite la creación/eliminación/acceso a los archivos
 ** Disk Manager
-   - Gestiona el espacio físico del DBMS (/los archivos lógicos del File Manager/)
+   - *Gestiona el espacio físico* del DBMS (/los archivos lógicos del File Manager/)
    - Se comunica con el SO para el acceso a disco
+   - El motor gestiona/administra su propio disco (Ej. el archivo ~.bak~ representa la DB)
+** Ejemplo
+   Cuando creamos una tabla...
+   1. el motor le pide al SO un espacio en disco, éste le responde con la posición en disco
+   2. el *Disk manager* gestiona el espacio y le comunica al *file manager*
+   3. el *file manager* se encarga de crear la db (el ~.bak~)
 * Técnicas de administración de memoria
 ** Conceptos
    - Esto es a *Nivel Interno Almacenamiento*
@@ -144,17 +180,18 @@
    #+END_COMMENT
 ** Segmentación
    - Divide la memoria en segmentos
-   - Cada segmento es _tamaño variable_
+   - Cada segmento es *longitud/tamaño variable*
 ** Paginación
 *** Conceptos
     - Divide la memoria en paginas
-    - Las paginas son todas de _igual tamaño_ (longitud fija y misma longitud)
+    - Las páginas son todas de *igual longitud/tamaño* (longitud fija y misma longitud)
+    - Las páginas NO se pueden *fragmentar* (/porque todas las páginas tienen un tamaño fijo/)
 *** Página (estructura)
 **** Componentes
-     UNa página tiene 3 componentes
-     - id page
-     - body page
-     - footer offset
+     Una página tiene 3 componentes
+     1. id page
+     2. body page
+     3. footer offset
 
      #+BEGIN_SRC plantuml :file img/paginacion.png :exports results
        @startuml
@@ -190,26 +227,73 @@
 
      #+RESULTS:
      [[file:img/paginacion.png]]
-
 **** ID
      - identifica las páginas (que están numeradas y son contiguas)
 **** Body
     - está dividido en *renglones* (/representan registros/)
     - acá _se almacenan los datos_ (/en cada renglón/)
-**** Footer offset
-    - Tiene _tantas entradas como registros_ (renglones) tenga la página
-    - Actua como un indice pero de cada página
+**** Footer offset (pie de página)
+    - Tiene _tantas entradas como renglones/registros_ tenga la página
+    - Actúa como un índice pero de cada página
+    - Lleva directamente al renglón (/como un acceso directo/)
     - se _registra la posicion relativa de la fila_ (relativo al inicio)
-      (/Ej. la 2da posicion es distante a la primera, por eso es relativa/)
+      (/Ej. la 2da posición es distante a la primera, por eso es relativa/)
+
+    #+BEGIN_QUOTE
+    Así como el *pie de página* actúa como el *índice de los renglones* dentro de la página,
+    la *FAT* actúa como *índice de las páginas*
+    #+END_QUOTE
 ** Fragmentación
 *** Conceptos
-    - Si el tamaño de la fila es chico => habrá espacio disponible => habrá fragmentación
-*** Fragmentacion externa
-    - Cuando el _tamaño de página_ es menor al _tamaño del cluster_
-*** Fragmentacion interna
-    - se da por la distancia entre los cluster
-    - Cuando el _tamaño de la fila_ es menor  que la _longitud del renglón_
-      (/la fila que se va a guardar en el cuerpo de la página/)
+    #+BEGIN_COMMENT
+      <<DUDA>>: en un momento dice que una página NO puede estar fragmentada, y luego que si (?)
+    #+END_COMMENT
+
+    - Un archivo fragmentado está separado en varios fragmentos (/pueden estar esparcidos en varias partes del disco/)
+    - Se utiliza el concepto de *página* para evitar la *fragmentación* porque esta NO puede estar fragmentada por ser de tamaño fijo
+
+    - Si una *página* es más grande que un *cluster* => la página va a estar *fragmentada* (en más de 1 cluster)
+    - si la *pagina* está *fragmentada* => va a estar en más de 1 cluster => se va la a tener que leer 2 veces (porque el SO lee en tamaño de *cluster*)
+    - NO hay fragmentación <=>  el tamaño de página = el tamaño de cluster (/esto sólo sucede en los mainframes/)
+
+    #+BEGIN_QUOTE
+    En Windows cuando se utiliza el desfragmentador, éste une los fragmentos de un archivo
+    que están disperso en distintas partes del disco, y repite lo mismo para el resto de los archivos.
+    Por eso luego lee más rápido el archivo
+    #+END_QUOTE
+
+    *Observación:*
+    - El SO lee en tamaño de *cluster* (/porque es la menor unidad de medida lectura/escritura en disco/)
+*** Fragmentación externa
+    - Cuando se asigna espacio al disco y al grabar quedan huecos, osea un sobrante de ~Bytes~
+    - Cuando se define un _tamaño de página_ menor al _tamaño del cluster_ (/no se está utilizando todo el cluster/)
+      
+    *Observaciones:*
+    - El *cluster* es la _menor unidad de medida de información_ para lectura/escritura en *Disco*
+*** Fragmentación interna
+    - se da por la distancia entre los *clusters* (/huecos, sobrante de bytes/)
+    #+BEGIN_COMMENT
+    <<DUDA>>: los huecos/espacio entre los cluster es en bytes? no era la menor unidad de medida?
+    <<DUDA>>: NO es que cuando la página no tiene más renglones, el motor pide una nueva página?
+    #+END_COMMENT
+
+    - Hay fragmentación interna => Cuando se trata de grabar algo más chico que un *cluster*
+      (/al grabar algo más chico, al cluster le queda espacio sobrante/disponible/)
+    - Hay fragmentación interna => Cuando se tata de grabar algo más grande que la página
+      (/se graba una parte de la página en un cluster, y lo que falta en otro cluster, éste último le queda espacio sobrante/)
+    - Cuando la _longitud de la fila_ es menor que la _longitud del renglón_
+      (/porque ocupa tan poco espacio, que queda espacio sin ocupar/)
+
+    #+BEGIN_QUOTE
+    El contenido de las *filas* se guarda en los *renglones* del *cuerpo* de las *páginas*.
+    
+    NO se puede evitar la fragmentación interna porque uno puede definir un tamaño de fila en una tabla
+    y el motor puede tener definido un tamaño mayor de página, y la página queda con espacio sobrante
+    #+END_QUOTE
+
+    *Observación:*
+    - Si el *cluster* es muy grande => habrá *fragmentación interna*
+      (Ej. si en el cluster escribimos "carlos" veremos lo sig. ~CARLOSXXXX~ donde cada ~X~ es espacio libre)
 
     #+BEGIN_SRC plantuml :file img/paginacion-fragmentacion-interna.png :exports results
       @startuml
@@ -257,7 +341,6 @@
 
     #+RESULTS:
     [[file:img/paginacion-fragmentacion-interna.png]]
-
 *** Otro problema
     - Si el _tamaño de la fila es mayor_ que la _longitud de renglon_ => cada fila usará 2 o más renglones
 
@@ -308,25 +391,81 @@
 
     #+RESULTS:
     [[file:img/paginacion-problema.png]]
-
+* Formas de Almacenar información
+** Conceptos
+   Hay dos maneras de almacenar la información
+   - De forma física
+   - De forma lógica
+** Almacenamiento Fisico
+   Con las técnicas de
+   1. Segmentar
+   2. Paginar
+** Almacenamiento Lógica
+   Con la técnica de Clustering con
+   1. Intra file
+   2. Inter file
 * [TODO] Clustering
 ** Conceptos
    - Su traducción es un "conjunto" de algo
    - Es una _técnica de agrupamiento_ que _unifica objetos_ en función algún criterio
-   - A nivel de redes, un cluster seria un conjunto de servidores que actúan como uno solo
-   - Un DBMS (motor) usa dos técnicas de clustering (/para almacenar cosas distintas/)
-     - Intra file --> prioriza pertenencia
-     - Inter file --> prioriza relación
+   - A nivel de redes, un cluster seria un conjunto de servidores que actúan como un solo servidor
+   - Un DBMS (motor) usa las dos técnicas de clustering (/para almacenar cosas distintas/)
+     - _Intra file_: prioriza pertenencia
+     - _Inter file_: prioriza relación/contenido
+
+   #+BEGIN_COMMENT
+   <<DUDA>> Las PK de un archivo (intra file), están en otro archivo (en una página, osea intra file)
+   <<DUDA>> La PK de una tabla es otro archivo (en el arbol-b, porque en todos los nodos-hoja tiene las *claves*)
+   #+END_COMMENT
 ** Intra file
-   - Intra significa "dentro de"
-   - _Prioriza la pertenencia_ a un conjunto
-     (/Ej. solo guardar los clientes, ó solo los productos, pero por separado/)
+   - *Intra* significa "dentro de"
    - Almacena cada *tabla* en una *página* diferente (/para no mezclar las filas/)
-   - NO guarda los indices (??)
+   - _Prioriza la pertenencia_ a un conjunto/de un archivo
+     (/Ej. solo guardar los clientes, ó solo los productos, pero por separado/)
+   - Almacena sólo las *tablas* en páginas (/no necesita guardar los índices/)
+
+   #+BEGIN_EXAMPLE
+   Si una tabla contiene datos de clientes, se crean páginas sólo para esa información,
+   porque administra las páginas "intra fila".
+
+   Por más que quede una página con espacio sobrante, 
+   osea que quedó a medias y no se completó con todos los clientes
+   #+END_EXAMPLE
+
+   #+BEGIN_SRC sql
+     -- En esta query el motor va a priorizar la "pertenencia" del conjunto
+     -- solo me va a traer los elementos de de la tabla "clientes"
+     SELECT * FROM clientes
+   #+END_SRC
 ** Inter file
-   - Inter signica "entre"
-   - _Prioriza la relación_ entre objetos (/por más que pertenezcan a conjuntos diferentes/)
+   - *Inter* significa "entre"
+   - _Prioriza la relación/contenido_ entre objetos (/por más que pertenezcan a conjuntos diferentes/)
    - Almacena los *índices* y las *PK* asociadas a las *FK*
+
+   #+BEGIN_SRC sql
+     -- En esta query el motor va a priorizar el 'contenido'
+     -- por más que el mismo esté en distintos conjuntos (clientes, facturas, renglon_factura, ...)
+     SELECT * FROM clientes c
+                     JOIN facturas f ON f.id_cliente = c.id_cliente
+                     JOIN renglon_factura r ON r.numero_factura = f.numero_factura;
+   #+END_SRC
+** [WAITING] Ejemplo Inter File - Arbol-b
+   Supongamos que tenemos las tablas: alumnos, materias
+
+   El *inter file* va a contener un *árbol-b* con la *claves* y *posiciones relativas*
+   de las tablas anteriores, y le adiciona un puntero más (una ~FK~) que apunta
+   apunta a una *tabla de hashing* que tiene todas las relaciones de ese alumno (ej. materias_x_alumnos)
+
+   Los índices se guardan *inter file* porque
+   1. en una página se guarda la ~PK~ y todas las ~FK~ que tenga relacionada esa ~PK~
+   2. guarda el *árbol-b*
+   3. guarda *tablas de hashing* duplicando la información
+      - _la información se duplica_ porque por c/nodo del árbol-b se guarda una *tabla de hashing* con
+        todas las _posiciones relativas_ de todas las FK que tenga relacionada
+      - esas *tablas de hasing* evitan las *busquedas secuenciales* (permite *acceso directo*)
+   4. luego de buscar/encontrar en el *árbol-b* un elemento por su clave
+      - usa el *puntero* (la ~FK~) para pedirle al *disk manager* que traiga de que *página* (a la que apunta la FK)
+        tomar la *posición relativa* del nodo encontrado antes   
 * Almacenamiento y Tipos de archivos
 ** Archivos
    #+BEGIN_QUOTE
@@ -338,17 +477,50 @@
    - Define el contenido del archivo
    - Es la estructuracion del archivo y del tipo de archivo
    - El motor de DB necesita un *header* para cada *tabla*
+     - para saber cuantas columnas tiene
+     - para saber que tipos de datos son cada columna
 ** Extensión
-   - Dice que tipo de *header* tiene (/para que el motor ó programa sepa como leer/)
+   - Dice que tipo de *header* tiene (/para que el motor ó programa sepa como leer el archivo/)
    - de la misma manera se comporta un motor de DB
+
+   Algunos ejemplos son
+
+   |-----------------+------------------+----------|
+   | Tipo de Archivo | Cabecera         | en ASCII |
+   |-----------------+------------------+----------|
+   | .zip            | 50 4B 03 04      | PK       |
+   | .rar            | 52 61 72 21      | Rar!     |
+   | .pdf            | 25 50 44 46      | %PDF     |
+   | .jpeg           | FF D8 FF E0 / FE | JFIF     |
+   |-----------------+------------------+----------|
 ** Header de tablas
    El motor va a guardar 
    - Cuantas tablas, filas, columnas
-   - Necesita saber el tamaño de la columna para hacer el ~fread~
-     (/Ej. cada columna representan campos que definimos al crear una tabla en sql/)
-   - _Una cabecera debe ser de tamaño fija_ para que sepa como leerla (/Ej. char nombre[256]/)
+   - Necesita saber el *tamaño de la fila* para hacer el ~fread~
+     (/para saber cuanto debe leer/)
+   - _Una cabecera debe ser de tamaño fijo_ para que sepa como leerla
+     (Ej. Al tener ~char nombre[256]~ el ~for~ que itere, solo leerá hasta 256 caracteres)
    - El _tamaño de una fila es cuanto ocupa todos los campos/columnas_
-     (/Ej. cada fila de un resultado de una consulta sql, está formada por varias columnas, los campos que definimos al crea la tabla/)
+     (/Ej. cada fila de un resultado de una consulta sql, está formada por varias columnas,
+      los campos que definimos al crea la tabla/)
+
+   #+BEGIN_SRC c
+     // El DBMS crea un header para identificar las tablas
+     // de la sig. manera
+
+     struct table{
+       long filas;
+       long columnas;
+       int tamaño_fila; // será la suma de las columnas de las filas
+     };
+
+     struct columna{
+       char nombre[256];
+       char tipo;
+       int longitud;
+       int decimales;
+     };
+   #+END_SRC
 * Referencias Web
   1. https://docs.oracle.com/database/121/CNCPT/tablecls.htm#CNCPT609
   2. https://shafiq2410.wordpress.com/2012/04/22/what-do-you-mean-by-cluster-in-oracle/
