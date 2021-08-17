@@ -1,15 +1,12 @@
 #+TITLE: Clase 8 - Inteligencia de negocios
 
 #+BEGIN_COMMENT
-DUDAS...
+DUDAS Resueltas
 
 # TECNOLOGIAS OLAP
 
 1. Pag. 12: que problemas de construcción y mantenimiento tenian?
    Rta: en la pag 14 lo menciona el xq
-2. Pag.20: DUDA (???) xq quedarian vacias? xq se cargan con el resto 
-   de la informacion, pero esa faltante serian columnas vacias?
-   
 --------------------------------------------------------------------------------
 
 # DATA WAREHOUSE
@@ -34,118 +31,673 @@ DUDAS...
 4. Pag. 11: Como es el tema de *depuracion*..? osea como verifica la calidad de los datos?
    Rta: En la pag 17. lo detalla
 #+END_COMMENT
+* Sistema de Inteligencia de Negocio
+** Conceptos
+   - Los pilares son conocer las diferencias entre
+     1. Los _datos_
+     2. La _información_
+     3. El _conocimiento_
+   - Transforma *datos* en *información*
+   - Transforma *información* en *conocimiento*
+   - Utilizar el *conocimiento* para mejorar el proceso de *toma de decisiones* (/de la organización/)
+
+   #+BEGIN_QUOTE
+   Datos -> Información -> Conocimiento
+
+   Es el conjunto de metodologías/heramientas/estructuras de almacenamiento
+   que permiten agrupar/depuar/transformar los *datos* en *información*.
+  
+   Información que se pueda analizar/convertir en *conocimiento*
+   para mejorar el proceso de *toma de decisiones*
+   #+END_QUOTE
+** Datos
+*** Conceptos
+     - Son valores absolutos/puros que toman un valor especifico (/Ej. una fecha, un nombre, un número, .../)
+     - Son la *mínima unidad semántica* de la *información*
+     - Ofrecen *información* útil => si son *vinculados con alguna relación*
+     - NO aportan a la *toma de decisiones*
+       (/porque necesitan estar vinculados con alguna relación y pasar por un proceso de análisis/)
+*** Origenes
+    Los datos _pueden tener distintos origenes_
+    - *Origenes Internos:* si son de la propia organización
+    - *Orígenes Externos:* si son extraídos del contexo (/Ej. de la competencia/)
+*** Otras Características
+    Los datos pueden ser
+    - objetivos/subjetivos
+    - cualitativos/cuantitativos
+** Información
+*** Conceptos
+    - Semanticamente es un *dato* contextualizado (/puesto en un contexto determinado/)
+    - Un *conjunto de datos* se considera *información*
+      1. si están asociados con alguna *relación* que le da un significado
+      2. ó si fueron procesados (/suponiendo que su salida tiene un contexto/)
+*** Proceso de Transformación
+    Las maneras de transformar un *conjunto de datos* en *información*
+**** Contextualizando
+     Si se conoce el *contexto* y el *propósito* por el que se generaron
+**** Categorizando
+**** Calculando
+     Si fueron procesados matemáticamente
+**** Corrigiendo
+     Si se le fueron eliminando errores/inconsistencias
+**** Condensando
+     Se resumieron en algo conciso
+** Conocimiento
+*** Conceptos
+   - El conocimiento es experiencia+información
+   - La *información* (/datos relacionados/) acumulada pasó por un *proceso de análisis*
+   - Si se incorpora más *información* => se generan nuevos *conocimientos*
+   - Contribuyen a la buena *toma de decisiones*
+*** Proceso de Transformación
+    La *información* se transforma en *conocimiento* si..
+    1. Si se compara con otros elementos
+    2. Si se comunica con otros portadores de conocimiento
+* Tecnologías OLAP/OLTP
+** Conceptos
+   El modelo de desarrollo de un Sistema desde el punto de vista conceptual está formado por 
+   1. Un Modelo de Eventos (/Ej. cuando realizamos entrevistas/)
+   2. Un Modelo de Transacciones
+   3. Un Modelo de Datos
+
+   En un *modelo de eventos* 
+   - los *eventos* son _sucesos que pueden afectar el sistema_ (/Ej. que un alumno se inscriba/de un final/.. en el SIGA/)
+   - se puede representar mediante un modelo de *casos de usos*
+   - está representado/modelado por los *requerimientos funcionales* (/el documento/)
+   - un evento es un *requerimiento* que debo resolver (/Ej. en un sistema pueden ser las opciones, menúes, .../)
+
+   Un *modelo de transacciones* 
+   - es un conjunto conjunto de *acciones* (/Ej. si un alumno se inscribe a un final, revisar si estaba anotado en el curso, si tiene las correlativas aprobadas, .../)
+   - una *transacción* son las *acciones* luego de que se dispara/ocurre un *evento*
+   - para funcionar requiere de un *modelo de datos*
+
+   Un *modelo de datos*
+   - le da soporte al *modelo de transacciones* para que pueda ejecutar sus *acciones*
+   - se modela con herramientas como el *DER* (Diagrama Entidad-Relación)
+
+   #+BEGIN_QUOTE
+   Un *evento* podría ser que un alumno se inscriba a un final, que dé un final, que se anote en una materia, ...
+
+   Una *transacción* es un *conjunto de acciones* que ocurren luego que se dispara un *evento*
+   Por ejemplo si un alumno se anotó en un final, el conjunto de acciones podrían ser
+   1. chequear si estaba inscripto en esa materia
+   2. validar que tiene las correlativas aprobadas
+   3. agregarlo al curso
+   4. mandarle un correo al profesor
+   #+END_QUOTE
+** Modelo OLAP
+*** Conceptos
+    - Conocido como *Modelo Relacional* por analizar/relacionar la información analizada
+      (/NO se refiere directamente al modelo relacional de DB/)
+    - OLAP son las siglas de *On Line Analytical Processing* (/procesar analizando/)
+    - Utilizado por directivos
+    - Se basan en la utilización de *Base de datos Multidimensionales*
+    - El sistema da opciones para la *toma de decisiones* (/infomación ya procesada/)
+
+    #+BEGIN_EXAMPLE
+    El concepto de un Modelo OLAP es procesar la información analizandola,
+    tratar de entender que quiere decir, darle sentido a lo que dice.
+    Ej. Tomarse su tiempo para terminar de leer un libro, entenderlo, sacando una conclusiones.
+
+    Se conoce también por Modelo Relacional, porque a medida que procesa la información
+    y la va analizando, también la relaciona con el resto de la información.
+    Ej. Cuando un profesor evalúa un curso, revisa las notas de cada alumno, la compara con
+    otras cursadas anteriores, ver si los alumnos participaron en clase,...
+    #+END_EXAMPLE
+*** Características
+    + Su ejecución se basa en el *análisis*
+      (/se analiza la información y se sacan conclusiones/)
+    + Son sistemas que generan *conocimiento* para la *toma de decisiones*
+    + Procesan *información* persistente/no volátil
+       (/porque trabaja con información que ya pasó/)
+    + La información se almacena *desnormalizada* 
+      (/para poder agrupar y relacionar/)
+    + Son de fácil uso, pero es compleja su construcción/mantenimiento
+
+    *Observación:*
+    La información se prefiere que quede *desnormalizada* para poder agrupar y relacionar.
+    Si estuviese *normalizada* la estaríamos separando y se perdería la relación.
+
+    #+BEGIN_QUOTE
+    Registran información global por *dimensiones* conocidos como *patrones de interés*,
+    los *patrones de interés* son los objetos que estamos interesados obtener/acumular información.
+    (/Ej. Para un consejero estudiantil, sus patrones de interés serían los alumnos, las materias,
+    y esa información la procesa analizando/)
+    
+    Como son actualizadas por bloques (/por múltiples fuentes/) => las DB OLAP se optimizan para el análisis
+    
+    El 1% de los sistemas existentes son OLAP
+    #+END_QUOTE
+*** Estructura
+    - _El origen_ de la mayoría de los *datos* _son externos_ (/de otros sistemas/aplicaciones/)
+    - Si el origen de los datos es externo => Se duplican/almacenan los datos
+*** Duplicación de datos
+**** Conceptos
+    El modelo OLAP se ve obligado a duplicar los datos por
+    - Ejecución
+    - Múltiples fuentes de datos
+    - Filtrado de datos
+    - Ajuste/Modificación de datos
+    - Actualización/Consistencia de datos
+    - Historia de los datos
+    - Distintas perspectivas o vistas
+    - Actualización de datos
+**** Ejecución
+     - Los sistemas OLAP son de gran tamaño
+     - Al necesitar tener un acceso rápido a los datos
+       1. su estructura de datos debe estar optimizada
+       2. deben guardar los datos por separado
+
+     #+BEGIN_QUOTE
+     Al duplicar los datos se evita afectar al sector operativo,
+
+     Ej. Si uno utiliza del sistema de la universidad las tablas de las materias/alumnos
+     para saber el promedio del alumnado de años anteriores y mientras tanto los
+     profesores están registrando las notas, se podría generar un bloqueo, suponiendo
+     que la operación que estamos realizando tiene mucho procesamiento, pudiendo demorar
+     la lectura/escritura de los datos.
+     #+END_QUOTE
+**** Múltiples fuentes de datos
+     - el origen de los datos es de distintos sistemas
+     - el proceso de unir los datos de distintos sistemas es complejo
+       (/cada sistema puede tener una codificación diferente/)
+**** Filtrado de datos
+     - para realizar un buen análisis y generar informes adecuados
+     - para tomar buenas decisiones
+**** Ajuste/Modificación de datos
+     Los datos deben ser *ajustados antes del análisis* porque
+     1. Las sucursales que están en otros países utilizan contabilidades distintas
+     2. Las estructuras de la organización NO siempre son iguales
+        (/Ej. los distintos departamentos/areas tienen distintas modalidades para trabajar/)
+
+     #+BEGIN_QUOTE
+     Supongamos que tenemos registradas las notas los alumnos/as de cada materia,
+     y del alumnado tenemos como dato el sexo, si es femenino/masculino.
+
+     Para un sistema OLTP no interesaría el sexo del alumnado, sólo se registaría
+     la nota según su evaluación y punto.
+
+     Mientras que en un sistema OLAP puede ser de interés el sexo del alumnado,
+     para relacionar quienes sacaron mejores notas, quienes peores, en que materias
+     se anotaron más y en cuales menos.
+     El procesar dicha información analizandola, y relacionandola comparando los valores,
+     se puede sacar una conclusión que sirva que se podria modificar/ajustar en las materias
+     con el análisis hecho.
+     #+END_QUOTE
+**** [TODO] Actualización/Consistencia de datos
+     - Como el origen de los datos es de distintos sistemas => los datos pueden no actualizarse al mismo tiempo
+     - Para lograr un buen análisis => la consistencia de los datos es fundamental
+
+     #+BEGIN_QUOTE
+     La frecuencia de la actualización de los datos puede variar según el sistema,
+     digamos que en el SIGA las notas se actualizan cada fin de cuatrimestre,
+     ó por cada mesa de finales.
+     #+END_QUOTE
+**** Historia de los datos
+     - Los sistemas OLAP consideran al *tiempo* como una *dimensión*
+     - Considerar al *tiempo* como una *dimensión* => permite obtener datos de varios años anteriores
+
+     *Observación:*
+     El tiempo se considera como un *patrón de interés* por ser una medida de tiempo
+     que puede interesarnos para obtener/acumular *información*
+
+     #+BEGIN_QUOTE
+     El disponer datos de varios años anteriores implica gran esfuerzo,
+     requiere migrar datos de aplicaciones antiguas y ajustarlos,
+     para que puedan ser utilizados en la DB del modelo OLAP
+     #+END_QUOTE
+**** Distintas perspectivas ó vistas
+     La *toma de decisiones* NO requiere a visión tan estructurada ó con tanto detalle
+     por tanto se debe ajustar la información al nivel de resumen/visión que se necesite
+     
+     *Observación:*
+     A diferencia de la *toma de decisiones*, los *datos operacionales* necesitan un gran nivel de detalle
+     y esos datos operacionales son utilizados en los niveles bajos de la organización.
+**** [TODO] Actualización de datos
+     - Si la aplicación tiene varias *entradas de datos* => se debe separar la DB de OLAP
+     - Al separar la DB se evita que se sobreescriban los datos operacionales
+** Modelo OLTP
+*** Conceptos
+    - Conocido como *Modelo Transaccional* por ejecutar un *conjunto de transacciones*
+    - Las siglas *OLTP* refieren a *On Line Transaction Processing* (/Procesar transacciones en linea/)
+    - Las *transacciones* son el conjunto de *acciones* que se ejecutan cuando se disparan ciertos *eventos*
+      (/Ej. si un alumno se anota a un final => validar correlativas aprobadas, validar si la cursó, agregarlo al curso, .../)
+    - Utilizadas por muchos usuarios que crean/actualizan registros
+    - Se basan en la utilización de *Base de datos Relacionales*
+
+    *Observaciones:*
+    - Las siglas OLTP, NO se refieren a las transacciones de los motores de Base de Datos
+*** Características
+    + Son *sistemas operativos*
+      - porque se asocian a una operación, está pensado para operar, NO para pensar
+      - porque son utilizados por el sector operativo de la organización
+    + Su ejecución se basa en *transacciones*
+      (/es decir manejan el Modelo de Casos de Uso, cuando se dispara un evento se ejecutan acciones es decir transacciones/)
+    + Procesan *datos* (/son volátiles/) y los almacenan *normalizados*
+      - Recibe valores absolutos y los procesa
+      - Aplican las reglas de normalización (1FN, 2FN, 3FN, ...) para separar los datos
+      - Los datos son volátiles porque el sistema va cambiando
+    + Registra los datos con gran nivel de detalle de cada *transacción*
+
+    #+BEGIN_QUOTE
+    El 99% de los sistemas existentes son OLTP
+
+    Como son creadas/actualizadas por muchos usuarios => las DB OLTP se optimizan para las actualizaciones de las transacciones
+    #+END_QUOTE
+** Tabla Comparativa entre OLAP/OLTP
+* Base de Datos Multidimensionales
+** Conceptos
+   - La información almacenada se presenta como *variables*
+   - Las *variables* están caracterizadas por una o más *dimensiones*
+   - Está diseñado para un sistema *OLAP*
+** Dimensiones
+   - Determinan la *estructura de la información* almacenada
+   - Cada *dimensión* representa un *patrón de interés* (/que información queremos obtener/acumular/)
+** Análisis de la información
+   La información se puede analizar por la *intersección de las dimensiones*
+   de una *variable* en particular (/Ej. La variable Región, ó Producto/)
+
+   #+BEGIN_EXAMPLE
+   Si tenemos tres dimensiones: Alumno, Materia, Profesor
+   de la intersección de las dimensiones podemos obtener la nota del alumno
+
+   Si cortamos el cubo multidimensional por alguna de las dimensiones
+   obtenemos una perspectiva/vista de esa dimensión.
+   Ej. Si hacemos un corte por la dimensión de Materia, podríamos obtener
+   todas las notas de todos los alumnos
+   Si hacemos un corte por la dimensión Alumno, podriamos sacar 
+   todas las notas de ese alumno 
+   #+END_EXAMPLE
+* Dispersión de Datos
+** Conceptos
+   - Si se agregan dimensiones a la DB Multidimensional => el número de *celdas* crece
+   - En la práctica la mayoria de las DB tienen un 95% de *celdas vacías*
+     (/a eso se llama "dispersión de datos"/)
+
+   #+BEGIN_QUOTE
+   Supongamos que NO se venden todos los productos de todas las sucursales todos los días,
+   si algunas sucursales pueden manejar sólo el 20% de todos los productos,
+   entonces quedan 80% de *celdas vacías*, a esto se lo llama *dispersión de datos*
+
+   Otro ejemplo sería, si tenemos una base de datos de los alumnos desde el año 2010
+   suponiendo que estamos en el 2021. Al agregar alumnos recientes, éstos tendrían
+   valores en null sobre los años anteriores al 2021, quedando *celdas vacías*.
+   Esto se debe a que en una DB Multidimensional la información se obtiene por la
+   intersección de las dimensiones, en este caso serían Alumno/Materia/Año
+   
+   En conclusión queda espacio de sobra que no se utiliza, ocupando espacio innecesario.
+   #+END_QUOTE
+** Hipercubo
+   - Es una *estructura estática* que se crea con *cubos multidimensionales*
+   - Es un gran cubo multidimensional con ~N~ dimensiones
+
+   *Observación:*
+   No es necesario poder representarlo graficamente, solo basta con entender que representa cada *dimensión*
+   
+   #+BEGIN_QUOTE
+   En el lenguaje C, podemos implementar un *hipercubo* usando una matriz con multiples
+   dimensiones, donde cada dimensión resulta al agregarle un vector ~[dim]~ y puede tener
+   tantas dimensiones como uno quiera.
+   Ej. ~int arr[dim1][dim2][dim3][dimN]~
+
+   Donde cada *dimensión* representa un *patrón de interés* pudiendo ser
+   ~int alumno[carrera][materia][turno]~
+   #+END_QUOTE
+** Multicubo
+   - La infomación se guarda dividiendo los datos en *Objetos Multidimensionales* (/grupos pequeños y densos/)
+   - La DB Multidimensional está formado por *objetos* separados con diferentes *dimensiones*
+
+   *Observación:*
+   A diferencia del *hipercubo* que es un gran cubo, éste lo particiona en pequeños cubos,
+   pudiendo usar *punteros* para acceder a cada *dimensión*
 * Sistemas de Data Warehouse
-  - Es un gran sistema de datos
-  - SE alimenta de muchos sistemas (propios/externos de la empresa)
-  - Es un a base de datos corporativa
-  - desde el punto de vista comercial lo mas importante son las *dimensiones*
-  - 
-** Caracteristicas
-*** Orientado a sujetos
-*** Es integrado
-*** Es tematico
-    - porque es a partir de un tema determinado
-*** es variante en el tiempo
-    - varia a medida que ingresan nuevos datos
-*** es simple de manejar
+** Conceptos
+  + Es una _colección de datos históricos_
+  + Es un _gran almacen de información_ (ó sistema de datos), con gran velocidad de respuesta
+    (/con gran velocidad porque tiene información duplicada/precalculada/desnormalizada/)
+  + Se alimenta de muchas fuentes/origen
+    - sistemas propios de la organización
+    - sistemas externos de la empresa
+  + Desde el punto de vista comercial lo más importante son las *dimensiones* (/patrones de interés/)
+  + Diseñada para la *tomas de decisiones estratégicas*
+    (/al usar el modelo OLAP, la información ya fué procesada y analizada para tomar decisiones/)
+  + Siempre se tiene una *temporalidad* que puede variar (/Cuatrimestre, Mes, Anio, .../)
+  + Se suele utilizar *vistas materializadas*
+  + Es una base de datos corporativa
+  
+  #+BEGIN_QUOTE
+  Un *Data Warehouse* es un gran almacen de datos, que lo más importante es 
+  *acumular* la información de las fuentes/origenes para luego tener con que *comparar*
+  y sacar conclusiones.
+
+  Al estar aplicado a un *modelo OLAP* los *datos* van a estar
+  1. precalculados
+  2. desnormalizados (/NO van a estar separados como el modelo OLTP, si no que estará agrupada/relacionada/)
+  
+  Al estar los datos precalculados/desnormalizados
+  - se evita el uso de *subqueries* (/permite realizar queries simples/)
+  - se reduce la cant. de *bloqueos* (/porque actúa como un sistema de consultas/)
+  #+END_QUOTE
+** Características
+*** Orientado a sujetos/objetos
+    - NO se orienta a funcionalidades/procesos/operaciones como los *sistemas transaccionales*
+    - Los *sujetos* son quienes participan en el sistema (/Ej. alumnos, profesores, materias, .../)
+    - Los *sujetos* pueden ser *objetos* (/Ej. materias, carreras, .../)
+
+    *Observación:*
+    En un sistema *OLTP* se orienta a las funcionalidades/procesos
+*** Integrado
+    Si los datos provienen del *ambiente transaccional/operacional* => Se integran antes de ingresar al DW
+*** [TODO] Temático
+    Porque es a partir de un tema determinado, se relaciona a un tema específico
+    (/Ej. alumnos aprobados/desaprobados, .../)
+*** [TODO] Variante en el tiempo
+    - Varía a medida que ingresan constantemente nuevos datos (/altera los valores de los datos precalculados/)
+    - Al ingresar nuevos datos puede que los campos precalculados se modifiquen
+      (/Ej. cantidad de alumnos aprobados/desaprobados, cant. de materias, .../)
+
+    *Observación:*
+    Cuando decimos que se modifican, no es un campo en si (Ej. nota, edad, ..),
+    si no uno que se obtiene a partir de valores históricos (Ej. promedio de alumnos aprobados)
+    destacamos esto porque es un sistema *NO volátil* que NO admite modificaciones
+*** Simple de manejar
     - NO se necesita conocimiento de base de datos para consultar los datos
-*** NO es volatil
+    - Sólo necesita dos operaciones (/NO necesitan de updates/)
+      1. Carga inicial
+      2. Acceso a los datos
+
+    *Observación:*
+    En las DB Transaccionales se necesitan de las operaciones insert/update/delete
+*** [TODO] NO volátil
+    - La información sólo se puede cargar/leer, NO permite modificaciones
+    - Las actualizaciones NO cambian la información
 ** Arquitectura
 *** Base de datos fuentes
-    - cualquier información que queramos agregar (db, textos, archivos, ..)
-    - 
-*** Heramientas de abstaccion de informacion
-    -
+    cualquier información que queramos agregar (db, textos, archivos, ..)
+*** Heramientas de abstracción de información
+    Pueden ser de *Análisis Multidimensional* (OLAPs) y *Data Mining*
 ** Objetivos
-   - Convertir modelos de datos OLTP a uno OLAP
-   - *tablero de control* (necesita de un modelo de data warehouse)
+   - Convertir/almacenar los datos de un *modelo transaccional OLTP* a un *modelo relacional OLAP*
+   - Para tener un *Tablero de control* (/requiere información preparada y ante ciertos eventos realiza ciertas acciones/)
+   - Se transforman/almacenan los datos a un *Modelo Relacional, OLAP* para
+     1. *Facilitar el acceso/uso* de los usuarios finales (/porque no requiere un conocimiento avanzado de base de datos/)
+     2. Para la *toma de decisiones* (/porque procesa, analiza la información y sugiere opciones/)
 ** Funcionalidades
-*** conceptos
-   - acceso a fuentes (source)
-   - carga (load)
-   - ...
-*** acceso a fuentes
-    - son los origenes de información a manejar (pueden ser distintos tecnicamente oracle,sql,...)
-    - se identifica a QUE se va a accede
-*** carga
-**** extraccion
-**** depuracion
-     - elegir que se va a cargar
-**** conversion
-***** conceptos
-       - hay dos tipos
-       - 
-***** sintactica
-      que en distintos origenes uno sea alfabetico, en otro numerico, ..
-***** semantica
-**** carga de datos
-     - extract transform load
-***** renovacion completa
-      - recalcular todo el datawarehouse (Desde el origen)
-***** renovacion incremental
-      - 
-** Almacenamiento
-   - Manejadores: RDBMS, 
-** Consultas
-*** conceptos
-    herramientas OLAP
-*** Data mining
-    - 
-*** simulacion de negocios
-** Metadatos
-   - 
+*** Conceptos
+    Las funcionalidades de un DW para la *toma de decisiones* se separan en 5 etapas
+   1. acceso a fuentes (Source)
+   2. carga (Load)
+   3. almacenamiento (Storage)
+   4. consultas (Query)
+   5. uso de metadatos (Meta data)
+*** 1. Acceso a fuentes
+    - En la *fase de Análisis y Diseño* se le dedica la mayor parte del tiempo 
+    - La *calidad de los metadatos* y el número de fuentes impactan en cuanto tiempo se le destinará
+    - Son los origenes de información a manejar (pueden ser distintos tecnicamente oracle,sql,...)
+    - Se identifica a QUE se va a acceder
+
+    *Observación:*
+    En el TP de la materia la *fuente* para el armado del DW, era el *DER* (Diagrama Entidad-Relación)
+*** [TODO] 2. Carga
+**** Conceptos
+     - Esto se realiza sobre lo obtenido de las fuentes/origenes de datos
+     - La funcionalidad de *carga*, afecta varios *procesos*
+       1. Extracción
+       2. Depuración
+       3. Conversión
+       4. Carga de datos
+     - Aplica el concepto de *ETL* (Extract Transform and Load)
+       1. Extraer la información de la fuente/origen
+       2. Transformarla <- Depuración + Conversión
+       3. Cargarla
+**** 1. Extracción
+     - Es el primer paso para la *preparación de los datos* a cargar
+     - Se accede a los datos de las fuentes/sistemas/aplicativos
+**** 2. Depuración
+     - Se elije que datos se cargan, lo filtramos
+     - Se verifica la *calidad de los datos*
+     - Se corrijen los datos para *estandarizar el formato*
+     - Se identifican los datos *redundantes* que NO se ingresarán en el DW
+     - Se elijen los datos a cargar
+     - Se suele invertir en la compra de software que lo haga
+     - Luego se hace una *conciliación* entre
+       1. Los datos NO depurados
+       2. El listado de las excepciones
+       3. Los datos depurados del *Stage* del DW
+**** 3. Conversión
+***** Conceptos
+       - Es el último paso para la *preparación de los datos* a cargar
+       - Se cambian los datos con el formato/estructura requerido por el DW
+       - Reduce la cant. de datos que se cargan del *Stage* al DW
+       - Existen dos tipos de conversiones
+         1. Conversión sintácica
+         2. Conversión semántica
+***** Sintáctica
+      - Se produce una una conversión de tipos => si en distintos fuentes/origenes los tipos son distintos (alfabetico, numérico, ..)
+      - Se puede llamar también como conversión técnica
+***** Semántica
+      - Cuando en distintos fuentes/origenes el dato (/puede tener distinto tipo/) tiene igual significado/semántica
+        (/Ej. el distintas universidades el código de materia puede ser diferente/)
+      
+      *Observación:*
+      Si los datos tienen distinto tipo, pero mismo significado se debería realizar
+      una *conversión sintáctica*
+      (/Ej. la materia de física en dos universidades es cod_materia=101 y cod_materia='F012'/)
+**** 4. Carga de datos
+***** Conceptos
+      Se ingresan los datos al DW, Data Warehouse
+***** Caga/Renovación completa
+      - Se *truncan* las tablas previo a cargarlas al DW
+      - Recalcular todo el Data Warehouse (Desde el origen)
+      
+      *Obsevación:*
+      Esto implíca que pudiesen cambiar los índices
+***** Carga/Renovación incremental
+      1. Identifica los cambios de los datos origen (/desde la última vez que se ingresaron/)
+      2. Inserta/actualiza/borra registros en cada tabla de DW
+
+      #+BEGIN_EXAMPLE
+      Digamos que la última fecha que se insertaron registros fué en Enero,
+      entonces cargamos nueva información del mes de Febrero,
+      luego cuando corresponda de los meses subsiguientes...
+      #+END_EXAMPLE
+*** [TODO] 3. Almacenamiento
+**** Conceptos
+    - Se elije el *esquema* de almacenamiento del DW
+    - Los datos del DW pueden estar esparcidos en muchas *bases* manejados por diferentes *DBMS*
+      1. (M)DBMS: Multidimensional Database Management System
+      2. (R)DBMS: Relational Database Management System
+
+    *Observación*
+    Los requerimientos de todas las áreas NO deberían ser soportados por la misma *base Multidimensional*
+**** Manejadores
+***** (M)DBMS
+      - Los datos se organizan en un arreglo de ~n~ *dimensiones*
+      - Cada *dimensión* representa un aspecto del negocio que se analizará
+***** (R)DBMS
+*** [TODO] 4. Consultas
+**** Conceptos
+     Mediante las herramientas *OLAP* (On Line Analytical Processing) el usuario puede
+     - Manejar el análisis
+     - Generar los reportes
+**** Data Mining
+     - Es una técnica donde se analizan los datos
+     - Se verifica la relación entre los datos 
+**** Simulación de Negocios
+     - Establecen si es necesario nuevas reglas de organización que retroalimenten los *aplicativos operacionales*
+     - Crean herramientas que controlan el impacto en el ambiente de negocios
+*** 5. Uso de Metadatos
+    - Es _cualquier información descriptiva_ sobre el contexto/calidad/condición/características de un recurso
+    - Incluyen el dominio + reglas de validación + derivación/conversión de los datos extraídos
+    - Deben estar disponibles para los usuarios (/para que puedan realizar el análisis/)
 ** Migración de datos
-*** area de staging
-    - pasa acá cuando ya está convertido
-    - acá se produce la carga
-    - antes de llegar al datawarehouse
-*** tablas del data warehouse
-*** sistemas fuente de origen
-** concilacion de datos
-*** calidad de datos
-*** cantidad de datos
-*** tipos
-**** completa
-**** por fase
-* data marts
-  - es información segmentada de la compania, de un sector/departamento
-    (a dif. del data warehouse que es global)
-* implementacion de un RDBMS
-** modelo estrella
-*** conceptos
-    - para implementar un DW en un RDBMS
-    - considera al modelo *OLAP*
-    - utiliza el modelo de tablas
-    - se basa en dimensiones
-    - puede haber más de un modelo estrella
-*** tabla de hechos
-    - tiene los hechos que pueden ocurrir 
-*** tabla de dimensiones
-    - tiene información de las dimensiones que aparecen en la *tabla de hechos*
-** modelo inter...
-* big data
-* data science
-* machine learning
+*** Conceptos
+    - Se trasladan los datos de los *sistemas de origen* al *Stage* del DW
+    - Trasladados los datos se hace una *conciliación* entre los datos del *sistema de origen* y el *Stage* del DW
+    - Los datos que van al *Stage* de DW, incluyen
+      1. Datos referenciales
+      2. Datos transaccionales
+    - Para evitar que se ingrese información innecesaria, sólo se migran los datos que
+      1. Son _solicitados por los usuarios_ para generar reportes
+      2. Se utilizan durante los *procesos de conversión/carga*
+
+    #+BEGIN_EXAMPLE
+    En un Data Warehouse de Ventas los datos que van al Stage del DW, podrían incluir
+    1. Datos referenciales a la información de un cliente
+    2. Datos transaccionales asociadas a la información de las ventas de un cliente
+    #+END_EXAMPLE
+
+    *Observación:*
+    Si NO se sabe donde se ubicarán los datos, se sugiere no ingresarlos
+*** Area de Staging
+    - Es donde se produce la carga, antes de llegar al datawarehouse
+    - Se realiza el proceso de
+      1. Depuración (/se corrije/filtra la información, y se estándariza a un formato/)
+      2. Conversión (/conversión sintáctica y conversión semántica/)
+*** Tablas del Data Warehouse
+*** Sistemas Fuente de Origen
+** Concilación de datos
+*** Conceptos
+    - _Identifica los problemas_ de los datos
+    - Identifica los datos que NO concuerdan con la información del *Sistema de origen*
+    - Para determinar la *precisión* y la *integridad* de la información se debe analizar
+      1. La calidad de los datos
+      2. La cantidad de los datos
+*** [TODO] Calidad de datos
+*** [TODO] Cantidad de datos
+*** Tipos
+**** Conciliación Completa
+     - Se realiza luego de cada proceso de carga (/al final de la carga/)
+     - Se compara la información del *Sistema de origen* con la del DW
+**** Conciliación por Fase
+     - Se realiza luego de cada etapa del flujo del proceso de los datos (/en cada fase/)
+     - Se _determina la veracidad e integridad de los datos_ luego de las siguientes etapas
+       1. Migración de los datos
+       2. Depuración
+       3. Conversión
+       4. Carga
+     - Se realiza cuando NO es posible una *concilación completa* por
+       1. La cantidad de sistemas de origen
+       2. La complejidad de los procesos de depuración/conversión
+* Data Marts
+  - Son populares por disminuir los costos asociados a su creación/operación
+  - Es *información segmentada* de la organización, de un sector/departamento determinado
+    (/Ej. sector de compras, sector de ventas, .../)
+  - Optimizan la distribución de información para la *toma de decisiones*
+  - Se ajustan a las necesidades de una parte específica de un negocio
+  - Se enfocan al manejo de datos resumidos ó de muestras
+
+  *Observación:*
+  - La información de un Data Warehouse es *global* (/de toda la organización/)
+  - La información de un Data Marts es *segmentada* (/de un sector de la organización/)
+* Implementación en un RDBMS
+** Conceptos
+   Un DW ó Data Marts puede ser implementado en
+   1. DBMS Multidimensionales
+   2. DBMS Relacionales
+** Modelo Estrella
+*** Conceptos
+    - Para implementar un DW en un RDBMS
+    - Es un modelo de datos, formado por dos tipos de tablas
+      1. Tablas de *Hechos*
+      2. Tablas de *Dimensiones* (/son los patrones de interés/)
+    - Considera al modelo *OLAP* (/guardamos la información por "sujeto/objeto" por quien estamos interesados/)
+    - Utiliza el *concepto de tablas*
+      1. Para crear un *Modelo Relacional*
+      2. Se basa en las *dimensiones*
+    - Puede haber más de un modelo estrella
+
+    #+BEGIN_QUOTE
+    En el *Modelo Multidimensional* trabaja sobre la intersección de las dimensiones,
+    donde cada dimensión está vinculada a un sujeto/objeto al cual se orienta el sistema DW.
+    Sólo se definen las *dimensiones*, defino lo "que" voy a guardar en la *intersección de las dimensiones*
+    del *cubo de las dimensiones*
+    (/Ej. La intersección entre las dimensiones Alumno, Materia, Profesor, Carrera, Cuatrimestre
+    podría ser la "nota" de cada alumno/)
+
+    En el *Modelo Relacional* _las filas de cada tabla dependen de la PK_ (Primary Key)
+
+    El *Modelo Estrella* puede tener menos filas/registros que el *Modelo OLTP*
+    porque el primero va a tener un resumen del segundo, tendrá información agrupada.
+    #+END_QUOTE
+*** Tabla de Hechos (Fact Table)
+    - Sería como el núcleo del modelo estrella
+    - Representa la información, sería el *cubo* del *modelo relacional*
+    - Está formado por las *dimensiones* (/La PK es una clave compuesta por las PK de las tablas dimensionales/)
+    - Tienden a representar
+      1. Valores numéricos
+      2. Datos asociados al evento específico
+      3. FK que referencian a tablas de datos Dimensionales
+    - Contienen detalles con gran nivel de granularidad/atomicidad
+    - Tiene los hechos que pueden ocurrir
+    - Registra medidas/métricas de un evento específico
+
+    #+BEGIN_QUOTE
+    En el caso de compra/venta si lo que la organización compra NO es igual a lo que vende
+    debemos tener dos tablas de hecho "diferentes".
+    
+    Por ejemplo, si es una empresa que fabrica postres, ésta compra la materia prima pero
+    lo que vende son 'postres' no la materia prima en si. En este caso, conviene armar dos
+    tablas de hechos.
+    #+END_QUOTE
+*** Tabla de Dimensiones (Dimension Table)
+    - Cada registro puede tener muchos atributos para escribir los datos del *hecho*
+    - tiene la información que aparece en la *tabla de hechos*
+
+    #+BEGIN_QUOTE
+    En un *Data Warehouse* las *tablas de dimensiones* son las más importantes desde el punto comercial
+    
+    a mayor cantidad de información => más cant. de comparaciones y análisis
+    #+END_QUOTE
+*** Ejemplo
+    Podríamos tener como modelo estrella lo siguiente
+
+    *Tablas de Hechos* (2)
+    1. Hechos_Ventas <- La PK está formada por {id_tiempo, id_producto, id_cliente, id_promo, pid_almacen}
+    2. Hechos_Compras
+
+    *Tablas de Dimensiones* (5)
+    1. Dimension_Tiempo <- fundamental
+    2. Dimension_Producto
+    3. Dimension_Cliente
+    4. Dimension_Promocion
+    5. Dimension_Almacen
+* Data Mining
+** Conceptos
+  - Conjunto de técnicas
+  - Obtener *información implícita* en grandes DB
+  - Utilizan *técnicas algorítmicas* para encontrar *patrones de interés ocultos*
+  - Los *patrones de interés ocultos* anticipan futuros acontecimientos
+** Características
+   
+* Big data
+* Data science
+* Machine learning
   - que la maquina aprenda a hacer algo
   - aprende del concepto *backtracking* (prueba y error)
   - un *sistema experto* no aprende
-* Tp grupal
-  - en nuestro modelo *elpt* tenemos un.. "cliente"
-  - momentos que habla de tp: 0:36:00, 0:51:00, 1:03:00
-  - en el tp, el *data marts* será del sector de *ventas/compras*
-  - vamos a implementar un *data warehouse* 
-  - nuestro DER es el OLAP
-  - tenemos una sola Carga
-  - definir un modelo bussiness inteligent (un nuevo DER) 
-  - vamos a tener que migrar
-* funciones de hash
-  - no genera colisiones cuando el dominio de entrada es igual al universo de salida
-    (mas chico o igual)
-    
+* TP Grupal - Observaciones
+  - En nuestro modelo *elpt* tenemos un.. "cliente"
+  - El *data marts* será del sector de *ventas/compras*
+  - Vamos a implementar un *data warehouse* 
+  - Nuestro DER es el OLAP
+  - Tenemos una sola Carga
+  - Definir un modelo bussiness inteligent (un nuevo DER) 
+  - vamos a tener que *migrar* del OLTP a OLAP
+* Dudas Resueltas
+** Duda 1
+  Las *funciones de hash* NO generan colisiones cuando el *dominio de entrada* es igual al *universo de salida*
+  (/más chico o igual/)
 * Referencias Web
 ** Base de datos de texto completo
    Algunas son.. EBSCO, PROQUEST, E-LIBRO, 
   1. http://scielo.sld.cu/scielo.php?script=sci_arttext&pid=S1024-94352008001000007
   2. https://www.ebsco.com/es/productos/bases-de-datos/bases-de-datos-gratuitas
   3. https://es.slideshare.net/BiblioSher/base-de-datos-2636450
+** Proceso ETL
+   1. https://www.ibm.com/cloud/learn/etl#toc-what-is-et-xeCDpL69
+   2. https://www.guru99.com/etl-extract-load-process.html
+   3. https://en.wikipedia.org/wiki/Extract,_transform,_load
+** Modelo OLAP
+   1. https://www.wikiwand.com/en/OLAP_cube
+   2. https://www.javatpoint.com/olap-operations
 
