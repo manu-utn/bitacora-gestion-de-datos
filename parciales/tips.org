@@ -1,0 +1,82 @@
+#+TITLE: Parciales-TIPS
+* Preguntas V/F
+** Pregunta (1)
+   #+BEGIN_QUOTE
+   Un árbol B es la técnica de creación de índices que debe utilizarse
+   cuando NO se tiene información del archivo a mantener ordenado
+   #+END_QUOTE
+
+   *Respuesta:* Verdadero
+** Pregunta (2)
+   #+BEGIN_QUOTE
+   Un constraint de tipo ~CHECK~ puede ser reemplazado por un ~trigger~
+   #+END_QUOTE
+   
+   *Respuesta:* Verdadero
+** Pregunta (3)
+   #+BEGIN_QUOTE
+   El algoritmo de HUffman obtiene los códigos comprimidos parseando un árbol balanceado
+   #+END_QUOTE
+
+   *Respuesta:* Falso
+** Pregunta (4)
+   #+BEGIN_QUOTE
+   EL uso de ~LIKE~ no es recomendable si se tiene que realizar consultas intensivas por texto
+   #+END_QUOTE
+
+   *Respuesta:* Verdadero
+** Pregunta (5)
+   #+BEGIN_QUOTE
+   La cantidad de nodos de un *árbo de expresión* siempre es par
+   #+END_QUOTE
+
+   *Respuesta:* Falso
+** Pregunta (6)
+   #+BEGIN_QUOTE
+   Un *Data Marts* es un *Data Warehouse* afectado a un departamento ó sector de la empresa
+   #+END_QUOTE
+
+   *Respuesta:* Verdadero
+* Preguntas a desarrollar
+** Pregunta (1)
+   #+BEGIN_QUOTE
+   Indique un escenario donde la creación de indices con *Tablas de Hashing* sea más eficiente que con *Arboles B*
+   #+END_QUOTE
+
+   *Respuesta:*
+   Cuando los datos tienen una distribución tal que no impactan las colisiones,
+   y además cuando la tabla tiende a mantener los mismos valores no creciendo mucho.
+** Pregunta (2)
+   #+BEGIN_QUOTE
+   Desarrolle las ventajas/desventajas de usar un DBMS
+   #+END_QUOTE
+** [TODO] Pregunta (3)
+   #+BEGIN_QUOTE
+   Que es y para que sirve un *árbol de expresión*
+   #+END_QUOTE
+
+   *Respuesta:*
+   Un árbol de expresión representa una expresión matemática, donde 
+   - los valores son hojas
+   - los operadores son...
+   Éste tipo de árbol permite recorrer la expresión matemática y resolverla.
+   
+   Ej. si tenemos la sig. expresión ~3+5*8-4*2~
+   1. Si se realiza el barrido en *IN-ORDEN* => se obtiene la expresión matemática en notación *INFIJO*
+   2. Si se realiza el abrrido en *POST-ORDEN* => idem, en notación *POST-FIJO* ó *polaca inversa*
+   
+   Quedando
+   - *IN-ORDEN:* ~3+5*8-4*2~
+   - *POST-FIJO:* ~358*+42*-~
+** Pregunta (4)
+   #+BEGIN_QUOTE
+   Desarrolle los conceptos de OLTP y OLAP, identificando características propias y diferencias entre ambos
+   #+END_QUOTE
+** Pregunta (5)
+   #+BEGIN_QUOTE
+   Relacione y explique los conceptos de transacción, lockeos y aislamiento
+   #+END_QUOTE
+** Pregunta (6)
+   #+BEGIN_QUOTE
+   Cual es el objetivo de crear la *tabla de frecuencias* en el *algoritmo de huffman* y porque su importancia
+   #+END_QUOTE
