@@ -1,0 +1,144 @@
+#+TITLE: Data Mining
+* Conceptos
+  - Su traducción es *minería de datos*
+  - Es un conjunto de técnicas para obtener *información implícita* en grandes DB
+  - Busca *patrones de interés ocultos* (/permiten anticipar futuros acontecimientos/)
+  - Encuentra *información predecible* que un experto quizás NO podría encontrar
+  - Una de las cosas que hace es la *predicción*
+    (/Ej. para una empresa el poder anticipar la reacción del consumidor, y quien será su potencial consumidor/)
+  - Los procesos de DM corren sobre DB de gran tamaño
+  - En un modelo de *Data Warehouse* los hechos se mantienen
+    - Lo más importante es que las *dimensiones* crezcan
+    - Los *hechos* se mantienen
+
+  #+BEGIN_COMMENT
+  Por que en el DW los hechos se mantienen?
+  #+END_COMMENT
+* Características
+** Gran cantidad de columnas
+   - Mayor cantidad de columnas => mayor el nivel de análisis y de detalle del DM
+   - Realiza diferentes combinaciones entre patrones especificados
+** Gran cantidad de filas
+   - mayor cantidad de filas => mayor la cant. de información histórica
+   - Disminuye la cant. de errores de estimación/devíos
+   - porque las dimensiones crecen
+** Predicción automatizada de tendencias y comportamientos
+   Puede *inferir* cual será el comportamiento futuro ante
+   - una nueva situación
+   - un estímulo determinado
+
+  #+BEGIN_COMMENT
+   *Observación:* 
+   El proceso de *inferir* es sinónimo de ... deducir a partir de un dominio, un conjunto de datos (?)
+   (/Ej. El motor de inferencia de prolog, infería soluciones en base al universo dado/)
+   #+END_COMMENT
+** [TODO] Obtención automatizada de modelos previamente desconocidos
+   - Identificar nuevos patrones mediante las herramientas algorítmicas
+* Características para cumplir su objetivo
+** Recolección de datos a gran escala
+    - Unifica la información de todas las DB internas/externas
+    - Si la información contiene profundidad/amplitud => Disminuye la cant. de errores/devíos
+** Alta tecnología y gran almacenamiento
+   - Multiples procesadores veloces + Gran capacidad de RAM
+     (/porque utilizan algoritmos de fuerza bruta, con muchas combinaciones/)
+   - El motivo son
+     1. Los procesos de recolección
+     2. Cant. de combinaciones de datos e información
+** Algoritmos de Data Mining
+   - Son los que permiten la búsqueda de *información oculta*
+   - Son algoritmos de fuerza bruta, pueden estar en ejecución por meses
+   - Usan *backtracking* (/hacen prueba error/)
+* Herramientas algorítmicas
+  Las herramientas algorítmicas más importantes son
+  - Redes neuronales
+  - Algoritmos genéticos
+  - Arboles de decisión
+* Redes Neuronales
+** Conceptos
+    - Son *modelos predecibles* con caracteríticas *no lineales*
+    - Es un *método de resolución de problemas*
+    - Aprenden a través del entrenamiento (/aprende por su cuenta luego de varias repeticiones, NO por la información provista/)
+    - Emula el modo de conexión de las neuronas del cerebro
+
+    #+BEGIN_COMMENT
+    Una caracteristica no lineal sería que va variando, concurrente como en sisop
+    #+END_COMMENT
+** Componentes
+   Está formado por 3 componentes
+   1. Dendritas (/son como pelitos eléctricos/): permite mantener la conexión
+   2. Cuerpo celular (/el centro/): 
+   3. Axón (/sería como la cola/): 
+** Capas
+   Una red neuronal está formado por varias capas/niveles, algunas podrían ser
+   1. Capa de entrada (/lo que ingresa/)
+   2. Capa oculta
+   3. Capa de salida (/el resultado/)
+** Patrón/Umbral de activación
+   - Dice si se va a activar o no la neurona (/como un sensor/)
+   - Activa las neuronas en una determinada capa/nivel cuando ocurre un suceso (/similar a un trigger/)
+
+   #+BEGIN_QUOTE
+   Un patrón de activación podría ser, que algunas neuronas (de cualquiera de las capas
+   pidan una cantidad mínima de 4 entradas para que sean activadas.
+   #+END_QUOTE
+** Algoritmos de Optimización
+*** Ascenso a Colina (ó voraces)
+**** Conceptos
+    - Similar a los *algoritmos genéticos* pero con menor aleatoriedad
+    - Aprende por prueba y error <- Backtracking (???)
+      (/Ej. Un nene tiene un "umbral de activación" que le permite aprender a caminar por repetición, acumulando información+experiencia/)
+    - Se conocen como *voraces* porque hace la mejor elección en cada paso
+    - Se puede intepretar como un paisaje que
+      1. tiene todas las soluciones posibles ante un problema determinado
+      2. A mayor altitud están las mejores soluciones (/forman colinas y picos/)
+      3. A menor altitud están las PEORES soluciones (/forman valles/)
+**** Proceso
+     1. Elige un problema al azar
+     2. Compara la primer solución con la anterior, y elige la que tenga mayor amplitud
+     3. Repite el proceso 
+*** Recocido Simulado
+**** Conceptos
+     - Similar a los *algoritmos evolutivos*
+     - Usa el concepto de "temperatura" que es una cant. numérica, que disminuye gradualmente
+     - Similar al proceso industrial de fusión de los elementos
+       1. derritir hasta superar su punto de fusión
+       2. enfriar para sacar imperfecciones de su estructura
+**** Proceso
+     1. Se compara la *aptitud* de una solución nueva con la anterior
+     2. Si la solución nueva tiene mayor aptitud => la nueva solución se conserva
+     3. Si la solución nueva NO tiene menor aptitud => se descarta o no en base a la *temperatura*
+     4. Cuando la temperatura llega a cero, se elige la solución en ese punto
+     
+     *Observaciones:*
+     - A medida que la temperatura baja, se eligen sólo los cambios que aumentan la *aptitud*
+* Algoritmos genéticos
+*** Conceptos
+    - Son *técnicas de optimización*
+      (/tratan de elegir la mejor solución a un problema determinado entre un conjunto de soluciones/)
+    - Su diseño está basado en procesos de la *evolución biológica*
+    - En cada paso, la solución *muta* (/varía, cambia/)
+*** Proceso
+    Se basan en el concepto de *mutación*
+    1. Se define una solución
+    2. Se eligen los mejores individuos (soluciones)
+    3. Se combinan para generar otros nuevos individuos
+    4. Vuelve al principio, para validar la nueva solución
+    
+    *Observación:*
+    El proceso se repite hasta probar todas las combinaciones, y encontrar la solución óptima
+* Arboles de decisión
+*** Conceptos
+    - Son una *técnica de programación* (/un algoritmo/)
+    - Analiza *decisiones secuenciales* en una *heurística/probabilidad de ocurrencia*
+      (/están basadas en el uso de resultados y probabilidades/)
+    - Representan *conjuntos de decisiones*
+    - Se utilizan en Inteligencia Artificial en los *Sistemas Expertos*
+    - Evalúa todos los *caminos* posibles dentro del árbol
+
+    *Observación:*
+    En un *Sistema Experto* se cargan reglas de decisión, basadas en la experiencia
+    de los expertos en una ciencia determinada
+* Ventajas DM
+  - Pemite generar distintos modelos
+    - descriptivos (/Ej. apuntar a un determinado consumidor, como puede ser su poder adquisitivo/)
+    - predictivos (/Ej. como funcionaría un producto a un sector del mercado/)

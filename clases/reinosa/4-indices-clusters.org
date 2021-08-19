@@ -1,5 +1,4 @@
 #+TITLE: Clase 04 y 05 - Indices + Clusters + Query Plan
-
 * Objetivo
   - Crear una *estructura de datos* adicional a la tabla (/esto genera un espacio extra/)
   - Ordena los datos en función a una *clave*
