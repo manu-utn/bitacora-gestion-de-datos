@@ -1,0 +1,3 @@
+[submodule "material"]
+	path = material
+	url = git@github.com:manu-utn/gdd-material.git
