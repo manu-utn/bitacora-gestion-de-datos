@@ -1,9 +1,4 @@
 #+TITLE: Diseño Lógico de Datos
-
-*DUDAS*:
- - [[DUDA 1][DUDA 1]]
- - [[DUDA 2][DUDA 2]]
-
 * Diseño de datos
    - Entender mejor los *requerimientos*
    - Evitar *redundancia* de datos
@@ -21,6 +16,7 @@
  
   Recordemos que una *entidad* representa una parte del sistema
 * Diseño Físico de datos
+** Conceptos
   - Es la implementación en un *motor de base de datos* (Ej. SQL)
   - El motor
     - debe soportar el *esquema* que se definió
@@ -28,24 +24,26 @@
       - el (DML) lenguaje de manipulación de datos
       - el (DDL) lenguaje que nos permite crear
         las entidades
+** (DDL) Data Definition Language
+   - Nos permite crear *entidades*
+   - Para definir los datos
+   - Decimos que *Metadata* es equivalente a *definición de datos*   
+** (DML) Data Manipulation Language
+   Para manejar los datos (Ej. select, insert, update, delete)
 * Base de datos
   - Conjunto de datos del sistema
-  - Almacenado en un medio físico de almacenamiento
-    (Ej. Disco rigido, etc...)
+  - Almacenado en un medio físico de almacenamiento (Ej. Disco rigido, etc...)
+  - Las siglas de *SQL* significan *Structured Query Language*
 * Sistema que administra la Base de Datos
-  - Es un conjunto de programas que ofrecen
-    distintos servicios
+  - Es un conjunto de programas que ofrecen distintos servicios
     - seguridad
-    - interfaz interactiva para ejecutar consultas,
-      manipular datos, ...
+    - interfaz interactiva para ejecutar consultas, manipular datos, ...
     - administrar las entidades
-
 * Esquemas para guardar datos
   - jerárquico
   - de objetos
   - documentales, par clave-valor
   - relacional
-
 * (DER) Diagrama Entidad-Relación
 ** Entidad
    - Datos que queremos persistir
@@ -64,12 +62,10 @@
 ** Instancia de una entidad
    - Es una *ocurrencia* particular de una entidad
    
-   <<DUDA 1>>
-   En una base de datos sería cada uno de los registros?
-   Osea cada fila?
+   *Observación:*
+   En una base de datos sería cada uno de los registros/filas de una tabla
 ** [TODO] Relaciones entre entidades
-   - Se pueden representar con un verbo o preposición
-     que conecta a las dos entidades
+   - Se pueden representar con un verbo o preposición que conecta a las dos entidades
 ** Características de las Relaciones
    En el *modelo relacional* no se utiliza
    - la *generalización* (supertipo-subtipo)
@@ -131,7 +127,6 @@
    - Si los *Strategies* son *Stateless*
      no son candidatos a ser *Entidades*
 ** Strategies y Stateless
-   <<DUDA 2>>
 * Clasificación de Entidades
 ** Entidades Fuertes ó Independientes
    - La clave primaria está compuesta
@@ -143,9 +138,7 @@
    - Tienen al menos un atributo de relación
      (osea tienen Clave foránea)
 ** Asociativas
-   - La clave primaria está formada por
-     atributos de relación
-
+   - La clave primaria está formada por atributos de relación
 * Algebra Relacional
   Juntando conceptos de las operaciones del *Algebra Relacional*
 ** Restricción
@@ -243,15 +236,5 @@
       FROM proyectos
       WHERE id=1;
     #+END_SRC
-
-
-
-* (DML) Lenguaje para Manipulación de Datos
-* (DDL) Lenguaje para Definición de Datos
-  - Nos permite crear *entidades*
-  - Decimos que *Metadata* es equivalente a *definición de datos*
-  
-  SQL es el lenguaje que lo permite (?)
-  SQL significa *Structured Query Language*
 * Glosario
-** clave subrogada
+  1. clave subrogada

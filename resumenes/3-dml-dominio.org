@@ -1,14 +1,9 @@
-#+TITLE: Clase 03 - SQL
-* Dudas
-  [[DUDA 1]]
+#+TITLE: DML
 * Sublenguajes
 ** DDL
    - Es el *Data Definition Language*
 ** DML
    - Es el *Data Manipulation Language*
-
-   Algunos de estos son
-   - SQL,
 * Dominio
 ** Concepto
    Es el *conjunto de valores posibles* que puede tener una columna de una tabla
@@ -80,112 +75,167 @@
      SELECT c.dni, c.nombre+ ', ' +c.apellido
      FROM clientes as c
    #+END_SRC
-** WHERE - Condiciones
-   Se agregan en el WHERE
+* WHERE - Condiciones
+  Se agregan en el WHERE
 
-   |-------------------------+------------------------------------------|
-   | Condiciones             | Descripcion                              |
-   |-------------------------+------------------------------------------|
-   | =, !=, <>, <, <=, >, >= | operadores relacionales, de igualdad, .. |
-   |-------------------------+------------------------------------------|
-   | AND, OR, NOT            | Operadores lógicos                       |
-   |-------------------------+------------------------------------------|
-   | [NOT] LIKE              | Para validar cadenas                     |
-   | [NOT] BETWEEN           | Para rangos                              |
-   | [NOT] IN                | Saber si está una lista de valores       |
-   | IS [NOT] NULL           |                                          |
-   |-------------------------+------------------------------------------|
-*** Operadores Logicos/Relaciones/Otros
+  |-------------------------+------------------------------------------|
+  | Condiciones             | Descripcion                              |
+  |-------------------------+------------------------------------------|
+  | =, !=, <>, <, <=, >, >= | operadores relacionales, de igualdad, .. |
+  |-------------------------+------------------------------------------|
+  | AND, OR, NOT            | Operadores lógicos                       |
+  |-------------------------+------------------------------------------|
+  | [NOT] LIKE              | Para validar cadenas                     |
+  | [NOT] BETWEEN           | Para rangos                              |
+  | [NOT] IN                | Saber si está una lista de valores       |
+  | IS [NOT] NULL           |                                          |
+  |-------------------------+------------------------------------------|
+** Operadores Logicos/Relaciones/Otros
+  #+BEGIN_SRC sql
+    SELECT * FROM products as p
+    WHERE p.price >= 100 AND p.price < 500;
+
+    SELECT * FROM products as p
+    WHERE p.price BETWEEN 100 AND 500;
+
+    SELECT * FROM products as p
+    WHERE p.category IN (1,4,9)
+  #+END_SRC
+** Operador LIKE
+   Validar cadenas de caracteres, conceptualmente similar a las regexp
+   aunque sintáticamente diferente
+
+   |-------------------------------+------------------------------------------------------|
+   |                               | Descripción                                          |
+   |-------------------------------+------------------------------------------------------|
+   | apellidoColumna LIKE 'A%'     | Apellidos que empiecen con A                         |
+   | apellidoColumna LIKE '%sh%'   | Apellidos que contengan la palabra sh                |
+   | apellidoColumna LIKE 'A_ _ _' | Apellidos que empiecen con A seguido de 3 caracteres |
+   |                               | (sin los espacios, se agregan a modo de ejemplo)     |
+   | apellidoColumna LIKE '[AEO]%' | Apellidos que empiecen con A ó con E ó con O         |
+   | apellidoColumna LIKE '[A-O]%' | Apellidos que empiecen entre la A y la O             |
+   |-------------------------------+------------------------------------------------------|
+
+  #+BEGIN_QUOTE
+  elegimos cualquier palabra que empiece con A
+  seguido de cero o mas caracteres (actúa como clausula de kleene, comodin)
+  ~LIKE 'A%'~
+
+  palabras que contengan th en cualquier lado
+  ~LIKE '%th%'~
+
+  palabras que comiencen con A y contenga 4 letras (incluyendo la A)
+  cada guión bajo repesenta cada caacter
+  ~LIKE 'A_ _ _'~
+
+  que comience con A ó E, 
+  seguido de cero o mas caracteres
+  ~LIKE '[AE]%'~
+
+  que comience con caracteres entre A y E,
+  seguido de cero o mas caracteres
+  ~LIKE '[A-E]%'~
+  #+END_QUOTE
+   
+   *Observación:*
+   El símbolo ~%~ (porcentaje) actúa como el comodín de las regexp osea como la
+   *clausula de kleene*. Es decir % representa cero o más caracteres
+* ORDER BY - Ordenamiento
+  - Ordena por columna los resultados
+  - Podemos ordenar de manera
+    - ascendente (por default) {1,2,3,4...}
+    - ó descendente {10,9,8,...}
+  - Podemos ordenar por
+    - nombre de columna
+    - número de columna
+
+  #+BEGIN_SRC sql
+    -- Ordenamos por nombre de columna
+    SELECT dni, nombre, apellido
+    FROM clientes
+    ORDER BY nombre, apellido;
+
+    -- Ordenamos por la columna 2 y 3
+    SELECT dni, nombre, apellido
+    FROM clientes
+    ORDER BY 2, 3;
+
+    -- ordenar el resultado por columnas
+    -- de forma descendente
+    SELECT *
+      FROM clientes
+     ORDER BY ciudad, apellido DESC;
+
+    -- con DISTINCT
+    -- listamos valores unicos
+    -- (elimina registros repetidos)
+    SELECT DISTINCT
+      FROM clientes
+     ORDER BY ciudad, apellido DESC;
+  #+END_SRC
+* DISTINCT - Registros Repetidos
+  - Utilizamos el operador *distinct* para evitar repetición de registros
+  - Es útil cuando hacemos un ...
+
+  #+BEGIN_SRC sql
+    -- no repite los registros que tengan la columna "numero" repetida
+    SELECT DISTINCT p.numero, p.nombre
+    FROM productos as p
+    ORDER BY 1; -- ordena por la primera columna (osea columna llamada numero)
+  #+END_SRC
+* Funciones Agregadas
+*** Conceptos
+    - Son funciones que dado un conjunto de datos (uno o más registros)
+      realizan *operaciones agregadas*
+    - Se utilizan bastante en conjunto con operador *GROUP BY* y *HAVING*
+
+    |-------------------------+-----------------------------------------------------------------------|
+    | Funcion Agregada        | Descripción                                                           |
+    |-------------------------+-----------------------------------------------------------------------|
+    | SUM(columna)            | Suma el valor de esa columna (de cada registro)                       |
+    | COUNT(*)                | Cuenta la cantidad total de registros                                 |
+    | MIN(columna)            | Encuentra el valor mínimo de la columna                               |
+    | MAX(columna)            | Encuentra el valor máximo de la columna                               |
+    | AVG(columna)            | Calcula un valor promedio de la columna por el valor de cada registro |
+    |-------------------------+-----------------------------------------------------------------------|
+    | COUNT(columna)          | Cuenta la cantidad de registros de esa columna (no nulos)             |
+    |-------------------------+-----------------------------------------------------------------------|
+    | COUNT(DISTINCT columna) | Cuenta la cantidad de registros (no cuenta los que se repitan)        |
+    |-------------------------+-----------------------------------------------------------------------|
+*** Ejemplos
    #+BEGIN_SRC sql
-     SELECT * FROM products as p
-     WHERE p.price >= 100 AND p.price < 500;
+     -- con todos estos queries
+     -- solo va a mostrar las columnas
 
-     SELECT * FROM products as p
-     WHERE p.price BETWEEN 100 AND 500;
+     SELECT COUNT(DISTINCT cliente_num)
+       FROM clientes;
 
-     SELECT * FROM products as p
-     WHERE p.category IN (1,4,9)
+     SELECT COUNT(cliente_num)
+       FROM clientes;
+
+     SELECT MAX(pedido_fecha)
+       FROM clientes;
+
+     SELECT MAX(pedido_fecha) ultimaCompra,
+            MIN(pedido_fecha) primerCompra
+       FROM clientes;
    #+END_SRC
-*** Operador LIKE
-    Validar cadenas de caracteres, conceptualmente similar a las regexp
-    aunque sintáticamente diferente
+* Cláusula GROUP BY
+  - Se suelen complementar con las [[Funciones Agregadas][funciones agregadas]]
+  - La [[Cláusula Having][cláusula HAVING]] actúa como el where con el select
 
-    |-------------------------------+------------------------------------------------------|
-    |                               | Descripción                                          |
-    |-------------------------------+------------------------------------------------------|
-    | apellidoColumna LIKE 'A%'     | Apellidos que empiecen con A                         |
-    | apellidoColumna LIKE '%sh%'   | Apellidos que contengan la palabra sh                |
-    | apellidoColumna LIKE 'A_ _ _' | Apellidos que empiecen con A seguido de 3 caracteres |
-    |                               | (sin los espacios, se agregan a modo de ejemplo)     |
-    | apellidoColumna LIKE '[AEO]%' | Apellidos que empiecen con A ó con E ó con O         |
-    | apellidoColumna LIKE '[A-O]%' | Apellidos que empiecen entre la A y la O             |
-    |-------------------------------+------------------------------------------------------|
+  #+BEGIN_SRC sql
+    SELECT p.numero_pedido, count(*) as cantidad
+    GROUP BY p.numero_pedido -- los agrupa por el numero pedido
+    ORDER BY 1; -- ordena de forma ascendente por la primera columna (osea numero_pedido)
 
-    *Observación:*
-    El símbolo ~%~ (porcentaje) actúa como el comodín de las regexp osea como la
-    *clausula de kleene*. Es decir % representa cero o más caracteres
-** ORDER BY - Ordenamiento
-   - Podemos ordenar de manera
-     - ascendente (por default) {1,2,3,4...}
-     - ó descendente {10,9,8,...}
-   - Podemos ordenar por
-     - nombre de columna
-     - número de columna
-
-   #+BEGIN_SRC sql
-     -- Ordenamos por nombre de columna
-     SELECT dni, nombre, apellido
-     FROM clientes
-     ORDER BY nombre, apellido;
-
-     -- Ordenamos por la columna 2 y 3
-     SELECT dni, nombre, apellido
-     FROM clientes
-     ORDER BY 2, 3;
-   #+END_SRC
-** DISTINCT - Registros Repetidos
-   - Utilizamos el operador *distinct* para evitar repetición de registros
-   - Es útil cuando hacemos un ...
-
-   #+BEGIN_SRC sql
-     -- no repite los registros que tengan la columna "numero" repetida
-     SELECT DISTINCT p.numero, p.nombre
-     FROM productos as p
-     ORDER BY 1; -- ordena por la primera columna (osea columna llamada numero)
-   #+END_SRC
-** Funciones Agregadas
-   - Son funciones que dado un conjunto de datos (uno o más registros)
-     realizan *operaciones agregadas*
-   - Se utilizan bastante en conjunto con operador *GROUP BY* y *HAVING*
-
-   |-------------------------+-----------------------------------------------------------------------|
-   | Funcion Agregada        | Descripción                                                           |
-   |-------------------------+-----------------------------------------------------------------------|
-   | SUM(columna)            | Suma el valor de esa columna (de cada registro)                       |
-   | COUNT(*)                | Cuenta la cantidad total de registros                                 |
-   | MIN(columna)            | Encuentra el valor mínimo de la columna                               |
-   | MAX(columna)            | Encuentra el valor máximo de la columna                               |
-   | AVG(columna)            | Calcula un valor promedio de la columna por el valor de cada registro |
-   |-------------------------+-----------------------------------------------------------------------|
-   | COUNT(columna)          | Cuenta la cantidad de registros de esa columna (no nulos)             |
-   |-------------------------+-----------------------------------------------------------------------|
-   | COUNT(DISTINCT columna) | Cuenta la cantidad de registros (no cuenta los que se repitan)        |
-   |-------------------------+-----------------------------------------------------------------------|
-** Cláusula GROUP BY
-   - Se suelen complementar con las [[Funciones Agregadas][funciones agregadas]]
-   - La [[Cláusula Having][cláusula HAVING]] actúa como el where con el select
-
-   #+BEGIN_SRC sql
-     SELECT p.numero_pedido, count(*) as cantidad
-     GROUP BY p.numero_pedido -- los agrupa por el numero pedido
-     ORDER BY 1; -- ordena de forma ascendente por la primera columna (osea numero_pedido)
-
-     SELECT p.numero_pedido, YEAR(p.fecha_pedido), MONTH(p.fecha_pedido)
-     FROM pedidos as p
-     GROUP BY YEAR(p.fecha_pedido), MONTH(p.fecha_pedido);
-   #+END_SRC
-** Cláusula HAVING
-   - Actúa en la cláusula [[Cláusula GROUP BY][GROUP BY]] como el where con el select
+    SELECT p.numero_pedido, YEAR(p.fecha_pedido), MONTH(p.fecha_pedido)
+    FROM pedidos as p
+    GROUP BY YEAR(p.fecha_pedido), MONTH(p.fecha_pedido);
+  #+END_SRC
+* Cláusula HAVING
+** Conceptos
+   - Actúa en la cláusula [[Cláusula GROUP BY][GROUP BY]] como el where con el select, PERO con el ~GROUP BY~
    - Requiere de condiciones con [[Funciones Agregadas][funciones agregadas]]
 
    #+BEGIN_SRC sql
@@ -198,3 +248,117 @@
      FROM pedidos as p
      GROUP BY YEAR(p.fecha_pedido), MONTH(p.fecha_pedido);
    #+END_SRC
+** Ejemplos
+  EL having actua como el where con select, PERO CON group by
+
+  #+BEGIN_SRC sql
+    SELECT YEAR(order_date) anio,
+           MONTH(order_date) mes,
+           COUNT(order_date) cant
+      FROM pedidos
+      GROUP BY YEAR(order_date);
+  #+END_SRC
+* Ejemplos
+  #+BEGIN_SRC sql
+    -- is null
+    -- NO hay que igualar a null
+    select * from tabla IS NULL;
+
+    -- para elegir entre un rango de numeros
+    select * FROM tabla
+     WHERE order_num between 10 AND 100;
+
+    -- alternativa al between
+    select * FROM tabla
+     WHERE order_num >= 10 AND order_num <= 100;
+
+    -- elegimos valores que sean alguno de esos tres
+    SELECT * FROM tabla
+     WHERE order_num IN (10,15,20);
+
+    -- alternativa al IN() aunque no sería eficiente
+    -- SELECT * FROM tabla
+    -- WHERE order_num = 10 OR order_nu = 15 OR order_num = 20;
+
+    -- el % reemplaza cero o mas caracteres (sería la clausula de kleene)
+  #+END_SRC
+* Parte práctica
+  #+BEGIN_SRC sql
+    -- ej. 3
+    select distinct city
+      from cliente
+     where state ='ca'
+     order by city;
+
+    -- ej 5
+    select fname, lname, c.address1, c.address2
+      from customer c whee customer_num =103;
+
+    -- ej. 6
+    select p.stock_num, p.unit_price, p.unite_code
+             from products_p
+     where p.manu_code ='ANZ'
+     order by p.unite_code;
+
+    -- ej. 7
+    select distinct manu_code
+      from items
+     order by 1;
+
+    -- ej. 8
+    select o.order_num, o.order_date, o.customer_num,
+           o.ship_date
+      from order o
+     where o.paid_state is null
+       and o.ship_date >= '2015-01-01'
+       and o.ship_date < '2015-07-01'
+           oder by 1;
+    -- otra alternativa al anterior
+    select order_num, order_date, customer_num, ship_date
+      from order
+     where paid_date
+           IS NULL
+           and year(ship_date) =2015
+           and month(ship_date) between 1 and 6;
+    -- ej. 9
+    select c.customer_num, c.company
+             from customer c
+             where c.company like '%town%';
+      -- ej. 10
+    select max(o.ship_charge) maximo,
+           min(o.ship_charge) minimo,
+           avg(o.ship_charge) promedio
+             from orders o;
+    -- ej 11
+    select o.order_num, o.ode_date, o.ship_date
+     from orders o
+     where year(o.ship_date) = year(o.order_date)
+     and month(o.ship_date) = month(o.order_date);
+
+    -- ej 12
+    -- SIEMPRE LO QUE AGREGEMOS EN GROUP BY
+    -- debe figurar en el SELECT
+    --
+    -- si NO agregamos una columna en el group by
+    -- lanza error
+    select o.customer_num, o.ship_date, count(*),
+           sum(o.ship_charge) total,
+     from orders o
+     group by o.customer_num, o.ship_date
+     order by total desc;
+
+    -- ej 13
+    select o.ship_date, sum(o.ship_weight) pesoTotal
+      from orders o
+     group by o.ship_date
+    having sum(o.ship_weight) >= 30
+           order by pesoTotal DESC;
+  #+END_SRC
+* Preguntas resueltas
+** Pregunta (1)
+   #+BEGIN_QUOTE
+   que admita ~NULL~, es lo mismo que en el DER aparezca modalidad opcional?
+   si por default todos son ~NOT NULL~, en el DER serian todos modalidad obligatoria? 
+   #+END_QUOTE
+
+   *Respuesta*: Si en ambos

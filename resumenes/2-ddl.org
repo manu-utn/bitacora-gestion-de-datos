@@ -1,5 +1,4 @@
-#+TITLE: SQL - Structured Query Language
-
+#+TITLE: DDL
 * Tablas
 ** Concepto
    - Es la unidad básica de almacenamiento de datos
@@ -18,7 +17,6 @@
             alta DATETIME NULL
      );
    #+END_SRC
-
 * Constraints
 ** Conceptos
    - EN español significa *restricciones*
@@ -96,8 +94,6 @@
     - El valor de la *foreign key* debe existir en 
       como valor en la *primary key*
 
-
-
 ** Tipos de Constraints Referenciales
 *** Conceptos
      #+NAME: tipo-constraints
@@ -109,20 +105,23 @@
      | Multiple path | PK con varias FK        |
      |---------------+-------------------------|
 *** Ejemplos
-    #+BEGIN_EXAMPLE
+    #+BEGIN_QUOTE
     Un ejemplo de ciclic referential constraint, sería:
     Cliente -> Facturas
     Pedido -> Productos
     Factua -> Renglones
 
     Ejemplos con una self referential constraint, serían:
-    Empleados->Empleados (por la subordinados)
+    Empleados->Empleados (por subordinados)
     Categoria->Categoria (para subcategorias, ej. mercadolibre)
     Color->Color (colores secundarios compuestos por primarios) 
-
+   
+    El de empleado-jefe podría ser 
+    ~FOREIGN KEY (n_jefe) references empleados (n_empleado)~
+    
     Ejemplos de multiple path constraint
     Cliente->Facturas, Cliente->Reclamos
-    #+END_EXAMPLE
+    #+END_QUOTE
 *** Sintáxis en SQL
     OJO..!
     El motor NO nos dejará ingresar un empleado
@@ -145,12 +144,14 @@
     #+END_SRC
 ** Integridad Semántica
 *** Conceptos
-    Para que los datos que guardemos respeten 
-    las restricciones
+    Para que los datos que guardemos respeten las restricciones
     - sobre los *dominios*
-      <<DUDA 9>>: Se refiere al dominio cuando definimos 
-      el tipo de dato en la tabla, antes de definir el campo?
     - sobre los *atributos*
+
+    #+BEGIN_COMMENT
+    Cuando se refiere a *dominio* supongo que lo relaciona
+    cuando definimos el tipo de dato en la tabla, antes de definir el campo
+    #+END_COMMENT
 
      #+NAME: 
      |------------+------------------------------------------|
@@ -176,11 +177,10 @@
 **** Ejemplos
 *** Default Constraint
 **** Conceptos
-    - Para fijar un valor predeterminado en una columna
-      al hacer un ~INSERT~ con un atributo sin valor
+    - Para fijar un valor predeterminado en una columna al hacer un ~INSERT~ con un atributo sin valor
+    - Las columnas no nombradas en el ~INSERT~ les dará un valor por defecto que pongamos al definir la tabla
     - Si no se asigna un valor, el valor predeterminado es NULL
     - Aplica sólo para ~INSERT~, NO para ~UPDATE~
-
     *Obsevación:*
     Si no agregamos un valor en la columna del insert,
     y tiene fijado un valor predeterminado, tendrá ese valor
