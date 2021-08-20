@@ -1,15 +1,4 @@
 #+TITLE: Modelo Relacional
-
-[[DUDA 5][DUDA 5]]
-* DUDAS
-  - No entendi el ejemplo de pag. 9 de "rel. autoref."
-    cuando habla de la primera tupla ingrese al conjunto
-  2. <Regla de integridad referencial>
-     no entendí lo de desconocido
-  3- <<DUDA 1>>
-  - [[DUDA 2]] 
-  - [[DUDA 3]]
-  - [[DUDA 4][DUDA 4]]
 * Base de Datos
 ** Concepto
    Es un conjunto de datos persistentes e interrelacionados
@@ -20,7 +9,11 @@
    - El grado varía con el tiempo (porque se pueden agregar/modificar/eliminar registros)
    - Es modificable, siempre que se modifique las tuplas de las relaciones (la DB sigue siendo la misma)
    - La DB no es la misma si se cambia la *definición de un dominio ó de una relación* 
-     <<DUDA 3>> =osea si se modifica una tabla ó los nombres de los atibutos (columnas), por lo de ALTER?=
+  
+   #+BEGIN_COMMENT
+   Supongo que último item se refiere a que si se modifica una tabla ó los nombres de los atibutos (columnas)
+   cuando usamos la instrucción ~ALTER~
+   #+END_COMMENT
 ** DBMS
    - Se conoce por *Motor de Base de Datos*
    - Significa *Data Base Manager System* (Sistema de Administación/Gestión de Base de Datos)
@@ -49,12 +42,14 @@
  |--------------------+------------------------------|
 ** Dominio
 *** Concepto
-    - Es un conjunto de valores posibles (escalares, del mismo tipo)
+    - Es un conjunto de valores posibles que puede tener un atributo (escalares, del mismo tipo)
+    - Cada atributo va a tener un dominio de valores
     - Restrigen las comparaciones (opeadores de comparación >=,<=, ==, !=, ...)
-    - Los motores de base de datos relacionales comeciales actuales
+    - Los (RDBMS) motores de base de datos relacionales comerciales actuales
       - NO tienen un *chequeo* para el manejo de dominios (el usuario el que debe decidir
         cuando hay incompatibilidad entre dominios)
       - hacen *chequeo* de los tipos de datos
+      - No manejan bien este concepto, porque es un concepto *semántico*
     - Es la menor *unidad semántica* de información
 *** Implementación
     Consiste en la implementación de
@@ -63,7 +58,7 @@
     - Restricciones de Chequeo (Sólo del tipo de dato)
     - Definición de convenciones de nombre para los atributos *IMPORTANTE*
       (para que tengan el mismo nombre cuando estén definidos sobre el mismo dominio)
-*** Ejemplos
+*** Ejemplo 1
      #+BEGIN_EXAMPLE
        El  dominio "NOMBRE" es el conjunto de todos los nombres posibles.
        Por tanto el conjunto de valores que aparecen en el atributo "ALU_NOMBRE" 
@@ -91,6 +86,22 @@
        -- Semánticamente MAL (porque no tiene sentido)
        -- Sintácticamente BIEN (NO tiene errores Sintáxis)
      #+END_SRC
+*** Ejemplo 2
+    |-------------------|
+    | alumno            |
+    |-------------------|
+    | (PK) nro_legajo   |
+    | (FK) cod_regional |
+    |-------------------|
+
+    |-------------------|
+    | regional          |
+    |-------------------|
+    | (PK) cod_regional |
+    |-------------------|
+
+    - el dominio de ~cod_regional~ sería todos los posibles valores de codigo de regionales
+    - el dominio de ~nro_legajo~ serían todos los posibles valores de número de legajo
 ** Relación
 *** Concepto
    - Una *relación* NO es una *tabla*.. Una tabla es la representación de una relación.
@@ -98,7 +109,7 @@
      - una cabecera
      - un cuerpo
 *** Cabecera
-    - Conjunto finito de atributos (sin detalla tanto)
+    - Conjunto finito de atributos (/que definen las tuplas/)
     - Conjunto finito de pares ordenados atributo-dominio
     - Su cantidad es fija
 
@@ -132,12 +143,14 @@
     *Obsevación:*
     Recordemos que las tuplas representan los registros ó filas de una tabla (relación),
     y su cantidad escalar se dice *cadinalidad*
+** Cardinalidad
+   cantidad de tuplas
 ** Grado
    - Es la cantidad de atributos de una *relación*
    - La cantidad de atributos NO puede variar, si se agrega ó saca atributos (columnas)
      se representando una nueva relación (concepto de Modelo Relacional)
 ** Tupla
-   - Es un elemento de una relación
+   - Es un elemento de una relación (/cada fila de la tabla/)
 * Propiedades de una Relación
   1. No existen en ella *tuplas repetidas*
      (por el concepto de unicidad, y que toda relación tiene *Clave Primaria*)
@@ -175,12 +188,12 @@
 * Integridad
 ** Atributos Clave
 *** Conceptos
-    - La *clave primaria* y *clave foránea* están definidas sobre el mismo *dominio*
+    - La (PK) *clave primaria* y (FK) *clave foránea* están definidas sobre el mismo *dominio*
 *** Clave Candidata
 **** Concepto
-    Es el conjunto de atributos que cumplan con las condiciones de
-    1. Unicidad
-    2. Minimalidad
+     Es el conjunto de atributos que cumplan con las condiciones de
+     1. Unicidad
+     2. Minimalidad
 **** Unicidad
      - Promete la no repetición del valor de un atributo
 **** Minimalidad
@@ -190,38 +203,51 @@
        entonces ese conjunto no cumplía con *minimalidad*,
        porque *la combinación de atributos* debe cumplir con *unicidad*
        =osea todas las posibles componentes que formemos deben cumplir unicidad=
-*** Clave Primaria
+*** (PK) Clave Primaria
+    - Identifica unívocamente a cada fila/registro
     - Surje del conjunto de *claves candidatas*
     - Es elegida por el diseñador (según su criterio, experiencia ó del negocio)
-    - Entra el concepto de [[Regla de integridad de las entidades][*Integridad de las entidades*]] (ningún elemento de la PK puede ser nulo)
-*** Clave Alterna
-    - También se le dice *Clave Alternativa*
-    - Son las *claves candidatas* que no fueron elegidas como *primaria*
-*** Clave Foránea
-    - Permite la combinación de datos de distintas relaciones R1, R2, ...(tablas),
-      no necesariamente deben ser distintas R1, R2,...
-    - Existe una *relación autoreferencial* si las relaciones son iguales (R1=R2)  
-    - Es un conjunto de atributos de una R1 que debe coincidir con los de la *clave primaria*
-      de la *relación referenciada* R2
-    - Pueden ser o no parte de la *clave primaria*
+    - Entra el concepto de [[Regla de integridad de las entidades][*Integridad de las entidades*]]
+      - ninguno de sus componentes/elementos puede ser *nulo*
+      - *componente* porque la clave puede ser *compuesta* (2 ó más atributos)
+*** Clave Alterna/Alternativa
+    Son las *claves candidatas* que no fueron elegidas como *primaria*
+*** (FK) Clave Foránea
+    - Permite la combinación de datos de distintas relaciones R1, R2,.. (/pueden no ser distintas R1, R2,.../)
+    - Si las relaciones son iguales (R1=R2) => Existe una *relación autoreferencial*
+    - Es un conjunto de atributos (/1 ó más/) de una R1 que debe coincidir con los de la (PK) *clave primaria*
+      de la *relación referenciada* R2 (/se relaciona con la PK de otra tabla/)
+    - Pueden formar o no parte de la *clave primaria*
     - El valor de los atributos puede ser.. todos nulos ó todos NO nulos (pero sólo uno u otro)
-    - A veces deben aceptar *nulos* (Ej. una relación *autoreferencial*)
+    - +A veces deben aceptar *nulos* (Ej. una relación *autoreferencial*)+ <---
     - Entra el concepto de [[Regla de integridad referencial][*Integridad Referencial*]] 
       - si una FK hace referencia a una PK, esta PK debe existir
       - que a su vez usa el concepto de *Integridad de las entidades*
       - y se debe determinar que acciones tomar para NO romper la *integridad referencial*
         (porque las FK de una manera brusca, al relacionar con otras entidades, puede hacer que se borren
         o modifiquen los registros de otras tablas)
-** Reglas de Integridad
-*** Conceptos
-    Permite obtener precisión y consistencia
+
+     #+BEGIN_QUOTE
+     La clave foránea puede ser *compuesta* digamos que fuese ~{cod_provincia, cod_localidad}~
+     se debe cumplir que para cada atributo de la clave sean
+     1. no nulos (ambos)
+     2. ó nulos (uno u otro)
+
+     Se debe cumplir alguna de las dos condiciones => caso contrario, se rompe la *regla de integridad referencial*
+     #+END_QUOTE
+** [TODO] Reglas de Integridad
+*** [TODO] Conceptos
+    Definir reglas permite que los datos sean
+    1. Integros <---- (???)
+    2. Consistentes
 *** Regla de integridad de las entidades
-    - Ningún *componente* de la *clave pimaria* de una relación base puede aceptar *nulos*
+    - Ningún *componente* de la (PK) *clave pimaria* de una relación base puede aceptar el valor *nulo*
+    - Se refiere a *componente* porque puede ser una *clave compuesta* (por 2 ó mas atributos)
 *** Regla de integridad referencial
 **** Concepto
-     - Cada valor de una *clave foránea* debe existir como valor en la *clave primaria*
-       de otra relación o ser desconocido
-       <<DUDA 5>>
+     - Se implementa en la *FK*
+     - Cada valor de una *clave foránea* debe existir como valor en la *clave primaria* de otra relación
+       ó ser desconocido (/ser desconocido se refiere al valor nulo NULL/)
      - Permite mantener un estado consistente de la base de datos
      - Es el Diseñador quien define la forma en que la *DBMS* manejará la *integridad referencial*
 
@@ -242,14 +268,20 @@
        2. *CASCADE:* Se modifican también las Claves Foráneas que la referencian
        3. *SET NULL:* Se le asigna NULO a todas las claves Foráneas (la clave foránea debe permitir nulos)
 
-     *Observación:*
-     Las acciones que se realizan se definen mediante *TRIGGERS*
+     *Observaciones:*
+     - Las acciones que se realizan se definen mediante *TRIGGERS*
+     - La regla por default es *restrict* (/no permite eliminar/modificar/)
+
      #+BEGIN_EXAMPLE
      Un ejemplo de una "clave foránea" que acepta nulos.
 
      Una entidad Materia, que aún no tiene un profesor asignado,
      por tanto su "numero de legajo" no aparece en la tupla
      (MATERIA_COD, MATERIA_NOMBRE, PROF_LEGAJO)
+     
+     Otro ejemplo sería si.. una Regional de una Universidad desaparece,
+     que todos los alumnos que tenían una referencia a ella, tengan el valor NULL
+     en la referencia.
 
      Observación: NO se puede dar que la clave primaria "MATERIA_COD" sea nula
      por la "regla de integridad de entidades"
@@ -276,10 +308,42 @@
     - Cada organización define sus reglas de negocio en función a sus objetivos
     - Son específicas de cada empresa
 * Reglas de CODD
+** Conceptos
   - Aseguran que un motor de BD sea *relacional*
+  - Edgar Codd es quien dijo que una Relación se conforma por un cuerpo, cabecera, etc..
+  - Las *reglas de integridad* deben estar en la *relación base*, no en programas de aplicación
+  - Aseguran la *independencia* entre
+    - el motor de base de datos
+    - los programas que acceden a los datos
+  - Soportar información faltante mediante *valores nulos* (~NULL~)
+  - Ofrecer lenguajes para
+    1. Definición de datos (DDL)
+    2. Manipulación de datos (DML)
+** Independencia de datos
+*** Independencia lógica
+    que uno podria hacer cambios a nuestra db
+    no deberia afectar nuestra app 
+    (podria afectar, aunque no al 100%)
+
+    anteriormente antes de las RDB, las apps
+    debian tener cargadas las estructuras de la DB
+    y si algo cambiaba en la DB, la app fallaba
+
+    #+BEGIN_EXAMPLE
+    la app es un buscador de alumnos
+    
+    si en la DB agrego nuevos atributos (edad, fecha de nac)
+    en la entidad alumnos
+    eso no deberia afectar la app
+    #+END_EXAMPLE
+*** Independencia física
+    (si modificamos el indice, etc...)
+    tampoco deberia afectar a la app
 * Algebra Relacional
 ** Concepto
+   - Lo definió Edgar Codd
    - Conjunto de operaciones sobre las relaciones (tablas)
+   - Permite operar distintas relaciones entre ellas
    - Cada operación relacional
      - opera sobre 1 ó 2 tablas (actúan como operandos)
      - tienen de resultado una *nueva relación*
@@ -287,18 +351,19 @@
 *** Operadores Tradicionales
     Son los comunes utilizados en álgebra
 **** Operador Unión (U)
-     - La unión de dos relaciones *compatibles* A, B
-       es el conjunto de TODAS las *[[Tupla][tuplas]]* de ambas relaciones
-     - <<DUDA 4>> Dos relaciones son *compatibles* si.. (?) 
+     - va a tener la cabecera de la primera relación
+     - Si dos relaciones tienen misma *cabecera* (cant. de atributos) => son *compatibles*
+     - La unión de dos relaciones *compatibles* ~A, B~ es el conjunto de TODAS las *[[Tupla][tuplas]]* de ambas relaciones
 **** Operador Intersección
      - La intersección de dos relaciones *compatibles* en la *UNIÓN* A y B,
        es el conjunto de todas las [[Tupla][tuplas]] que pertenecen a ambas relaciones
 **** Operador Diferencia (-)
-     - La diferencia de dos relaciones A y B
-       es el conjunto de [[Tupla][tuplas]] que pertence a A pero no a B
+     - La diferencia de dos relaciones A y B, es el conjunto de [[Tupla][tuplas]] que pertence a A pero no a B
 **** Operador Producto Cartesiano (x)
-     - El producto de dos relaciones A y B, 
-       es la concatenación de las tuplas de A y B
+     - El producto de dos relaciones A y B, es la concatenación de las tuplas de A y B
+     - Es una operación costosa para la DB
+     - el *grado* de A X B, es la suma de los grados de A y B (/siendo A y B relaciones/)
+     - La *cardinalidad* será el producto 
 *** Operadores Especiales
 **** Conceptos
     Están orientados al manejo de *relaciones*, y forman el *algebra relacional*
@@ -309,6 +374,16 @@
 **** Operador Select
      - Toma un *subconjunto horizontal* de una relación específica (toma todas las columnas)
      - El resultado es otra tabla con los mismos atributos que la tabla original
+     - NO tiene que ver con el operador ~select~ de SQL
+     - evalúa un conjunto de *tuplas* que cumplan cierta condición
+     - devuelve una nueva relación 
+     - filtra tuplas
+
+    #+BEGIN_QUOTE
+    ~SELECT (A) Ciudad ='Paris'~
+
+    nos trae un conjunto de tuplas que cumpla con una condición específica
+    #+END_QUOTE
 
       #+NAME: tabla-A
       |----+---------+---------|
@@ -320,7 +395,6 @@
 
       Si hacemos un Select CiudadA='Paris' nos quedaría
 
-      <<DUDA 2>> se parece al where?
       |----+---------+---------|
       | A  | NombreA | CiudadA |
       |----+---------+---------|
@@ -329,6 +403,18 @@
 **** Operador Project 
      - Toma un *subconjunto vertical* de una relación, al seleccionar los atributos especificos
      - El resultado es otra tabla es una nuva tabla con los atributos seleccionados
+     - Devuelve una nueva relación
+     - Elige un conjunto de atributos que queramos
+     - Filtra *atributos*
+
+    #+BEGIN_QUOTE
+    ~Project  (A) nombA, CiudadA~
+    
+    ~PROJECT (SELECT (A) Ciudad='Paris') nombA~
+
+    Por ejemplo filtramos las tuplas por las cumplan esa condicion (que ciudad sea paris)
+    y de ese resultado hacemos un project
+    #+END_QUOTE
 
       #+NAME: tabla-A
       |----+---------+---------|
@@ -346,7 +432,7 @@
       | A2 | Londres |
       |----+---------|
 **** Operador División
-     Me confundió un poco (?)
+    ~A % B~ son los valores que no están en B y que se relacionan con todos los valores de A
 **** Operador Join
      - El resultado es una nueva tabla donde cada renglon se forma 
        *concatenando dos renglones que tengan el mismo valor de atributo*
@@ -357,6 +443,37 @@
      Una de las columnas repetidas se puede eliminar
      - aplicando el *Operador Project*
      - utilizando el *natural join* (parece ser la manera adecuada)
+     - Matchea *tuplas* a partir de una igualdad (/del atributo/)
+     - Hace como un *producto cartesiano* pero solo para los *atributos* que matchee
+     - Es una operación costosa (/por lo del producto cartesiano/)
+** Ejemplos
+*** Ejemplo 1
+     ~PROJECT (SELECT (SPJ) J#='J1') S#~
+
+     agarra todas las tuplas de SPJ que cumplan con esa condicion y muestra solo el atributo S#
+
+     |----|
+     | S# |
+     | S1 |
+     | S2 |
+     |----|
+*** Ejemplo 2
+     se puede usar los operadores tradicionales
+
+     ~PROJECT ( SELECT (SPJ) J#='J1' )~
+*** Ejemplo 3
+     ~PROJECT JNAME (JOIN (SELECT (SPJ) S#='S1') J#)~
+
+     *Descripción:*
+     1. agarramos todas las tuplas que cumplan con  la condición donde S# tenga como valor S1
+     2. hacemos un producto cartesiano el resultado anterior con J, y devuelve los datos de J 
+        donde los datos sean similares
+     3. mostramos solo el atributo JNAME 
+
+     *Observación:*
+     Se recomienda hacer primero el select, y luego hacer el join.
+     porque el join puede ser mas costoso, por el tema del producto cartesiano
+     evaluaria demasiadas tuplas
 * Glosario
 ** Nulo
    - Es la *ausencia de valor* para un atributo que pertenezca al conjunto dominio
