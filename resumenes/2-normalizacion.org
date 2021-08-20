@@ -1,14 +1,72 @@
 #+TITLE: Resumen - Normalización
+* Diseño de datos
+** Entidades
+** Relaciones
+*** Según CODD
+    - La denomina *relaciones*, pero al implementar se les llama *Entidad*
+*** Implementación
+    - Se denominan como *Entidad*
+*** Conceptos
+    - Para relacionar dos entidades
+* Características de las Relaciones
+** Grado
+*** Unaria
+    - También llamada *recursiva*
+    - La entidad se relaciona consigo misma,
+      se *autoreferencia*
+    
+    #+BEGIN_EXAMPLE
+    Algunos ejemplos podrían ser
+    
+    La relación de la entidad Empleado con Empleado,
+    donde un empleado puede tener a cargo ninguno
+    o varios empleados.
+    OJO..! la PK NO deberia ser "NOT NULL",
+    porque no se podría cargar el primer empleado
 
-*DUDAS*
- 1. [[DUDA 1][DUDA 1]]
+    y también entra el concepto de *integridad referencial*
+    #+END_EXAMPLE
+*** Binaria
+    La mayoria lo son
 
+    #+BEGIN_EXAMPLE
+    Un ejemplo sería la relación de la entidad
+    Cliente Factura,
+    donde un Cliente puede tener muchas facturas,
+    y una Factura debe pertenecer sólo a un Cliente
+    #+END_EXAMPLE
+*** N-Aria
+    Se relaciona N entidades,
+
+    #+BEGIN_EXAMPLE
+    La relación entre las entidades
+    Cursadas, Alumnos, Cursos y Materias
+    #+END_EXAMPLE
+** Cardinalidad
+   - La cantidad de instancias de entidad que puede relacionarse con otras entidades
+   - Cuando tenemos una relación Muchos a Muchos, solemos usar una *entidad asociativa*
+
+   #+BEGIN_EXAMPLE
+   1 a 1
+   
+   1 a N
+
+   N a N
+   #+END_EXAMPLE
+** Modalidad
+*** Conceptos
+*** Opcional
+*** Obligatoria
+** Especialización ó Generalización
+   Cuando separamos en supertipo-subtipo
+   donde tenemos una entidad padre y 2 o más entidades hijas
+   donde esas entidades hijas tienen comportamiento diferente
 * Normalización
 ** Que es Normalizar
-  - Reducir la redundancia de datos (repetición)
-    y las inconsistencias
+  - Reducir la redundancia de datos (repetición) y las inconsistencias
   - Facilitar el mantenimiento de los datos
   - Evitar que se violen las *reglas de integridad*
+  - Reduce la *perfomance* pero... aumenta la *robustez*
 ** Que NO es Normalizar
    - Referirse al tipo de los datos de
      los atributos, ni a su longitud
@@ -32,61 +90,78 @@
   |-----------+----------+--------+-------|
 * (1FN) Primera Forma Normal
 ** Conceptos
-   - Los campos deben ser *atómicos*
-     (No pueden tener listados, ó colecciones)
+   - Los campos deben ser *atómicos* (No pueden tener listados, ó colecciones)
    - NO puede haber *atributos multivaluados*
-   - NO hay un orden en las fila
-     (Ej. el ID=1, no está antes del ID=2)
+   - NO hay un orden en las fila (Ej. el ID=1, no está antes del ID=2)
    - NO hay un orden en las columnas
-   - Las filas se identifican unicamente por
-     las *claves candidatas*
+   - Las filas se identifican unicamente por las *claves candidatas*
+   - Evitar grupos repetitivos ó campos multivaluados
 ** Ejemplos
-   La siguiente relación NO cumple la (1FN)
-   porque cada atributo debe ser *atómico*
-   y no se cumple en las dos primeras filas
-   en el atributo *tipo*
+*** Ejemplo 1
+    La siguiente relación NO cumple la (1FN)
+    porque cada atributo debe ser *atómico*
+    y no se cumple en las dos primeras filas
+    en el atributo *tipo*
 
-   #+NAME: relacion-sin-normalizar
-   |-------------+---------+-------------|
-   | id_producto | tipo    | descripcion |
-   |-------------+---------+-------------|
-   |           1 | A, B, C |             |
-   |-------------+---------+-------------|
-   |           2 | A, B    |             |
-   |-------------+---------+-------------|
-   |           3 | B       |             |
-   |-------------+---------+-------------|
+    #+NAME: relacion-sin-normalizar
+    |-------------+---------+-------------|
+    | id_producto | tipo    | descripcion |
+    |-------------+---------+-------------|
+    |           1 | A, B, C |             |
+    |-------------+---------+-------------|
+    |           2 | A, B    |             |
+    |-------------+---------+-------------|
+    |           3 | B       |             |
+    |-------------+---------+-------------|
 
-   Esta otra tampoco cumple la (1FN),
-   porque el atributo material es multivaluado
+    Esta otra tampoco cumple la (1FN),
+    porque el atributo material es multivaluado
 
-   #+NAME: relacion-sin-normalizar
-   |-------------+----------+-------------|
-   | id_producto | material | descripcion |
-   |-------------+----------+-------------|
-   |           1 | Piedra   |             |
-   |             | Maderas  |             |
-   |-------------+----------+-------------|
-   |           2 | A        |             |
-   |-------------+----------+-------------|
-   |           3 | B        |             |
-   |-------------+----------+-------------|
+    #+NAME: relacion-sin-normalizar
+    |-------------+----------+-------------|
+    | id_producto | material | descripcion |
+    |-------------+----------+-------------|
+    |           1 | Piedra   |             |
+    |             | Maderas  |             |
+    |-------------+----------+-------------|
+    |           2 | A        |             |
+    |-------------+----------+-------------|
+    |           3 | B        |             |
+    |-------------+----------+-------------|
+*** Ejemplo 2
+  #+BEGIN_EXAMPLE
+  Campos multivaluados en una entidad quedaría 
+
+  PIZZAS
+  gusto1
+  gusto2
+  gusto3
+  gustoN
+
+  quedando todos esos atributos como un arreglo,
+  esto ya no se utiliza, y se debe evitar
+  #+END_EXAMPLE
 * (2FN) Segunda Forma Normal
 ** Conceptos
-   1. NO debe haber [[Dependencia Funcional][dependencia funcional]] entre los atributos clave
-      (Osea NO tiene que haber dependencias parciales,
-       no puede haber un atributo no-clave que no dependa completamente
-       de la clave principal)
-   2. Que TODOS los [[Determinante][determinantes]] sean [[Clave Candidata][claves candidatas]]
-   3. Si la relación tiene una clave compuesta,
+   1. Debe respetar la (1FN)
+   2. NO debe haber [[Dependencia Funcional][dependencia funcional]] entre los *atributos clave*
+      - NO tiene que haber dependencias parciales,
+      - no puede haber un atributo no-clave que no dependa completamente de la clave principal
+      - Si la PK es una clave compuesta, cada atributo debe depender por completo de ella
+   3. Que TODOS los [[Determinante][determinantes]] sean [[Clave Candidata][claves candidatas]]
+   4. Si la relación tiene una clave compuesta,
       entonces la [[Clave Compuesta][clave compuesta]] debe ser *determinante*
       de TODOS los atributos no-clave
       (NO debe haber una dependencia parcial, de un atributo no-clave
        que dependa de un atributo clave A, pero no de la clave compuesta A+B)
-   4. NO debe haber grupos repetitivos
+   5. NO debe haber grupos repetitivos
 
+  Osea NO debe haber dependencias parciales,
+  los atributos no-claves deben depender completamente
+  de todos los elementos de la clave principal
+  
    *Observación:*
-   El punto (1) y (2) significan lo mismo
+   El punto (2) y (3) significan lo mismo
 ** Ejemplos
 *** Ejemplo (pdf)
     #+NAME: entidad-pedido-gusto
@@ -240,14 +315,15 @@
     |------------------+------------------+--------------------+--------------|
 * (3FN) Tercera Forma Normal
 ** Conceptos
+  - Debe respetar la (2FN)
   - NO puede haber [[Dependencial Funcional][dependencia funcional]] entre atributos no-claves
+    (/Es decir.. no puede haber atributos no-claves que dependan parcialmente de algunos, y no de otros/)
 
   *Observación:*
   Recordemos que en la ([[(2FN) Segunda Forma Normal][2FN)]] NO puede haber [[Dependencia Funcional][dependencia funcional]]
   entre los atributos claves.
   Osea los atributos no-clave, deben depender del conjunto de atributos
-  de la clave principal. NO pueden depender de un atributo clave, y 
-  del otro no
+  de la clave principal. NO pueden depender de un atributo clave, y del otro no
 ** Ejemplos 
 *** Ejemplo (pdf)
     #+NAME: entidad-pedidos
@@ -291,9 +367,12 @@
     |--------------+------------+---------------|
 * (BCNF) Forma Normal Boyce & Codd
   - Se repite el *todo determinante debe ser clave candidata*
+
+  #+BEGIN_COMMENT
   <<DUDA 1>>: Cuando volvemos a normalizar, en el ejemplo del pdf
   el nuevo atributo clave, se genera una 3ra entidad id_recepcionista y nombre?
   o se queda así?
+  #+END_COMMENT
 * (4FN) Cuarta Forma Normal 
 * (5FN) Quinta Forma Normal
 * Resumen de todas las Formas Normales
@@ -303,9 +382,51 @@
   - Las preguntas que nos debemos hacer son
     1. Hay dependencias funcionales entre atributos? (ya sean clave o no-clave)
     2. Hay grupos repetitivos ó atributos multivaluados?
-* Conceptos anteriores
-  Algunos conceptos de temas anteriores
-** Clave Candidata
-* glosario
-** Redundante
-   Cuando algo se repite
+* Desnormalización
+** Conceptos
+  - Aumenta la *perfomance*
+** Ejemplos
+*** Ejemplo 1 - Precio congelado
+  #+BEGIN_EXAMPLE
+  Un ejemplo podria ser con los precios congelados,
+  entre dos entidades FACTURA-RENGLON-PRODUCTO
+
+  Donde los renglones de factura tendrían 
+  el precio congelado, con el que se facturó
+
+  Y los productos tendrian también el atributo precio
+  pero sería con el valor actual (xq puede variar según
+  el mercado)
+
+  En este caso estamos desnormalizando,
+  teniendo el mismo atributo en dos entidades,
+  de forma intencional para poder distinguir lo dicho
+  precio actual y precio congelado
+
+  Si no quisieramos tener en cuenta eso,
+  podriamos normalizar, y que el atributo precio
+  solo aparezca en uno de los dos lados
+  #+END_EXAMPLE
+*** Ejemplo 2 - Telefonos
+  #+BEGIN_EXAMPLE
+  Si tuvieramos la entidad Alumno con un atributo telefono
+  podriamos dejar Desnormalizado si no quisieramos tener
+  una entidad especializada Telefono 
+ 
+  Desnormalizado seria
+  ALUMNO
+  nombre
+  telefono1
+  telefono2
+
+  Normalizado sería
+  ALUMNO
+  nombre
+
+  Telefono
+  cliente
+  telefono1 
+  telefono2
+  #+END_EXAMPLE
+* Glosario
+  1. *Redundante:* Cuando algo se repite

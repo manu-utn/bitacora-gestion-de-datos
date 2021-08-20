@@ -1,48 +1,4 @@
 #+TITLE: Clase 08 - Stores Procedures - Funciones - Cursores
-* Parte práctica
- #+BEGIN_SRC sql
-   CREATE PROCEDURE actualizaEstadisticas  
-		     @customer_numDES INT , @customer_numHAS INT 
-   AS 
-   BEGIN 
-      DECLARE CustomerCursor CURSOR FOR 
- SELECT customer_num from customer WHERE customer_num  
-		  BETWEEN @customer_numDES AND @customer_numHAS 
- 
-     DECLARE  @customer_num INT, @ordersqty INT, @maxdate DATETIME, 
-		      @uniqueManufact INT; 
-  
-     OPEN CustomerCursor; 
-     FETCH NEXT FROM CustomerCursor INTO @customer_num 
-     WHILE @@FETCH_STATUS = 0 
-     BEGIN 
-    
-	SELECT @ordersqty=count(*) , @maxDate=max(order_date)  
-	  FROM orders 
-	 WHERE customer_num = @customer_num; 
- 
-	 SELECT @uniqueManufact=count(distinct stock_num) 
-	   FROM items i, orders o 
-	  WHERE o.customer_num = @customer_num 
-	    AND o.order_num = i.order_num;
- 
-	 IF NOT EXISTS( SELECT 1 FROM CustomerStatistics  
-			 WHERE customer_num = @customer_num) 
- 
-     insert into customerStatistics  
-		    values (@customer_num,@ordersQty, @maxDate,@uniqueManufact);
-	 ELSE 
-	 update customerStatistics   
-		  SET  ordersQty=@ordersQty,maxDate=@maxDate,   
-		 uniqueManufact= @uniqueManufact 
-		   WHERE customer_num = @customer_num; 
-
-	 FETCH NEXT FROM CustomerCursor INTO @customer_num 
-     END; 
-     CLOSE CustomerCursor; 
-     DEALLOCATE CustomerCursor; 
-    END
- #+END_SRC
 * Diccionario de datos
   En ...
   - sys.procedures
@@ -765,3 +721,47 @@
       -- 3. verificamos que hayan habido cambios luego de ejecutar el SP
       SELECT * FROM dbo.customerStatistics;
     #+END_SRC
+* Parte práctica
+ #+BEGIN_SRC sql
+   CREATE PROCEDURE actualizaEstadisticas  
+		     @customer_numDES INT , @customer_numHAS INT 
+   AS 
+   BEGIN 
+      DECLARE CustomerCursor CURSOR FOR 
+ SELECT customer_num from customer WHERE customer_num  
+		  BETWEEN @customer_numDES AND @customer_numHAS 
+ 
+     DECLARE  @customer_num INT, @ordersqty INT, @maxdate DATETIME, 
+		      @uniqueManufact INT; 
+  
+     OPEN CustomerCursor; 
+     FETCH NEXT FROM CustomerCursor INTO @customer_num 
+     WHILE @@FETCH_STATUS = 0 
+     BEGIN 
+    
+	SELECT @ordersqty=count(*) , @maxDate=max(order_date)  
+	  FROM orders 
+	 WHERE customer_num = @customer_num; 
+ 
+	 SELECT @uniqueManufact=count(distinct stock_num) 
+	   FROM items i, orders o 
+	  WHERE o.customer_num = @customer_num 
+	    AND o.order_num = i.order_num;
+ 
+	 IF NOT EXISTS( SELECT 1 FROM CustomerStatistics  
+			 WHERE customer_num = @customer_num) 
+ 
+     insert into customerStatistics  
+		    values (@customer_num,@ordersQty, @maxDate,@uniqueManufact);
+	 ELSE 
+	 update customerStatistics   
+		  SET  ordersQty=@ordersQty,maxDate=@maxDate,   
+		 uniqueManufact= @uniqueManufact 
+		   WHERE customer_num = @customer_num; 
+
+	 FETCH NEXT FROM CustomerCursor INTO @customer_num 
+     END; 
+     CLOSE CustomerCursor; 
+     DEALLOCATE CustomerCursor; 
+    END
+ #+END_SRC

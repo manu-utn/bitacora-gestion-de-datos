@@ -3,9 +3,7 @@
 #+BEGIN_COMMENT
 leadtime es el tiempo promedio de entrega que tiene el proveedor
 y se utiliza para los sistemas q usan intime
-#+END_COMMENT
 
-* Pila de Dudas (?)
   Ordenadas por prioridad
   1. [[DUDA 4]] (pag. 11 pdf=30-DML...)
   2. [[DUDA 5]] (pag. 12, pdf=30-DML...)
@@ -13,6 +11,8 @@ y se utiliza para los sistemas q usan intime
   4. [[DUDA 2]]
   5. [[DUDA 3]]
   6. DUDA 6: Pag. 27,28, pdf=30-DML.. no hace falta un ~DISTINCT~ en el SELECT?
+#+END_COMMENT
+
 * DDL y DML
 ** Conceptos
    Recordemos que *DDL* se refiere al conjunto de operaciones de un lenguaje que permiten

@@ -355,13 +355,3 @@
        WHERE estado = 1;
     #+END_SRC
 * [TODO] Tablas anidadas
-  Pag. 15 de 18-Pesentacion Objetos
-  aún no lo dió el profe
-* parcial teoria-practica
-  1. 2 preguntas teoricas que pueden ser de
-     - modelo relacional
-     - funciones de una BD
-     - objetos de BD
-  2. parte practica (queries complejos en sql)
-  3. store procedures
-  4. triggers

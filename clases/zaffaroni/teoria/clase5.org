@@ -356,6 +356,3 @@
     + Consistencia
     + Isolation (aislamiento)
     + Durabilidad
-* [TODO] Indices
-  el profe aún no lo dio..
-  pag. 43 de 18-presentacion-objetos

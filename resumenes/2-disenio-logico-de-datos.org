@@ -112,31 +112,24 @@
 
 * Modelo Relacional
 ** Conceptos
-   - Las relaciones entre entidades se implementan
-     con *Claves foráneas* (FK)
+   - Las relaciones entre entidades se implementan con *Claves foráneas* (FK)
 ** Que NO puede tener
   Si integramos el concepto de *diagrama entidad-relación*
   debemos recordar que el *modelo relacional*
   - NO puede tener [[Atributos Multivaluados][atributos multivaluados]]
   - NO puede tener [[Especialización ó Generalización][entidades supertipo]] (generalización/especialización)
-
 * Modelo de Objetos
 ** Conceptos
-   - Las relaciones entre entidades se pueden
-     implementar con *referencias*
-   - Si los *Strategies* son *Stateless*
-     no son candidatos a ser *Entidades*
+   - Las relaciones entre entidades se pueden implementar con *referencias*
+   - Si los *Strategies* son *Stateless* no son candidatos a ser *Entidades*
 ** Strategies y Stateless
 * Clasificación de Entidades
 ** Entidades Fuertes ó Independientes
-   - La clave primaria está compuesta
-     por atributos propios
-   - No tiene atributos de relación
-     (osea NO tiene clave foránea)
+   - La clave primaria está compuesta por atributos propios
+   - No tiene atributos de relación (osea NO tiene clave foránea)
 ** Entidades Débiles ó Dependientes
    - También llamadas de *dependencia simple*
-   - Tienen al menos un atributo de relación
-     (osea tienen Clave foránea)
+   - Tienen al menos un atributo de relación (osea tienen Clave foránea)
 ** Asociativas
    - La clave primaria está formada por atributos de relación
 * Algebra Relacional
@@ -237,4 +230,4 @@
       WHERE id=1;
     #+END_SRC
 * Glosario
-  1. clave subrogada
+  1. Clave subrogada
