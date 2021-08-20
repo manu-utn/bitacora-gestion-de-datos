@@ -1,9 +1,63 @@
-#+TITLE: DML
-* Sublenguajes
-** DDL
-   - Es el *Data Definition Language*
-** DML
-   - Es el *Data Manipulation Language*
+#+TITLE: DML - Data Manipulation Language
+#+STARTUP: inlineimages
+* SQL
+  - Las siglas *SQL* hacen referencia a *Structured Query Language*
+  - Es un (DBMS) *motor de base de datos* que incorpora un (DDL) *lenguaje de definición de datos*
+  
+  *Observación:*
+  Una de las *reglas de CODD* impone que un (DBMS) *Data Base Managment System* (/motor de db/) debe tener
+  - un (DDL) *lenguaje de definición de datos* (/CREATE, ALTER, .../)
+  - un (DML) *lenguaje de manipulación de datos* (/SELECT, INSERT, UPDATE, DELETE, .../)
+
+  #+BEGIN_SRC plantuml :exports results :file img/instrucciones-sql.png
+    @startuml
+
+    title SQL Instrucciones
+    top to bottom direction 
+
+    note as N1
+    ,* SQL: Structured Query Language
+    ,* DML: Data Manipulation Lenguaje
+    ,* DDL Data Definition Language
+    ,* TCL: Transactional Control Language
+    endnote
+
+    note as SQL
+    Instrucciones-SQL
+    endnote
+
+    note as DDL
+    DDL
+    ,* CREATE
+    ,* ALTER
+    ,* DROP
+    ,* TRUNCATE
+    endnote
+
+    note as DML
+    DML
+    ,* SELECT
+    ,* INSERT
+    ,* UPDATE
+    ,* DELETE
+    endnote
+
+    note as TCL
+    TCL
+    ,* COMMIT
+    ,* ROLLBACK
+    endnote
+
+    DDL -up-> SQL
+    DML -up-> SQL
+    TCL -up-> SQL
+
+    @enduml
+  #+END_SRC
+
+  #+RESULTS:
+  [[file:img/instrucciones-sql.png]]
+
 * Dominio
 ** Concepto
    Es el *conjunto de valores posibles* que puede tener una columna de una tabla
