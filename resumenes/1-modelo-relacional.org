@@ -1,31 +1,30 @@
 #+TITLE: Modelo Relacional
 * Base de Datos
 ** Concepto
-   Es un conjunto de datos persistentes e interrelacionados
+   Es un conjunto de datos *persistentes* e *interrelacionados*
      1. almacenados
      2. sin redundancia (ó mínimas)
-** DBR
+** (DBR) Relational Database
    - Colección de relaciones *normalizadas* de distintos grados
-   - El grado varía con el tiempo (porque se pueden agregar/modificar/eliminar registros)
-   - Es modificable, siempre que se modifique las tuplas de las relaciones (la DB sigue siendo la misma)
+   - El *grado* varía con el tiempo (/porque se pueden agregar/modificar/eliminar registros/)
+   - Es modificable, siempre que se modifique las *tuplas* de las relaciones (la DB sigue siendo la misma)
    - La DB no es la misma si se cambia la *definición de un dominio ó de una relación* 
   
    #+BEGIN_COMMENT
    Supongo que último item se refiere a que si se modifica una tabla ó los nombres de los atibutos (columnas)
    cuando usamos la instrucción ~ALTER~
    #+END_COMMENT
-** DBMS
+** (DBMS) Data Base Manager System
    - Se conoce por *Motor de Base de Datos*
    - Significa *Data Base Manager System* (Sistema de Administación/Gestión de Base de Datos)
-   - Intrepreta y ejecuta comandos SQL
-   - Es un progama que permite administar el contenido de una/s base/s de datos *almacenada en disco*
+   - Intrepreta y ejecuta comandos/instrucciones SQL
+   - Es un progama que permite administar el contenido de una ó varias bases de datos *almacenadas en disco*
    - Los motores más conocidos son
      - Oracle
      - Mysql
      - PostgreSQL
-     - MS Sql Server
-** RDBMS
-   - Significa *Relational Data Base Managment System*
+     - Microsoft SQL Server
+** (RDBMS) Relational Data Base Managment System
 * Estructura
 ** Conceptos
  #+NAME: termino-relacional
@@ -42,22 +41,23 @@
  |--------------------+------------------------------|
 ** Dominio
 *** Concepto
+    - Es la menor *unidad semántica* de información
     - Es un conjunto de valores posibles que puede tener un atributo (escalares, del mismo tipo)
     - Cada atributo va a tener un dominio de valores
     - Restrigen las comparaciones (opeadores de comparación >=,<=, ==, !=, ...)
-    - Los (RDBMS) motores de base de datos relacionales comerciales actuales
-      - NO tienen un *chequeo* para el manejo de dominios (el usuario el que debe decidir
-        cuando hay incompatibilidad entre dominios)
-      - hacen *chequeo* de los tipos de datos
-      - No manejan bien este concepto, porque es un concepto *semántico*
-    - Es la menor *unidad semántica* de información
+    - No manejan bien el concepto de *dominio* porque es un concepto *semántico*
+*** Chequeo de Dominio
+    Los (RDBMS) motores de base de datos relacionales comerciales actuales
+    - NO tienen un *chequeo* para el _manejo de dominios_
+      (/es usuario quien debe decidir cuando hay incompatibilidad entre dominios/)
+    - hacen *chequeo* de los *tipos de datos* (/integer, datetime, char, varchar, .../)
 *** Implementación
     Consiste en la implementación de
-    - Claves foráneas (permiten combinar datos de distintas Relaciones)
-    - La definición de *tipos de dato de usuario* (se especifican previo a la definición de un campo)
-    - Restricciones de Chequeo (Sólo del tipo de dato)
+    - *Claves foráneas* (/permiten combinar datos de distintas Relaciones, es decir entre dos tablas/)
+    - La definición de *tipos de dato de usuario* (/se especifican previo a la definición de un campo/)
+    - Restricciones de Chequeo (/sólo del tipo de dato, Ej. integer, datetime, char, varchar, .../)
     - Definición de convenciones de nombre para los atributos *IMPORTANTE*
-      (para que tengan el mismo nombre cuando estén definidos sobre el mismo dominio)
+      (/para que tengan el mismo nombre cuando estén definidos sobre el mismo dominio/)
 *** Ejemplo 1
      #+BEGIN_EXAMPLE
        El  dominio "NOMBRE" es el conjunto de todos los nombres posibles.
@@ -104,7 +104,7 @@
     - el dominio de ~nro_legajo~ serían todos los posibles valores de número de legajo
 ** Relación
 *** Concepto
-   - Una *relación* NO es una *tabla*.. Una tabla es la representación de una relación.
+   - Una *relación* NO es una *tabla*.. Una *tabla* es la representación de una *relación*.
    - Se compone sobre un conjunto de *dominios* y se compone por
      - una cabecera
      - un cuerpo
@@ -140,33 +140,29 @@
     - Conjunto de tuplas atributo-valor
     - Su cantidad puede variar, porque las *tuplas* (registros) se pueden borrar, modificar ó agregar otras
 
-    *Obsevación:*
-    Recordemos que las tuplas representan los registros ó filas de una tabla (relación),
+    *Observación:*
+    Recordemos que las *tuplas* representan los registros ó filas de una tabla (relación),
     y su cantidad escalar se dice *cadinalidad*
 ** Cardinalidad
    cantidad de tuplas
 ** Grado
-   - Es la cantidad de atributos de una *relación*
-   - La cantidad de atributos NO puede variar, si se agrega ó saca atributos (columnas)
-     se representando una nueva relación (concepto de Modelo Relacional)
+   - Es la cantidad de atributos de una *relación* (/de una tabla/)
+   - La cantidad de atributos NO puede variar
+   - Si se agrega/saca atributos (/columnas/) se está representando una nueva *relación* (concepto de Modelo Relacional)
 ** Tupla
    - Es un elemento de una relación (/cada fila de la tabla/)
 * Propiedades de una Relación
-  1. No existen en ella *tuplas repetidas*
-     (por el concepto de unicidad, y que toda relación tiene *Clave Primaria*)
-  2. Las *tuplas* NO están ordenadas
-     (porque las tuplas son un conjunto de atributo-valor,
-      y los conjuntos matemáticamente no son ordenables)
-  3. Los atributos NO están ordenados
-     (mismo concepto que con las tuplas por ser un conjunto,
-      pero al estar en la cabecera es un conjunto de atributo-dominio)
-  4. TODOS los valores de los *atributos* son *atómicos*
-     (por tanto está *Normalizada*)
+  1. NO existen en ella *tuplas repetidas*
+     (/por el concepto de *Unicidad*, donde toda relación tiene *Clave Primaria* que la identifica unívocamente/)
+  2. Las *tuplas* (/atributo-valor/) NO están ordenadas
+     (/porque las tuplas son un conjunto de atributo-valor, y los conjuntos matemáticamente NO son ordenables/)
+  3. Los *atributos* (/columnas/) NO están ordenados
+     (/mismo concepto que con las tuplas por ser un conjunto, pero al estar en la cabecera es un conjunto de atributo-dominio/)
+  4. TODOS los valores de los *atributos* son *atómicos* => por tanto está *Normalizada*
 * Tipos de Relaciones
 ** Relaciones base
-   - Son las tablas
-   - Tiene existencia *permanente*
-   - Es parte de la base de datos (los datos)
+   - Son representadas por las *tablas*
+   - Tiene existencia *permanente* (/persisten, se guardan físicamente en disco/)
 ** Vistas
    - Se pueden nombrar
    - Son relaciones *virtuales*
@@ -182,20 +178,56 @@
    - NO se pueden nombrar
    - NO son de existencia *permanente*
 ** Relaciones temporales
-   - Son tablas temporales
+   - Son representadas por *tablas temporales*
    - Se pueden nombrar
    - Se destruye de forma automática en algún momento
 * Integridad
 ** Atributos Clave
 *** Conceptos
-    - La (PK) *clave primaria* y (FK) *clave foránea* están definidas sobre el mismo *dominio*
+    La (PK) *clave primaria* y (FK) *clave foránea* están definidas sobre el mismo *dominio*
+
+    #+BEGIN_QUOTE
+    En las siguientes tablas vemos como la FK ~cod_materia~ de la primera tabla,
+    y la (PK) ~cod_materia~ de la segunda tabla están definidas sobre el mismo
+    dominio que es *materia*
+    #+END_QUOTE
+
+    #+name: tabla-alumno
+    |-------------------+--------------------+--------|
+    | (PK) *cod_alumno* | (FK) *cod_materia* | nombre |
+    |-------------------+--------------------+--------|
+    |          39211118 |               0001 | fede   |
+    |          39211119 |               0001 | pedro  |
+    |-------------------+--------------------+--------|
+
+    #+name: tabla-materia
+    |--------------------+------------|
+    | (PK) *cod_materia* | nombre     |
+    |--------------------+------------|
+    |               0001 | matemática |
+    |               0002 | física     |
+    |--------------------+------------|
 *** Clave Candidata
 **** Concepto
      Es el conjunto de atributos que cumplan con las condiciones de
      1. Unicidad
      2. Minimalidad
 **** Unicidad
-     - Promete la no repetición del valor de un atributo
+     Promete la no repetición del valor de un atributo
+
+     #+BEGIN_QUOTE
+     En la siguiente tabla vemos como se cumple la unicidad con la clave compuesta
+     formada por ~{numero_legajo, dni}~
+     #+END_QUOTE
+
+      #+name: tabla-materia
+      |-----------------+----------+--------|
+      | *numero_legajo* |    *dni* | nombre |
+      |-----------------+----------+--------|
+      |         1509265 | 30211118 | carlos |
+      |         1609263 | 30111117 | perez  |
+      |         1909262 | 30212113 | samuel |
+      |-----------------+----------+--------|
 **** Minimalidad
      - Promete que será mínima la combinación de atributos que cumplan unicidad
      - El cada subconjunto de atributos debe cumplir con unicidad
@@ -215,62 +247,61 @@
 *** (FK) Clave Foránea
     - Permite la combinación de datos de distintas relaciones R1, R2,.. (/pueden no ser distintas R1, R2,.../)
     - Si las relaciones son iguales (R1=R2) => Existe una *relación autoreferencial*
-    - Es un conjunto de atributos (/1 ó más/) de una R1 que debe coincidir con los de la (PK) *clave primaria*
+    - Es un conjunto de atributos (/1 ó más/) de una R1 que debe coincidir con los de la (PK) *Clave Primaria*
       de la *relación referenciada* R2 (/se relaciona con la PK de otra tabla/)
-    - Pueden formar o no parte de la *clave primaria*
-    - El valor de los atributos puede ser.. todos nulos ó todos NO nulos (pero sólo uno u otro)
-    - +A veces deben aceptar *nulos* (Ej. una relación *autoreferencial*)+ <---
-    - Entra el concepto de [[Regla de integridad referencial][*Integridad Referencial*]] 
-      - si una FK hace referencia a una PK, esta PK debe existir
-      - que a su vez usa el concepto de *Integridad de las entidades*
-      - y se debe determinar que acciones tomar para NO romper la *integridad referencial*
-        (porque las FK de una manera brusca, al relacionar con otras entidades, puede hacer que se borren
-        o modifiquen los registros de otras tablas)
+    - Pueden formar o no parte de la (PK) *Clave Primaria*
+    - El valor de los atributos puede ser.. 
+      1. todos nulos
+      2. ó todos NO nulos 
+    - A veces pueden aceptar el *valor nulo* ~NULL~
+    - Permite mantener un *estado consistente* de la base de datos
 
-     #+BEGIN_QUOTE
-     La clave foránea puede ser *compuesta* digamos que fuese ~{cod_provincia, cod_localidad}~
-     se debe cumplir que para cada atributo de la clave sean
-     1. no nulos (ambos)
-     2. ó nulos (uno u otro)
+    #+BEGIN_QUOTE
+    Utiliza el concepto de [[Regla de integridad referencial][*Integridad Referencial*]] 
+    - si una FK hace referencia a una PK, esta PK debe existir
+    - que a su vez usa el concepto de *Integridad de las entidades*
+    - y se debe determinar que acciones tomar para NO romper la *integridad referencial*
+      (porque las FK de una manera brusca, al relacionar con otras entidades, puede hacer que se borren
+       o modifiquen los registros de otras tablas)
+    #+END_QUOTE
 
-     Se debe cumplir alguna de las dos condiciones => caso contrario, se rompe la *regla de integridad referencial*
-     #+END_QUOTE
+    #+BEGIN_QUOTE
+    Un ejemplo de una *clave foránea* que es *compuesta* podría ser ~{cod_provincia, cod_localidad}~
+    si cumple con la *regla de integridad referencial*, entonces cada atributo de la clave deben ser
+    1. no nulos (ambos)
+    2. ó nulos (uno u otro)
+
+    Se debe cumplir alguna de las dos condiciones => caso contrario, rompe la *regla de integridad referencial*
+    #+END_QUOTE
 ** [TODO] Reglas de Integridad
 *** [TODO] Conceptos
     Definir reglas permite que los datos sean
-    1. Integros <---- (???)
-    2. Consistentes
+    1. Integros (/que sean completos, que no le falten partes/)
+    2. Consistentes/Coherentes (/Ej. una FK debería hacer referencia a un registro que exista/)
 *** Regla de integridad de las entidades
     - Ningún *componente* de la (PK) *clave pimaria* de una relación base puede aceptar el valor *nulo*
-    - Se refiere a *componente* porque puede ser una *clave compuesta* (por 2 ó mas atributos)
+    - Se refiere a *componente* porque puede ser una *clave compuesta* (formada 2 ó mas atributos)
 *** Regla de integridad referencial
-**** Concepto
-     - Se implementa en la *FK*
-     - Cada valor de una *clave foránea* debe existir como valor en la *clave primaria* de otra relación
-       ó ser desconocido (/ser desconocido se refiere al valor nulo NULL/)
-     - Permite mantener un estado consistente de la base de datos
-     - Es el Diseñador quien define la forma en que la *DBMS* manejará la *integridad referencial*
-
-      #+BEGIN_EXAMPLE
-      Si A hace referencia a B => B debe existir
+    - Se implementa en la *FK*
+    - Cada valor de una *clave foránea* debe existir como valor en la *clave primaria* de otra tabla
+      ó ser desconocido (/ser desconocido se refiere al valor nulo NULL, porque no pertenece al dominio del que se trate/)
+    - Permite mantener la *consistencia* de los datos
+      (/Ej. Evita que haya redundancia de datos que generan inconsistencias/)
+    - Asegura la *coherencia* entre datos de dos tablas
+       (/Ej. Si un registro de la tabla Alumnos hace referencia a una materia, ésta debe existir en la tabla Materias/)
+    - Es el Diseñador quien define la forma en que la *DBMS* manejará la *integridad referencial*
+       
+     #+BEGIN_QUOTE
+     Si A hace referencia a B => B debe existir
    
-      B existe por la *regla de integridad de entidades* (existencia de la clave primaria)
-      #+END_EXAMPLE
-**** Aspectos que debe contemplar el diseñador
-     - Si la *clave foránea* acepta nulos
-     - La acción a realizar si se *elimina* un registro que tiene una *clave primaria* referenciada 
-       por una *clave foránea* de otra *relación*
-       1. *RESTRICT:* NO se deja eliminar el registro padre (al que hace referencia)
-       2. *CASCADE:* Se elimina ese registro, y los registros que la referencian
-       3. *SET NULL:* Se le asigna NULO a todas las Claves Foráneas (la clave foránea debe permitir nulos)
-     - La acción a realizar si se intenta *modificar* la *clave primaria* de un registro referenciado
-       1. *RESTRICT:* NO se deja modificar el registro padre (al que hace referencia)
-       2. *CASCADE:* Se modifican también las Claves Foráneas que la referencian
-       3. *SET NULL:* Se le asigna NULO a todas las claves Foráneas (la clave foránea debe permitir nulos)
-
-     *Observaciones:*
+     B existe por la *regla de integridad de entidades* (existencia de la clave primaria)
+     #+END_QUOTE
+*** Mecanismos para implementar la Regla de Integridad Referencial
+**** Conceptos
      - Las acciones que se realizan se definen mediante *TRIGGERS*
      - La regla por default es *restrict* (/no permite eliminar/modificar/)
+**** Validar valor nulo
+     Se debe evaluar si la *clave foránea* acepta nulos
 
      #+BEGIN_EXAMPLE
      Un ejemplo de una "clave foránea" que acepta nulos.
@@ -286,59 +317,127 @@
      Observación: NO se puede dar que la clave primaria "MATERIA_COD" sea nula
      por la "regla de integridad de entidades"
      #+END_EXAMPLE
-**** Ejemplos
-     #+BEGIN_EXAMPLE
+**** Acción al Eliminar registros
+     La acción a realizar si se *elimina* un registro que tiene una *clave primaria* referenciada 
+     por una *clave foránea* de otra *relación*
+
+     1. *RESTRICT:* NO se deja eliminar el registro padre (al que hace referencia)
+     2. *CASCADE:* Se elimina ese registro, y los registros que la referencian
+     3. *SET NULL:* Se le asigna NULO a todas las Claves Foráneas (la clave foránea debe permitir nulos)
+**** Acción al Modificar registros
+     La acción a realizar si se intenta *modificar* la *clave primaria* de un registro referenciado
+
+     1. *RESTRICT:* NO se deja modificar el registro padre (al que hace referencia)
+     2. *CASCADE:* Se modifican también las Claves Foráneas que la referencian
+     3. *SET NULL:* Se le asigna NULO a todas las claves Foráneas (la clave foránea debe permitir nulos)
+**** Ejemplo 1
+     Supongamos que tenemos dos tablas ~alumno~ y ~materia~ donde
+     - La tabla ~alumno~ tenemos los atributos
+       1. ~cod_alumno~ es la PK de la tabla ~alumno~
+       2. ~cod_materia~ la (FK) que hace referencia a la tabla ~materia~
+     - En la tabla ~materia~ tenemos como atributo
+       1. ~cod_materia~ es la (PK)
+
+     Si vemos la primera fila de la tabla ~alumno~ la FK ~cod_materia~ hace referencia a un registro
+     de la tabla ~materia~ que NO EXISTE. Por tanto NO se está respetando la *regla de integridad referencial*
+
+     #+name: tabla-alumno
+     |--------------+---------------+--------|
+     | *cod_alumno* | *cod_materia* | nombre |
+     |--------------+---------------+--------|
+     |           01 | ~9~           | samuel |
+     |           02 | 11            | pedro  |
+     |--------------+---------------+--------|
+
+     #+name: tabla-materia
+     |---------------+------------|
+     | *cod_materia* | nombre     |
+     |---------------+------------|
+     |            10 | matemática |
+     |            11 | física     |
+     |            12 | historia   |
+     |---------------+------------|
+**** Ejemplo 2
+     Supongamos que tenemos dos tablas ~factura~ y ~cliente~ donde
+     - La tabla ~factura~ tenemos los atributos
+       1. ~factura_numero~ es la PK de la tabla ~factura~
+       2. ~cod_cliente~ la (FK) que hace referencia a la tabla ~cliente~
+     - En la tabla ~cliente~ tenemos como atributo
+       1. ~cod_cliente~ es la (PK)
+
+     Si vemos la primera fila de la tabla ~factura~ la FK ~cod_cliente~ hace referencia a un registro
+     de la tabla ~cliente~ que NO EXISTE. Por tanto NO se está respetando la *regla de integridad referencial*
+
+     #+name: tabla-factura
+     |------------------+---------------|
+     | *factura_numero* | *cod_cliente* |
+     |------------------+---------------|
+     |             0001 | ~1~           |
+     |             0002 | 2             |
+     |------------------+---------------|
+
+     #+name: tabla-cliente
+     |---------------+--------|
+     | *cod_cliente* | nombre |
+     |---------------+--------|
+     |             2 | pedro  |
+     |             3 | samuel |
+     |---------------+--------|
+**** Ejemplo 3
+     #+BEGIN_QUOTE
      Si intentamos eliminar un registro (tupla) de (ALUMNO) que tiene una Clave Primaria (ALU_LEGAJO, ALU_DNI)
      referenciada por una Clave Foránea (ALU_COD) de otra Relación (INSCRIPCION)
 
-     podemos decidir si eliminar al alumno, y todas sus inscripciones (CASCADA)
-     ó que NO se pueda eliminar al alumno (RESTRICT)
-     ó asignarle NULO a todas las inscripciones (ANULACION) mmmh (????)
-     #+END_EXAMPLE
+     - *Cascada:* podemos eliminar al alumno, y todas sus inscripciones
+     - *Restrict:* hacemos que NO se pueda eliminar al alumno
+     - *Anulación:* podemos asignarle NULL a todas las inscripciones
+     #+END_QUOTE
+**** Ejemplo 4
+      #+BEGIN_QUOTE
+      Si intentamos modificar la clave primaria de PRODUCTO (entidad) que está referenciado
+      por PEDIDO (otra entidad) podemos optar por 
 
-     #+BEGIN_EXAMPLE
-     Si intentamos modificar la clave primaria de PRODUCTO (entidad) que está referenciado
-     por PEDIDO (otra entidad) podemos optar por 
-
-     NO permitir la modificación
-     ó modificar el COD_PROD (clave foránea, porque referencia a PEDIDO) de cada registro de PEDIDO (otra entidad)
-     ó asignarle NULO a todos los registros de PEDIDO que hagan referencia a esa clave primaria
-     #+END_EXAMPLE
+      - *Cascada:* podemos modificar el COD_PROD (clave foránea, porque referencia a PEDIDO) de cada registro de PEDIDO (otra entidad)
+      - *Restrict:* decidimos NO permitir la modificación
+      - *Anulación:* podemos asignarle NULO a todos los registros de PEDIDO que hagan referencia a esa clave primaria
+      #+END_QUOTE
 *** Regla de negocios ó comerciales
     - Cada organización define sus reglas de negocio en función a sus objetivos
     - Son específicas de cada empresa
 * Reglas de CODD
 ** Conceptos
   - Aseguran que un motor de BD sea *relacional*
-  - Edgar Codd es quien dijo que una Relación se conforma por un cuerpo, cabecera, etc..
-  - Las *reglas de integridad* deben estar en la *relación base*, no en programas de aplicación
+  - *Edgar Codd* es quien dijo que una *Relación* se conforma por un cuerpo, cabecera, etc..
+  - Las *reglas de integridad* deben estar en la *base*, no en programas de aplicación
   - Aseguran la *independencia* entre
     - el motor de base de datos
     - los programas que acceden a los datos
   - Soportar información faltante mediante *valores nulos* (~NULL~)
   - Ofrecer lenguajes para
-    1. Definición de datos (DDL)
-    2. Manipulación de datos (DML)
+    1. (DDL) Definición de datos (/CREATE, ALTER, .../)
+    2. (DML) Manipulación de datos (/SELECT, INSERT, UPDATE, DELETE, .../)
 ** Independencia de datos
 *** Independencia lógica
-    que uno podria hacer cambios a nuestra db
-    no deberia afectar nuestra app 
-    (podria afectar, aunque no al 100%)
+    - El poder hacer cambios en *tablas* sin afectar a las aplicaciones que no requieren esos cambios
 
-    anteriormente antes de las RDB, las apps
-    debian tener cargadas las estructuras de la DB
-    y si algo cambiaba en la DB, la app fallaba
+    #+BEGIN_QUOTE
+    Digamos que tenemos una aplicación que es un *buscador de alumnos*
+ 
+    si en la DB agregamos nuevos atributos {~edad~, ~fecha de nac~, ..} la tabla *alumnos* 
+    que son cambios que no requiere la aplicación aún, este cambio no debería afectar la aplicación
+    #+END_QUOTE
 
-    #+BEGIN_EXAMPLE
-    la app es un buscador de alumnos
-    
-    si en la DB agrego nuevos atributos (edad, fecha de nac)
-    en la entidad alumnos
-    eso no deberia afectar la app
-    #+END_EXAMPLE
+    *Observación:*
+    Previo a las RDB, las aplicaciones debían tener cargadas las estructuras de la DB
+    y si algo cambiaba en la DB, la aplicación fallaba
 *** Independencia física
-    (si modificamos el indice, etc...)
-    tampoco deberia afectar a la app
+    - El modificar la estructura de almacenamiento, la técnica de acceso, .. no debería afectar las aplicaciones
+
+    #+BEGIN_QUOTE
+    Por ejemplo si modificamos el índice de una tabla, no debería afectar a la aplicación que la utiliza
+
+    tampoco en el caso de si crear un *índice* en una columna de una tabla para obtener un listado más rápido
+    #+END_QUOTE
 * Algebra Relacional
 ** Concepto
    - Lo definió Edgar Codd
@@ -475,12 +574,10 @@
      porque el join puede ser mas costoso, por el tema del producto cartesiano
      evaluaria demasiadas tuplas
 * Glosario
-** Nulo
-   - Es la *ausencia de valor* para un atributo que pertenezca al conjunto dominio
-     sobre el cual está definido
+** Valor Nulo - Ausencia de Valor
+   - Es la *ausencia de valor* para un atributo que pertenezca al conjunto dominio sobre el cual está definido
    - NO se representa únicamente por valo NULL, puede ser una cadena en blanco,
      o cualquier valor que no genere valor en el dominio sobre el cual está definido
-
 ** Tipos de datos del usuario
    - Se pueden definir en las últimas versiones de motores de base de datos
    - Se acerca al concepto de *dominio*
@@ -493,3 +590,28 @@
    - de dos posiciones
    - valores definidos entre 1 y 24
    #+END_EXAMPLE
+** Consistencia/Coherencia
+   La *consistencia* y la *coherencia* entre los datos de dos tablas se logra con la *regla de integridad referencial*
+   Vemos como las dos primeras filas de la primera tabla hacen referencia a registros que NO existen..
+   
+   Esto genera *inconsistencia* porque refiere datos que no existen e *incoherencia* porque no tiene sentido que suceda.
+
+   #+name: tabla-alumno
+   |--------------+---------------+--------|
+   | *cod_alumno* | *cod_materia* | nombre |
+   |--------------+---------------+--------|
+   |           01 | ~9~           | samuel |
+   |           02 | ~15~          | fede   |
+   |           03 | 11            | pedro  |
+   |--------------+---------------+--------|
+
+   #+name: tabla-materia
+   |---------------+------------|
+   | *cod_materia* | nombre     |
+   |---------------+------------|
+   |            10 | matemática |
+   |            11 | física     |
+   |            12 | historia   |
+   |---------------+------------|
+** Estado Consistente
+   Está relacionado con las *transacciones* las mismas deben llevar a la DB de un *estado seguro* a otro *estado seguro*
