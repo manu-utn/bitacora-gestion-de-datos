@@ -58,6 +58,50 @@
   #+RESULTS:
   [[file:img/instrucciones-sql.png]]
 
+* Dominio
+** Concepto
+   Es el *conjunto de valores posibles* que puede tener una columna de una tabla
+   (/con columna nos referimos a un campo/atributo/)
+** Implementación
+   El *dominio* en una base de datos se implementa con
+   - Nombres (de columna)
+   - Tipos (de datos de las columnas/atributos/campo)
+   - Constraints (restricciones)
+*** Tipo de datos
+    |-----------------------------|
+    | Tipo de dato                |
+    |-----------------------------|
+    | int                         |
+    | date                        |
+    | smallint                    |
+    | varchar(unEntero)           |
+    | decimal(unEntero, unEntero) |
+    |-----------------------------|
+*** Constraints
+   |------------+-----------------------------------------------------------------|
+   | Constraint | Descripción                                                     |
+   |------------+-----------------------------------------------------------------|
+   | NULL       | Verifica que la columna pueda tener valor nulo (no tener valor) |
+   | NOT NULL   | Verifica que la columna debe tener datos (osea no nulo)         |
+   | CHECK      | Verifica que se cumpla una condición en una columna             |
+   | DEFAULT    |                                                                 |
+   |------------+-----------------------------------------------------------------|
+
+   #+BEGIN_SRC sql
+     /*
+     * Si NO se cumplen los CHECK,
+     * entonces no se puede ingresar ese registro a la tabla
+     */
+     CREATE TABLE pedidos(
+     numero int PRIMARY KEY,
+     numeroB int UNIQUE,
+     -- el atributo 'sexo' puede ser nulo
+     -- pero si NO es nulo, entonces solo puede ser el caracter F ó M
+     sexo char null CHECK (estado in ('F', 'M')),
+     -- el valor de la edad debe ser mayor a 18
+     edad int CHECK( edad > 18)
+     );
+   #+END_SRC
 * Tablas
 ** Concepto
    - Es la unidad básica de almacenamiento de datos

@@ -105,6 +105,7 @@
 ** Relación
 *** Concepto
    - Una *relación* NO es una *tabla*.. Una *tabla* es la representación de una *relación*.
+   - Se las denomina *relaciones*, pero al implementar se les llama *Entidad*
    - Se compone sobre un conjunto de *dominios* y se compone por
      - una cabecera
      - un cuerpo

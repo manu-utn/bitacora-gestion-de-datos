@@ -1,93 +1,29 @@
-#+TITLE: Resumen - Normalización
-* Diseño de datos
-** Entidades
-** Relaciones
-*** Según CODD
-    - La denomina *relaciones*, pero al implementar se les llama *Entidad*
-*** Implementación
-    - Se denominan como *Entidad*
-*** Conceptos
-    - Para relacionar dos entidades
-* Características de las Relaciones
-** Grado
-*** Unaria
-    - También llamada *recursiva*
-    - La entidad se relaciona consigo misma,
-      se *autoreferencia*
-    
-    #+BEGIN_EXAMPLE
-    Algunos ejemplos podrían ser
-    
-    La relación de la entidad Empleado con Empleado,
-    donde un empleado puede tener a cargo ninguno
-    o varios empleados.
-    OJO..! la PK NO deberia ser "NOT NULL",
-    porque no se podría cargar el primer empleado
-
-    y también entra el concepto de *integridad referencial*
-    #+END_EXAMPLE
-*** Binaria
-    La mayoria lo son
-
-    #+BEGIN_EXAMPLE
-    Un ejemplo sería la relación de la entidad
-    Cliente Factura,
-    donde un Cliente puede tener muchas facturas,
-    y una Factura debe pertenecer sólo a un Cliente
-    #+END_EXAMPLE
-*** N-Aria
-    Se relaciona N entidades,
-
-    #+BEGIN_EXAMPLE
-    La relación entre las entidades
-    Cursadas, Alumnos, Cursos y Materias
-    #+END_EXAMPLE
-** Cardinalidad
-   - La cantidad de instancias de entidad que puede relacionarse con otras entidades
-   - Cuando tenemos una relación Muchos a Muchos, solemos usar una *entidad asociativa*
-
-   #+BEGIN_EXAMPLE
-   1 a 1
-   
-   1 a N
-
-   N a N
-   #+END_EXAMPLE
-** Modalidad
-*** Conceptos
-*** Opcional
-*** Obligatoria
-** Especialización ó Generalización
-   Cuando separamos en supertipo-subtipo
-   donde tenemos una entidad padre y 2 o más entidades hijas
-   donde esas entidades hijas tienen comportamiento diferente
+#+TITLE: Normalización
 * Normalización
 ** Que es Normalizar
-  - Reducir la redundancia de datos (repetición) y las inconsistencias
-  - Facilitar el mantenimiento de los datos
+  - Reducir la *redundancia* de datos (repetición) y las *inconsistencias*
+  - Facilitar el *mantenimiento* de los datos
   - Evitar que se violen las *reglas de integridad*
   - Reduce la *perfomance* pero... aumenta la *robustez*
 ** Que NO es Normalizar
-   - Referirse al tipo de los datos de
-     los atributos, ni a su longitud
+   - Referirse al *tipo de dato* de los *atributos*, ni a su longitud
    - A la nomenclatura de los atributos/relaciones
-     (No establece seguir un criterio de nombres)
+     (/No establece seguir un criterio de nombres/)
 * Forma Canónica
 ** Conceptos
-  Consiste en eliminar los atributos calculables
-  (resultan del cálculo entre atributos)
+  Consiste en eliminar los atributos calculables (/resultan del cálculo entre atributos/)
 ** Ejemplos
-  En esta tabla vemos que el atributo *total*
-  es un campo calculables que resulta de operar
-  cantidad*precio
+   #+BEGIN_QUOTE
+   En esta tabla vemos que el atributo ~total~ es un *campo calculables* que resulta de operar ~cantidad*precio~
+  #+END_QUOTE
 
   #+NAME: relacion-pedidos
-  |-----------+----------+--------+-------|
-  | id_pedido | cantidad | precio | total |
-  |-----------+----------+--------+-------|
-  |         1 |       10 |      5 |    50 |
-  |         2 |       15 |      2 |    30 |
-  |-----------+----------+--------+-------|
+  |-----------+----------+--------+---------|
+  | id_pedido | cantidad | precio | *total* |
+  |-----------+----------+--------+---------|
+  |         1 |       10 |      5 |      50 |
+  |         2 |       15 |      2 |      30 |
+  |-----------+----------+--------+---------|
 * (1FN) Primera Forma Normal
 ** Conceptos
    - Los campos deben ser *atómicos* (No pueden tener listados, ó colecciones)
@@ -95,17 +31,17 @@
    - NO hay un orden en las fila (Ej. el ID=1, no está antes del ID=2)
    - NO hay un orden en las columnas
    - Las filas se identifican unicamente por las *claves candidatas*
-   - Evitar grupos repetitivos ó campos multivaluados
+   - Evitar *grupos repetitivos* ó *campos multivaluados*
 ** Ejemplos
 *** Ejemplo 1
-    La siguiente relación NO cumple la (1FN)
-    porque cada atributo debe ser *atómico*
-    y no se cumple en las dos primeras filas
-    en el atributo *tipo*
+    #+BEGIN_QUOTE
+    La siguiente relación NO cumple la *(1FN)* porque cada *atributo* debe ser *atómico*
+    y no se cumple en las dos primeras filas en el atributo *tipo*
+    #+END_QUOTE
 
     #+NAME: relacion-sin-normalizar
     |-------------+---------+-------------|
-    | id_producto | tipo    | descripcion |
+    | id_producto | *tipo*  | descripcion |
     |-------------+---------+-------------|
     |           1 | A, B, C |             |
     |-------------+---------+-------------|
@@ -113,22 +49,23 @@
     |-------------+---------+-------------|
     |           3 | B       |             |
     |-------------+---------+-------------|
-
-    Esta otra tampoco cumple la (1FN),
-    porque el atributo material es multivaluado
-
-    #+NAME: relacion-sin-normalizar
-    |-------------+----------+-------------|
-    | id_producto | material | descripcion |
-    |-------------+----------+-------------|
-    |           1 | Piedra   |             |
-    |             | Maderas  |             |
-    |-------------+----------+-------------|
-    |           2 | A        |             |
-    |-------------+----------+-------------|
-    |           3 | B        |             |
-    |-------------+----------+-------------|
 *** Ejemplo 2
+   #+BEGIN_QUOTE
+   Esta otra tampoco cumple la (1FN), porque el atributo ~material~ es *multivaluado*
+   #+END_QUOTE
+
+   #+NAME: relacion-sin-normalizar
+   |-------------+------------+-------------|
+   | id_producto | *material* | descripcion |
+   |-------------+------------+-------------|
+   |           1 | Piedra     |             |
+   |             | Maderas    |             |
+   |-------------+------------+-------------|
+   |           2 | A          |             |
+   |-------------+------------+-------------|
+   |           3 | B          |             |
+   |-------------+------------+-------------|
+*** Ejemplo 3
   #+BEGIN_EXAMPLE
   Campos multivaluados en una entidad quedaría 
 
@@ -138,32 +75,29 @@
   gusto3
   gustoN
 
-  quedando todos esos atributos como un arreglo,
-  esto ya no se utiliza, y se debe evitar
+  quedando todos esos atributos como un arreglo, esto ya no se utiliza, y se debe evitar
   #+END_EXAMPLE
 * (2FN) Segunda Forma Normal
 ** Conceptos
-   1. Debe respetar la (1FN)
+   1. Debe respetar la *(1FN)*
    2. NO debe haber [[Dependencia Funcional][dependencia funcional]] entre los *atributos clave*
       - NO tiene que haber dependencias parciales,
-      - no puede haber un atributo no-clave que no dependa completamente de la clave principal
-      - Si la PK es una clave compuesta, cada atributo debe depender por completo de ella
+      - no puede haber un *atributo no-clave* que no dependa completamente de la (PK) *clave principal*
+      - Si la (PK) es una *clave compuesta*, cada *atributo* debe depender por completo de ella
    3. Que TODOS los [[Determinante][determinantes]] sean [[Clave Candidata][claves candidatas]]
-   4. Si la relación tiene una clave compuesta,
-      entonces la [[Clave Compuesta][clave compuesta]] debe ser *determinante*
-      de TODOS los atributos no-clave
-      (NO debe haber una dependencia parcial, de un atributo no-clave
-       que dependa de un atributo clave A, pero no de la clave compuesta A+B)
-   5. NO debe haber grupos repetitivos
+   4. Si la relación tiene una clave *compuesta* => entonces la [[Clave Compuesta][clave compuesta]] debe ser *determinante* de TODOS los *atributos no-clave*
+      (/NO debe haber una dependencia parcial, de un atributo no-clave que dependa de un atributo clave A, pero no de la clave compuesta A+B/)
+   5. NO debe haber *grupos repetitivos*
 
-  Osea NO debe haber dependencias parciales,
-  los atributos no-claves deben depender completamente
-  de todos los elementos de la clave principal
+  #+BEGIN_QUOTE
+  En otras palabras NO debe haber *dependencias parciales*,
+  los *atributos no-claves* deben *depender completamente* de todos los elementos de la (PK) *clave principal*
+  #+END_QUOTE
   
    *Observación:*
    El punto (2) y (3) significan lo mismo
 ** Ejemplos
-*** Ejemplo (pdf)
+*** Ejemplo 1
     #+NAME: entidad-pedido-gusto
     |-------------+------------+-----------------+-------------------|
     | =id_pedido= | =id_gusto= | cantidad_pizzas | descripcion_gusto |
@@ -176,27 +110,29 @@
     |           2 |          5 |               2 | ahumado           |
     |-------------+------------+-----------------+-------------------|
 
-    La *Clave Primaria* está formada por {id_pedido, id_gusto}
-    osea es una *clave compuesta* (porque tiene más de un atributo)
+    #+BEGIN_QUOTE
+    La (PK) *Clave Primaria* está formada por ~{id_pedido, id_gusto}~
+    por tanto es una *clave compuesta* (porque tiene más de un atributo)
     y como NO se cumple que esa *clave compuesta* sea [[Determinantes][determinante]]
-    de todos los atributos no-clave, no cumple con la (2FN)
+    de todos los *atributos no-clave*, no cumple con la *(2FN)*
 
     porque ~id_gusto->descripcion_gusto~ 
     pero =id_gusto= junto con =id_pedido= forman la *clave principal*
     entonces el atributo no-clave *descripcion_gusto* NO depende
     completamente de la *clave principal*, sólo de =id_gusto=
+    #+END_QUOTE
  
-    Más en detalle 
+    LLendo más en detalle...
     1. En notación los *determinantes* que observamos son
        ~id_gusto->descripcion_gusto~ y ~id_pedido+id_gusto->cantidad_pizzas~
     2. Es decir =id_gusto= es *determinante*, porque de él depende {descripcion_gusto}
-       y la clave compuesta =id_pedido+id_gusto= también es *determinante* 
-       porque de ella depende {cantidad_pizzas}
+       y la *clave compuesta* =id_pedido+id_gusto= también es *determinante* 
+       porque de ella depende ~{cantidad_pizzas}~
     3. Por tanto NO cumple con la [[(2FN) Segunda Forma Normal][(2FN)]] porque 
        toda la clave compuesta =id_pedido+id_gusto= debe ser *determinante*
-       de todos los atributos no-clave
-       y descripcion_gusto NO depende de la clave compuesta, sólo de =id_gusto=
-*** Ejemplo 1
+       de todos los *atributos no-clave*
+       y ~descripcion_gusto~ NO depende de la *clave compuesta*, sólo de =id_gusto=
+*** Ejemplo 2
    En la entidad Inscripciones a materias, observamos que
    la *clave primaria* es una [[Clave Compuesta][clave compuesta]] porque tiene 
    a {id_alumno, id_materia}
@@ -218,11 +154,11 @@
    |            02 |            03 | carlitos      | 05/09/2020        |
    |---------------+---------------+---------------+-------------------|
 
-   La solución es partir la relación en dos,
-   y ahora ambas cumplen con (2FN)
-   porque el *determinante* id_alumno+id_materia
-   es clave primaria de todos los atributos no-clave
-   en este caso solo de fecha_inscripcion
+   #+BEGIN_QUOTE
+   La solución es partir la relación en dos, y ahora ambas cumplen con (2FN)
+   porque el *determinante* id_alumno+id_materia es (PK) *clave primaria* de todos los *atributos no-clave*
+   en este caso solo de ~fecha_inscripcion~
+   #+END_QUOTE
 
    #+NAME: entidad-inscripciones
    |---------------+---------------+-------------------|
@@ -235,10 +171,12 @@
    |            02 |            03 | 05/09/2020        |
    |---------------+---------------+-------------------|
 
-   y nos queda una entidad Alumnos,
-   que clasificamos como Entidad Fuerte ó Independiente
-   porque sus atributos no-clave dependen de su clave primaria
-   y no tiene clave foránea
+   #+BEGIN_QUOTE
+   y nos queda una entidad *Alumnos*,
+   que clasificamos como *Entidad Fuerte* (ó Independiente)
+   porque sus *atributos no-clave* dependen de su (PK) *clave primaria*
+   y no tiene (FK) *clave foránea*
+   #+END_QUOTE
 
    #+NAME: entidad-alumnos
    |---------------+---------------|
@@ -250,25 +188,24 @@
    |---------------+---------------|
 ** Dependencia Funcional
 *** Conceptos
-    - Cuando uno o varios atributos dependen completamente
-      de otro (dependen funcionalmente)
-    - El atributo (ó atributos) de los que dependen otros
-      se llaman [[Determinante][determinantes]]
+    - Cuando uno o varios atributos dependen completamente de otro (dependen funcionalmente)
+    - El atributo (ó atributos) de los que dependen otros se llaman [[Determinante][determinantes]]
 *** Notación
      1. Si A depende de B, se denota:  B->A
      2. Si A y B dependen de C, se denota: C->A,B
-     3. Si nombre y precio dependen completamente de id_producto
-        se denota id_producto->nombre,precio 
+     3. Si nombre y precio dependen completamente de id_producto se denota id_producto->nombre,precio 
 
      *Observación:*
      El caso (1), el atributo B, se llama *determinante*
      En el caso (2) el atributo C, se llama *determinante*
-*** Ejemplos
+*** Ejemplo
+    #+BEGIN_QUOTE
     En la siguiente entidad *Pedidos* vemos como los atributos
     nombre y edad dependen completamente del atributo id_cliente.
 
     A su vez el atributo id_cliente depende completamente
     del atributo id_pedido (porque id_pedido es la clave primaria)
+    #+END_QUOTE
 
     #+NAME: entidad-pedidos
     |------------------+------------+----------+------|
@@ -283,24 +220,24 @@
     |------------------+------------+----------+------|
 ** Determinantes
 *** Conceptos
-    - El atributo (ó atributos) de los que dependen completamente
-      otros atributos (que dependen funcionalmente)
+    El *atributo* (ó atributos) de los que *dependen completamente* otros atributos
+    (/que dependen funcionalmente/)
 *** Notación
-     Si nombre y precio dependen completamente de id_producto
-     se denota id_producto->nombre,precio 
-
-     y id_producto se denomina como *determinante*
+     Si ~nombre~ y ~precio~ dependen completamente de ~id_producto~
+     - se denota ~id_producto->nombre,precio~
+     - y ~id_producto~ se denomina como *determinante*
 *** Ejemplos
+    #+BEGIN_QUOTE
     En la siguiente entidad *Producto Fabricante* vemos que la
-    *Clave primaria* es una [[Clave Compuesta][clave compuesta]] por id_producto y id_fabri
+    *Clave primaria* es una [[Clave Compuesta][clave compuesta]] por ~id_producto~ y ~id_fabri~
     
-    donde desc_prod y id_fabri dependen de id_producto,
-    en notación sería: id_producto->desc_prod, id_fabri
+    donde ~desc_prod~ y ~id_fabri~ dependen de ~id_producto~,
+    en notación sería: ~id_producto->desc_prod, id_fabri~
 
-    además nombre_fabri depende de id_fabri, 
-    en notación sería: id_fabri->nombre_fabri
+    además ~nombre_fabri~ depende de ~id_fabri~, en notación sería ~id_fabri->nombre_fabri~
 
-    por tanto id_producto y id_cliente son *determinantes*
+    por tanto ~id_producto~ y ~id_cliente~ son *determinantes*
+    #+END_QUOTE
  
     #+NAME: entidad-producto-fabricante
     |------------------+------------------+--------------------+--------------|
@@ -319,13 +256,12 @@
   - NO puede haber [[Dependencial Funcional][dependencia funcional]] entre atributos no-claves
     (/Es decir.. no puede haber atributos no-claves que dependan parcialmente de algunos, y no de otros/)
 
-  *Observación:*
-  Recordemos que en la ([[(2FN) Segunda Forma Normal][2FN)]] NO puede haber [[Dependencia Funcional][dependencia funcional]]
-  entre los atributos claves.
-  Osea los atributos no-clave, deben depender del conjunto de atributos
-  de la clave principal. NO pueden depender de un atributo clave, y del otro no
+  #+BEGIN_QUOTE
+  Recordemos que en la ([[(2FN) Segunda Forma Normal][2FN)]] NO puede haber [[Dependencia Funcional][dependencia funcional]] entre los *atributos claves*.
+  Osea los *atributos no-clave*, deben depender del conjunto de atributos de la (PK) clave principal
+  NO pueden depender de un *atributo-clave*, y del otro no
+  #+END_QUOTE
 ** Ejemplos 
-*** Ejemplo (pdf)
     #+NAME: entidad-pedidos
     |-------------+------------+--------------+------------+---------------|
     | =id_pedido= | id_cliente | fecha_pedido | nombre_cli | domicilio_cli |
@@ -334,11 +270,13 @@
     |           2 |          3 | 10/07/2020   | Pedro      | Palermo       |
     |-------------+------------+--------------+------------+---------------|
 
+    #+BEGIN_QUOTE
     En la entidad Pedidos la *clave primaria* está formada solo por *id_pedido*
     id_cliente es un atributo no-clave (no pertenece a la clave principal)
     y además es [[Determinantes][determinante]] porque ~id_cliente->nombre_cli, domicilio_cli~
     Es decir hay [[Dependencia Funcional][dependencia funcional]] entre atributos no-claves
     para cumplir la (3FN) no puede pasar eso.
+    #+END_QUOTE
   
     Más en detalle observamos lo siguiente:
     1. id_cliente es *determinante* de {nombre_cli, domicilio_cli}
@@ -347,9 +285,10 @@
        en notación sería ~id_pedido-> id_cliente, fecha_pedido~
     3. hay grupos de datos repetidos en las 2 últimas columnas
 
-    Para que la entidad Pedidos cumpla con (3FN),
-    la partimos de manera que 
-    "NO haya dependencia funcional entre atributos no-clave"
+    #+BEGIN_QUOTE
+    Para que la entidad Pedidos cumpla con (3FN), la partimos de manera que 
+    "NO haya *dependencia funcional* entre *atributos no-clave*"
+    #+END_QUOTE
 
     #+NAME: entidad-pedidos
     |-------------+------------+--------------|
@@ -376,12 +315,12 @@
 * (4FN) Cuarta Forma Normal 
 * (5FN) Quinta Forma Normal
 * Resumen de todas las Formas Normales
-  - NO es necesario seguir un orden para normalizar
-    osea 1FN, 2FN, 3FN, ... (eso es sólo categorizar/identificarlas)
-  - La idea es evitar información redundante
+  - NO es necesario seguir un orden para normalizar osea 1FN, 2FN, 3FN,..
+    (/eso es sólo categorizar/identificarlas/)
+  - La idea es *evitar información redundante*
   - Las preguntas que nos debemos hacer son
-    1. Hay dependencias funcionales entre atributos? (ya sean clave o no-clave)
-    2. Hay grupos repetitivos ó atributos multivaluados?
+    1. Hay *dependencias funcionales* entre atributos? (ya sean clave o no-clave)
+    2. Hay *grupos repetitivos* ó *atributos multivaluados*?
 * Desnormalización
 ** Conceptos
   - Aumenta la *perfomance*

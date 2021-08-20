@@ -22,8 +22,7 @@
     - debe soportar el *esquema* que se definió
     - impone ciertas restricciones del fabricante
       - el (DML) lenguaje de manipulación de datos
-      - el (DDL) lenguaje que nos permite crear
-        las entidades
+      - el (DDL) lenguaje que nos permite crear las entidades
 ** (DDL) Data Definition Language
    - Nos permite crear *entidades*
    - Para definir los datos
@@ -48,8 +47,7 @@
 ** Entidad
    - Datos que queremos persistir
 ** Atributos
-   - Propiedades ó características de las
-     entidades
+   - Propiedades ó características de las entidades
 ** Atributos multivaluados
    - NO aparecen en el *modelo relacional*
    - Atributos que pueden tomar más de un valor
@@ -74,18 +72,43 @@
     Representa la cantidad de entidades
     que tiene asociada una relación
 **** Unarias ó Recursivas
-     Relaciones que asocian a una sola entidad
+     - Relaciones que asocian a una sola entidad
+     - La entidad se relaciona consigo misma, se *autoreferencia*
+
+    #+BEGIN_QUOTE
+    Un ejemplo sería la relación de la entidad *Empleado* con *Empleado*,
+    donde un empleado puede tener a cargo ninguno o varios empleados.
+
+    OJO..! la *PK* NO debería tener como *constraint* default ~NOT NULL~,
+    porque no se podría cargar el primer empleado
+    #+END_QUOTE
 **** Binarias
-     Relaciones que asocian a dos entidades
+     - Relaciones que asocian a dos entidades
+     - La mayoría lo son
+
+    #+BEGIN_QUOTE
+    Un ejemplo sería la relación entre la entidad *Cliente* y *Factura*
+    - un *Cliente* puede tener muchas facturas
+    - una *Factura* debe pertenecer sólo a un cliente
+    #+END_QUOTE
 **** N-arias
      Relaciones que asocian a N entidades
-*** Cardinalidad
-    - Cantidad de *entidades* que participan
-      en una relación
-    - Es la cantidad de [[Instancia de una Entidad][instancias de entidad]]
-    que puede tener una relación entre
-    dos entidades
 
+    #+BEGIN_EXAMPLE
+    Un típico ejemplo sería la relación entre las entidades 
+    - Cursadas
+    - Alumnos
+    - Cursos
+    - Materias
+    #+END_EXAMPLE
+*** Cardinalidad
+    - Cantidad de *entidades* que participan en una relación
+    - Es la cantidad de [[Instancia de una Entidad][instancias de entidad]] que puede tener una relación entre dos entidades
+
+    *Observación:*
+    - Cuando tenemos una relación *Muchos a Muchos* solemos usar una *entidad asociativa*
+
+    #+name: relacion-cardinalidad
     |--------------+------------------------------|
     | Cardinalidad | Ejemplo                      |
     |--------------+------------------------------|
@@ -94,8 +117,7 @@
     | n a n        | Profesores y Alumnos         |
     |--------------+------------------------------|
 *** Modalidad
-    Indica la *obligatoriedad* de existencia
-    o no de una [[Instancia de una Entidad][entidad]] en una [[Relación][relación]]
+    Indica la *obligatoriedad* de existencia ó no de una [[Instancia de una Entidad][entidad]] en una [[Relación][relación]]
 
     |-------------+------------------------------------------------|
     | Modalidad   | Ejemplo                                        |
@@ -104,18 +126,20 @@
     | Opcional    | Un cliente puede tener o no facturas asociadas |
     |-------------+------------------------------------------------|
 *** Especialización ó Generalización
+**** Conceptos
+   - Cuando separamos en *supertipo-subtipo*
+   - Tenemos una *entidad padre* (supertipo) y 2 o más *entidades hijas* (subtipo)
+   - Las *entidades hijas* tienen *comportamiento* diferente (/deben tener al menos un atributo que los diferencie/)
 **** Entidad Supertipo
      Es la Entidad Padre
 **** Entidad Subtipo
      - Son las entidades hijas
      - DEBEN TENER atributos *diferentes*
-
 * Modelo Relacional
 ** Conceptos
    - Las relaciones entre entidades se implementan con *Claves foráneas* (FK)
 ** Que NO puede tener
-  Si integramos el concepto de *diagrama entidad-relación*
-  debemos recordar que el *modelo relacional*
+  Si integramos el concepto de *diagrama entidad-relación* debemos recordar que el *modelo relacional*
   - NO puede tener [[Atributos Multivaluados][atributos multivaluados]]
   - NO puede tener [[Especialización ó Generalización][entidades supertipo]] (generalización/especialización)
 * Modelo de Objetos
