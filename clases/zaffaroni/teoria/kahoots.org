@@ -1,0 +1,64 @@
+* Pregunta 1
+  *Pregunta:*
+  SELECT nombre FROM empleados WHERE apellido LIKE '[A-G]_ _%'
+
+  *Respuesta:*
+  apellidos que comienzan entre A y G, 
+  con 3 o más letras
+   
+  *Justificación:*
+  el [A-G] se usa para rangos de valores
+  el _ representa cualquier caracter (uno solo)
+  el % representa la clausura de kleene, 1 o más veces cualquier caracter
+* Pregunta 2
+  *Pregunta:*
+  SELECT nombre, apellido lname FROM empleados
+  la sintáxis es correcta? V/F
+   
+  *Respuesta:*
+  Verdadero
+   
+  *Justificación:*
+  A primera vista puede parecer que falta una coma entre
+  apellido y lname, pero.. ~lname~ es un *alias*
+
+  es como si hubiera puesto ~apellido as lname~
+* Pregunta 3
+  *Pregunta:*
+  Orden correcto de las clausulas del select
+  a) SELECT - FROM - GROUP BY - ORDER BY ?
+  b) SELECT - FROM - ORDER BY - WHERE ? 
+  c) SELECT - WHERE - FROM - ORDER BY ? 
+  d) SELECT - FROM - ORDER BY - GROUP BY ?
+   
+  *Respuesta:*
+  a) SELECT - FROM - GROUP BY - ORDER BY
+   
+  *Justificación:*
+  la b) porque... el ORDER BY, va al final
+  la c) porque.. el FROM va antes que el WHERE
+  la d) está al porque primero se agrupan los datos con GROUP BY,
+  y luego los ordena con ORDER BY
+* Pregunta 4
+  *Pregunta:*
+  cual es un SELECT VALIDO
+  a) SELECT * WHERE apellido='gomez'
+  b) SELECT apellido, nombre WHERE apellido='Gomez'
+  c) SELECT codigo FROM empleados ORDER BY apellido WHERE
+     apellido='gomez'
+  d) SELECT apellido, nombre FROM empleados ORDER BY apellido
+   
+  *Respuesta:*
+  d) SELECT apellido, nombre FROM empleados ORDER BY apellido
+   
+  *Justificación:*
+  la a) le falta el FROM
+  la b) le falta el FROM
+  la c) el ORDER BY va al final
+* Pregunta 5
+  *Pregunta:*
+  La condición (x>=10 AND X<=20) es igual a (x BETWEEN 10 AND 20)
+  V/F?
+   
+  *Respuesta:*
+  Verdadero
