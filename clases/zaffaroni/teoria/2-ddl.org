@@ -8,6 +8,12 @@
   Una de las *reglas de CODD* impone que un (DBMS) *Data Base Managment System* (/motor de db/) debe tener
   - un (DDL) *lenguaje de definición de datos* (/CREATE, ALTER, .../)
   - un (DML) *lenguaje de manipulación de datos* (/SELECT, INSERT, UPDATE, DELETE, .../)
+  - un (TCL) *lenguaje de control de transacciones* (/COMMIT, ROLLBACK/) <----
+  - un (DCL) *lenguaje de control de datos* (/GRANT, REVOKE/) <---
+
+  DCL
+  - GRANT: permite otorgar permisos
+  - REVOKE: elimina los permisos otorgados
 
   #+BEGIN_SRC plantuml :exports results :file img/instrucciones-sql.png
     @startuml
@@ -61,12 +67,13 @@
 * Dominio
 ** Concepto
    Es el *conjunto de valores posibles* que puede tener una columna de una tabla
-   (/con columna nos referimos a un campo/atributo/)
+   (con columna decimos un campo/atributo)
 ** Implementación
    El *dominio* en una base de datos se implementa con
    - Nombres (de columna)
    - Tipos (de datos de las columnas/atributos/campo)
    - Constraints (restricciones)
+
 *** Tipo de datos
     |-----------------------------|
     | Tipo de dato                |
@@ -111,6 +118,54 @@
      - nombre
      - tipo de dato
      - un ancho/longitud (/que varía según el tipo de dato/)
+** Tabla Maestra Vs Tabla Transaccional Vs. Tabla Paramétrica
+*** Tabla Maestra
+    1. Aplican el concepto *ABM* (Alta-Baja-Modificación)
+    2. Es el usuario quien ingresa los datos
+
+    #+BEGIN_QUOTE
+    Un ejemplo de tablas maestras sería *CLIENTE*, *PEDIDO*, *ALUMNO*, *MATERIA*, ..
+    estas necesitas un alta-baja-modificación
+    #+END_QUOTE
+*** Tabla Transaccional
+    - Se generan a través de *tablas maestras* y de la interacción entre *tablas maestras*
+    - NO es el usuario quien ingresa los datos. Es el Sistema quien carga los datos
+    - NO las crea los usuarios, si no que surjen a través de *transacciones* que realiza el sistema
+
+    #+BEGIN_QUOTE
+    Por ejemplo una tabla transaccional podría ser *FACTURA*
+    que surje cuando *CLIENTE* interactúa con *PRODUCTO* (/ambas son "tablas maestras"/)
+    
+    y su interacción hace que generemos una *factura*
+    que tiene un *cliente*, y muchos *productos*    
+    #+END_QUOTE
+
+    #+BEGIN_QUOTE
+    Otra tabla transaccional podría ser *ITEM_FACTURA*
+    que surje de la relación entre la *factura* y los *productos*
+
+    donde un *item_factura* tiene un producto y pertenece a una *factura*
+    #+END_QUOTE
+*** Tabla Paramétrica
+    - Es una *tabla maestra* que sirve para paramétrizar *tablas maestras*
+    - Son tablas que *permiten parametrizar atibutos* de otras tablas
+
+    #+BEGIN_QUOTE
+    Supongamos que tenemos la tabla *PRODUCTO* que tiene como atributos
+    1. (PK) *producto_codigo*
+    2. producto_detalle
+    3. producto_precio
+    4. (FK) ~producto_rubro~
+    5. (FK) ~producto_envase~
+
+    Podemos crear dos *tablas parámetricas* que también son *tablas maestras* (/permiten ABM/)
+    1. *RUBRO:* para parámetrizar los productos en diferentes rubros (/Ej. lacteos, verduras, .../)
+    2. *ENVASE:* para parametrizar los producos en función a su envase de presentación
+
+    Finalmente las relaciones entre las dos *tablas paramétricas* y *PRODUCTO* quedaría..
+    1. ~1 a N~: Un producto puede tener un envase, y un envase puede estar en muchos productos
+    2. ~1 a 1~: UN producto tiene un rubro, y un rubro tiene un producto
+    #+END_QUOTE
 ** Sintáxis en SQL
    #+BEGIN_SRC sql
      CREATE TABLE clientes(
@@ -120,16 +175,48 @@
             alta DATETIME NULL
      );
    #+END_SRC
+* Alter
+** Conceptos
+   - ~ALTER~ permite alterar una columna de una tabla (agregar/eliminar/cambiar tipo)
+
+   |-------------------------------------------------------------+---------------------------------------|
+   | INSTRUCCIÓN                                                 | DESCRIPCION                           |
+   |-------------------------------------------------------------+---------------------------------------|
+   | ~ALTER TABLE nombre_tabla ADD nombre_columna~               | agrega una columna                    |
+   |-------------------------------------------------------------+---------------------------------------|
+   | ~ALTER TABLE nombre_tabla DROP COLUMN nombre_columna~       | elimina una columna                   |
+   |-------------------------------------------------------------+---------------------------------------|
+   | ~ALTER TABLE nombre_tabla ALTER COLUMN nombre_columna TIPO~ | cambiar el tipo de dato de la columna |
+   |-------------------------------------------------------------+---------------------------------------|
+** Sintáxis en SQL
+   #+BEGIN_SRC sql
+     ALTER TABLE cliente ADD cliente_provincia INT NULL;
+
+     ALTER TABLE cliente DROP COLUMN cliente_provincia INT NULL;
+
+     ALTER TABLE cliente ALTER COLUMN cliente_provincia CHAR(10) NULL;
+   #+END_SRC
 * Constraints
 ** Conceptos
-   - EN español significa *restricciones*
+   - En español significa *restricciones*
+   
+   #+BEGIN_QUOTE
+   Por lo general el proceso de creación de tablas mediante scripts, es
+   1. crear las tablas sin PK, ni FK
+   2. luego se agregan las PK
+   3. luego se crearn las FK haciendo referencia a las PK
+
+   Si llegamos a hacer el paso (2) (3) de forma inversa, lanzaria una excepción
+   porque estaríamos rompiendo las reglas de integridad referencial
+   al asociar una FK que NO existe
+   #+END_QUOTE
 ** (PK) Primary Key Constraint
 *** Conceptos
    - Puede estar formada por 1 o más columnas
    - Representa de forma unívoca a cada fila
    - NO puede aceptar valores nulos
    - Se utiliza el concepto de [[Integridad de Entidad][Integidad de Entidad]]
-*** Sintáxis en SQL
+*** Crear PK - Sintáxis en SQL
     Supongamos que tenemos una entidad Pedidos, que tiene varios items.
 
     *Observación:*
@@ -137,8 +224,8 @@
 
     #+BEGIN_SRC sql
       /*
-      * Restricción a nivel de Columna
-      */
+      ,* Restricción a nivel de Columna
+      ,*/
       CREATE TABLE pedidos(
              cod_pedido        INT PRIMARY KEY, -- ACA!!!
              descripcion       VARCHAR(20),
@@ -146,8 +233,8 @@
       );
 
       /*
-      * Restricción a nivel de Tabla
-      */
+      ,* Restricción a nivel de Tabla
+      ,*/
       CREATE TABLE items_pedidos(
              cod_item      INT,
              cod_pedido    INT REFERENCES pedidos,
@@ -157,12 +244,43 @@
              PRIMARY KEY(cod_item, cod_pedido) -- ACA!!!
       );
     #+END_SRC
+*** Agregar/Eliminar PK - Sintáxis en SQL
+    #+BEGIN_SRC sql
+      /*
+       ,* Agregar el constraint con la tabla ya creada
+       ,*/
+
+      CREATE TABLE alumno(
+        dni        INT,
+        legajo        INT,
+        nombre       VARCHAR(20)
+      );
+
+      -- 1ra manera:
+      -- (el motor le agrega un nombre aleatorio al constraint)
+      ALTER TABLE alumno
+        ADD PRIMARY KEY(dni, legajo);
+
+      -- 2da manera:
+      -- especificamos el nombre del constraint
+      ALTER TABLE alumno
+        ADD CONSTRAINT pk_alumno PRIMARY KEY(dni, legajo);
+
+      /*
+       ,* Eliminar el constraint
+       ,*/
+
+      -- suponiendo que "nosotros" le definimos ese nombre a la (PK)
+      -- caso contrario se debe revisar en el motor, que nombre le definió
+      ALTER TABLE alumno
+        DROP CONSTRAINT pk_alumno;
+    #+END_SRC
 ** (FK) Foreign Key Constraint
 *** Conceptos
    - Puede estar formada por 1 o más columnas
    - Está referenciada a una (PK) *primary key* de otra tabla
    - Se utiliza el concepto de [[Integridad Referencial][Integridad Referencial]]
-*** Sintáxis en SQL
+*** Crear FK - Sintáxis en SQL
     #+NAME: restricciones-a-nivel-tabla
     #+BEGIN_SRC sql
       CREATE TABLE facturas(
@@ -184,6 +302,44 @@
              fecha_generada DATE,
              PRIMARY KEY (numero, letra)
       );
+    #+END_SRC
+*** Agregar/Eliminar FK - Sintáxis en SQL
+    #+BEGIN_SRC sql
+      /*
+       ,* Agregar el constraint con la tabla ya creada
+       ,*/
+
+      CREATE TABLE Alumnos(
+        dni        INT,
+        legajo        INT,
+        nombre       VARCHAR(20),
+        materia_id INT
+      );
+
+      CREATE TABLE Materias(
+        materiaID INT NOT NULL,
+        nombre VARCHAR(30) NOT NULL,
+        PRIMARY KEY (materiaID)
+        );
+
+      -- 1ra manera:
+      -- (el motor le agrega un nombre aleatorio al constraint)
+      ALTER TABLE Alumnos
+        ADD FOREIGN KEY(materia_id) REFERENCES Materias(materiaID);
+
+      -- 2da manera:
+      -- especificamos el nombre del constraint
+      ALTER TABLE Alumnos
+        ADD CONSTRAINT pk_materia FOREIGN KEY (materia_id) REFERENCES Materias(materiaID);
+
+      /*
+       ,* Eliminar el constraint
+       ,*/
+
+      -- suponiendo que "nosotros" le definimos ese nombre a la (FK)
+      -- caso contrario se debe revisar en el motor, que nombre le definió
+      ALTER TABLE Alumnos
+        DROP CONSTRAINT pk_materia;
     #+END_SRC
 ** Reglas de Integridad
 *** Integridad de Entidad
@@ -296,11 +452,13 @@
     *Observaciones:*
     - Las *claves candidatas* son aquellas que representan de forma únivoca a cada fila/registro de una entidad/tabla.
     - Si el diseñador elige una o un conjunto de ellas como (PK) clave primaria, el resto se consideran *claves alternas*
+    - Acepta el valor ~NULL~ (/llamado "valor desconocido"/) pero una única vez, en un sólo registro
+    - En una PK no puede tener ningún registro con "valor desconocido" ~NULL~
 **** Sintáxis en SQL
      #+BEGIN_QUOTE
      En este caso tenemos dos *claves candidatas*, los atributos ~legajo~ y ~cuil~.
      Como el diseñador prefirió elegir la primera como (PK) *clave primaria*, la segunda se considera
-     como *clave altena* por tanto usaremos ~UNIQUE~ para decir que posee valores únicos para
+     como *clave alterna* por tanto usaremos ~UNIQUE~ para decir que posee valores únicos para
      cada fila de clientes
      #+END_QUOTE
 
@@ -385,7 +543,12 @@
               PRIMARY KEY (dni, tipo_dni) --> restriccion a nivel de tabla, por ser una clave compuesta
        );
      #+END_SRC
-
-
-    
-
+*** Autoincrement
+**** Ejemplos
+     #+BEGIN_SRC sql
+       CREATE TABLE Clientes(
+         cliente_id INT IDENTITY(1,1) PRIMARY KEY,
+         nombre VARCHAR(30) NOT NULL,
+         edad INT
+         );
+     #+END_SRC
