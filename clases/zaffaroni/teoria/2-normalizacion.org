@@ -1,17 +1,137 @@
 #+TITLE: Normalización
+#+STARTUP: inlineimages
 * Normalización
 ** Que es Normalizar
+  - Llevar al modelo acorde al *Modelo Relacional*
   - Reducir la *redundancia* de datos (repetición) y las *inconsistencias*
   - Facilitar el *mantenimiento* de los datos
   - Evitar que se violen las *reglas de integridad*
-  - Reduce la *perfomance* pero... aumenta la *robustez*
+  - Reduce la *perfomance* (/cuando se trata de grandes volumenes de datos/) pero... aumenta la *robustez*
 ** Que NO es Normalizar
    - Referirse al *tipo de dato* de los *atributos*, ni a su longitud
    - A la nomenclatura de los atributos/relaciones
      (/No establece seguir un criterio de nombres/)
+* Resumen de todas las Formas Normales
+  - NO es necesario seguir un orden para normalizar osea 1FN, 2FN, 3FN,..
+    (/eso es sólo categorizar/identificarlas/)
+  - La idea es *evitar información redundante*
+  - Las preguntas que nos debemos hacer son
+    1. Hay *dependencias funcionales* entre atributos? (ya sean clave o no-clave)
+    2. Hay *grupos repetitivos* ó *atributos multivaluados*?
+
+  #+BEGIN_SRC plantuml :exports results :file img/normalizacion-resumen.png
+    @startuml
+    title Normalización (1FN, 2FN, 3FN)
+
+    note as 1FN
+    ,**Canónica**
+    ,* sin Atributos calculables
+
+    ,**1FN**
+    ,* sin Atributos multivaluados
+    ,* sin Grupos repetitivos
+    endnote
+
+    note as 2FN
+    ,**2FN**
+    ,* 1fn
+    ,* sin dependencia funcional/parcial
+    entre atributos-clave
+
+    "todos los atributos no-clave deben
+    depender por completo de la PK"
+    endnote
+
+    note as 3FN
+    ,**3FN**
+    ,* 2fn
+    ,* sin dependencia funcional/parcial
+    entre atributos no-clave
+
+    "los atributos no-clave que dependen
+    de otros atributos no-clave se llevan
+    a otra tabla"
+    endnote
+
+    note as N1
+    ,**total** es un **atributo calculable**
+
+    | precio   | cantidad | total        |
+    | 2         |   5       | 5 * 2 = 10    |
+    | 5         |   5       | 5 * 5 = 25    |
+
+    ---
+
+    ,**domicilio** es **multivaluado**
+
+    |= cod_cliente   | domicilio     |
+    | 001             | thames 55 2ºC |
+    | 002             | thames 255 9ºC |
+
+    ---
+
+    ,**telefono1,telefono2,telefono3** actúa como vector
+
+    |= cod_cliente      | telefono1    | telefono2    | telefono3    |
+    | 001               | 4732110       |   4732111     |   4732119     |
+    | 002               | 4732110       |   4732121     |   3732110     |
+
+    ---
+
+    ,**grupo repetitivo**
+
+    |= cod_alumno  | nom_alumno   | nom_materia |
+    | 001           | carlos    | matematica |
+    | 001           | carlos    | fisica 1 |
+    | 001           | carlos    | fisica 2 |
+    | 002           | samuel    | algebra |
+    endnote
+
+
+    note as N2
+    ,**nombre_materia** NO depende completamente de {id_alumno, id_materia}
+
+    |= id_alumno |= id_materia  |   nombre_alumno |   nombre_materia |
+    | 001       | 01            | perez             |   matematica      |
+    | 002       | 02            | perez             |   algebra      |
+    | 002       | 03            | perez             |   fisica      |
+    | 003       | 03            | pedro             |   fisica      |
+
+    en notación de **determinantes**
+    id_alumno + id_materia -> nombre_alumno + nombre_materia
+
+    debería ser dividirse en
+    id_alumno -> nombre_alumno + id_materia
+    id_materia -> nombre_materia
+
+    ---
+
+    ,**nombre_cliente** depende de **id_cliente** y éste no pertenece a la PK
+
+    |= id_pedido    | id_cliente   | fecha_pedido  | nombre_cliente    |
+    | 0001          | 001           | 05/09/12      | perez             |
+    | 0002          | 001           | 05/11/12      | perez             |
+
+    en notación de **determinantes**
+    id_pedido + id_cliente -> fecha_pedido + nombre_cliente
+
+    debería separarse en
+    id_pedido -> id_cliente + fecha_pedido
+    id_cliente -> nombre_cliente
+    endnote
+
+    N1 -up-> 1FN
+    N2 -up-> 2FN
+    N2 -up-> 3FN
+    @enduml
+  #+END_SRC
+
+  #+RESULTS:
+  [[file:img/normalizacion-resumen.png]]
+
 * Forma Canónica
 ** Conceptos
-  Consiste en eliminar los atributos calculables (/resultan del cálculo entre atributos/)
+  Consiste en eliminar los *atributos calculables* (/resultan del cálculo entre atributos/)
 ** Ejemplos
    #+BEGIN_QUOTE
    En esta tabla vemos que el atributo ~total~ es un *campo calculables* que resulta de operar ~cantidad*precio~
@@ -31,7 +151,7 @@
    - NO hay un orden en las fila (Ej. el ID=1, no está antes del ID=2)
    - NO hay un orden en las columnas
    - Las filas se identifican unicamente por las *claves candidatas*
-   - Evitar *grupos repetitivos* ó *campos multivaluados*
+   - Evitar *grupos repetitivos* ó *campos multivaluados* (/este segundo, también se llama "campo compuesto"/)
 ** Ejemplos
 *** Ejemplo 1
     #+BEGIN_QUOTE
@@ -253,7 +373,7 @@
 * (3FN) Tercera Forma Normal
 ** Conceptos
   - Debe respetar la (2FN)
-  - NO puede haber [[Dependencial Funcional][dependencia funcional]] entre atributos no-claves
+  - NO puede haber [[Dependencial Funcional][dependencia funcional]] entre *atributos no-claves*
     (/Es decir.. no puede haber atributos no-claves que dependan parcialmente de algunos, y no de otros/)
 
   #+BEGIN_QUOTE
@@ -314,18 +434,42 @@
   #+END_COMMENT
 * (4FN) Cuarta Forma Normal 
 * (5FN) Quinta Forma Normal
-* Resumen de todas las Formas Normales
-  - NO es necesario seguir un orden para normalizar osea 1FN, 2FN, 3FN,..
-    (/eso es sólo categorizar/identificarlas/)
-  - La idea es *evitar información redundante*
-  - Las preguntas que nos debemos hacer son
-    1. Hay *dependencias funcionales* entre atributos? (ya sean clave o no-clave)
-    2. Hay *grupos repetitivos* ó *atributos multivaluados*?
 * Desnormalización
 ** Conceptos
   - Aumenta la *perfomance*
 ** Ejemplos
-*** Ejemplo 1 - Precio congelado
+*** Ejemplo 1 (IMPORTANTE) - Factura y Renglón Factura
+    #+BEGIN_QUOTE
+    Aplicar la *normalización* puede en algunos casos *reducir la perfomance* 
+    cuando se trata de grandes volumenes de datos..
+    Un ejemplo podría ser si tenemos las entidades *FACTURA* y *RENGLON_FACTURA*
+
+    En la cual tenemos que los atributos de *FACTURA* son
+    1. (PK) *factura_numero*
+    2. (PK) *factura_tipo*
+    3. (PK) *factura_sucursal*
+    4. (FK) factura_cliente
+    5. facturacion_fecha
+    6. facturacion_total <------- "campo calculado" indicio de que "NO ESTÁ NORMALIZADO" (/pero eso no es malo/)
+
+    y los atributos de *RENGLON_FACTURA* son
+    1. (PK) *renglon_numero*
+    2. (FK) factura_numero
+    3. (FK) factura_tipo
+    4. (FK) factura_sucursal
+    5. item_cantidad
+    6. item_precio
+    
+    Donde la relación entre las entidades sería ~FACTURA -|--o<- RENGLON_FACTURA~
+    - una *factura* puede tener uno ó muchos *renglones*
+    - un *renglón* pertenece sólo a una *factura*
+    #+END_QUOTE
+
+    *Observaciones importantes:*
+    1. Podemos notar que la (FK) en *RENGLON_FACTURA* es una *clave compuesta* porque debe contener "TODOS" los atributos de la (PK)
+       a la que hace referencia, en este caso ~factura_numero~, ~factura_tipo~ y ~factura_sucursal~
+    2. El campo ~facturacion_total~ es un *campo calculado* que NO fue *normalizado* para mejorar la perfomance
+*** Ejemplo 2 - Precio congelado
   #+BEGIN_EXAMPLE
   Un ejemplo podria ser con los precios congelados,
   entre dos entidades FACTURA-RENGLON-PRODUCTO
@@ -346,7 +490,7 @@
   podriamos normalizar, y que el atributo precio
   solo aparezca en uno de los dos lados
   #+END_EXAMPLE
-*** Ejemplo 2 - Telefonos
+*** Ejemplo 3 - Telefonos
   #+BEGIN_EXAMPLE
   Si tuvieramos la entidad Alumno con un atributo telefono
   podriamos dejar Desnormalizado si no quisieramos tener
