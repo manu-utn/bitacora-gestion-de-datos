@@ -31,6 +31,42 @@
    - Permite *persistir/guardar* el resultado de una operación
      (/apesar de que el sistema luego falle, esta información persiste en la DB/)
    - Permite *recuperar/leer* el resultado de aquellas operaciones
+* Arquitectura de Software en Capas
+  - La arquitectura de un software está formado en capas/niveles
+  - Los tipos son
+    - Monocapas
+    - Bicapas
+    - Multicapas: está basada en que cada capa cumple una función
+  - Los *motores de base de datos* usan 3 capas
+    1. _Capa de Presentación_: (/nivel más alto de la aplicación, la que utilizan los usuarios, Ej. en web es el frontend/)
+    2. _Capa Conceptual/Logica/Dominio_: (/es el modelo lógico, tiene las reglas de dominio sobre "que se puede hacer, y que no"/)
+    3. _Capa de Persistencia/Datos_: (/acceso a los datos/)
+
+  #+BEGIN_QUOTE
+  Llevado a la realidad, cuando realizabamos programas en *lenguaje C*, *Wollok*, ... 
+  estabamos implementando una *Arquitectura Monocapa*,
+  
+  porque en el mismo programa estaban todas las capas juntas "presentación/lógica/persistencia"
+
+  los datos los guardabamos en vectores, colecciones, ...
+  la lógica de que se debía hacer o no, estaba en el mismo lugar
+  #+END_QUOTE
+
+  #+BEGIN_QUOTE
+  Por lo general se tiende hacer sistemas con una *arquitectura bicapa* ó de 3 capas, ó más de 3 capas...
+  Un ejemplo sería si tuvieramos
+  1. Capa de presentación: el frontend con html
+  2. Capa de dominio: en php
+  2. Capa de persistencia: una base de datos mysql
+
+  Otro ejemplo sería
+  1. Capa de presentación+Capa de dominio: en java
+  2. Capa de persistencia: una base de datos sql
+  #+END_QUOTE
+
+  *Observaciones:*
+  - El usuario está encima de la *capa de presentación*, por tanto sólo ve esta capa (/la de presentación/)
+  - El Sistema Operativo, está por debajo de la *capa de persistencia*
 * Arquitectura ANSI de un DBMS
 ** Conceptos
    - Las siglas *ANSI* significan *American National Standards Institute* 
@@ -45,20 +81,20 @@
     Evita que *usuarios* lidien con problemas de almacenamiento
 ** [WAITING] Niveles/Capas de un DBMS
 *** Vista desde el Almacenamiento
-**** Nivel Externo (Vistas de los usuarios)
+**** Nivel Externo - Capa de Presentación (Vistas de los usuarios)
      - _Restringir acceso a datos_ que no tiene autorizado el usuario
      - Muestra solo los datos que necesita el usuario
 **** Nivel Conceptual (Vista diseño)
      - Podria parecerse a un (DER) a nivel lógico
      - Describe los datos que se almacenan
      - Muestra como están relacionados los datos
-**** Nivel interno (Vista de almacenamiento)
+**** Nivel interno - Capa de Persistencia (Vista de almacenamiento)
      - Determina como va a *persistir/guardar* la información
      - Tiene en cuenta las propiedades de la siglas *ACID*
      - Es la *representación física* de la base de datos
      - Describen como se almacenan los datos en la db y en el equipo (a nivel hardware)
 *** Vista desde la Funcionalidad
-**** Nivel Externo
+**** Nivel Externo - Capa de Presentación
      - El usuario interactúa en este nivel (/Tanto un usuario final como una aplicación PL-SQL/)
      - Es el (SSMS) SQL Server Management Studio (/gestor de base de datos/)
      - Es cualquier programa que interactúe con la DB
@@ -76,7 +112,7 @@
 
      *Observación:*
      - El desarrollador sólo utiliza las capas superiores, NO necesita conocer la implementación del sistema
-**** Nivel interno
+**** Nivel interno - Capa de Persistencia
      - Se maneja la *persistencia* de la información en el DBMS
      - El DBA decide se guardarán los datos
      - El DBA decide que se puede hacer o no
