@@ -257,6 +257,10 @@
     - A veces pueden aceptar el *valor nulo* ~NULL~
     - Permite mantener un *estado consistente* de la base de datos
 
+    *Observación:*
+    Su nombre deriva de "extranjero", por tanto es una *clave* que NO pertenece a la tabla (A) donde se encuentra,
+    si no que pertenece a otra tabla (B). En conclusión ésta hace referencia a la otra tabla (B).
+
     #+BEGIN_QUOTE
     Utiliza el concepto de [[Regla de integridad referencial][*Integridad Referencial*]] 
     - si una FK hace referencia a una PK, esta PK debe existir
@@ -274,6 +278,19 @@
 
     Se debe cumplir alguna de las dos condiciones => caso contrario, rompe la *regla de integridad referencial*
     #+END_QUOTE
+*** (FK) Identificativa Vs. (FK) NO Identificativa
+    - Una (FK) NO identificativa es aquella que NO pertenece a la PK
+      (/porque no representa unívocamente al registro/)
+    - Una (FK) identificativa es la que pertenece a la PK
+
+    #+BEGIN_QUOTE
+    Si tenemos la tabla *FACTURA* con los atributos
+    - (PK) numero_factura
+    - fecha
+    - (FK) cod_cliente
+
+    vemos como la ~cod_cliente~ no representa unívocamente a las instancias de *FACTURA*
+    #+END_QUOTE
 ** [TODO] Reglas de Integridad
 *** [TODO] Conceptos
     Definir reglas permite que los datos sean
@@ -284,18 +301,34 @@
     - Se refiere a *componente* porque puede ser una *clave compuesta* (formada 2 ó mas atributos)
 *** Regla de integridad referencial
     - Se implementa en la *FK*
-    - Cada valor de una *clave foránea* debe existir como valor en la *clave primaria* de otra tabla
-      ó ser desconocido (/ser desconocido se refiere al valor nulo NULL, porque no pertenece al dominio del que se trate/)
+    - Cada valor de una (FK) *clave foránea* debe
+      1. debe existir como valor en la (PK) *clave primaria* de la tabla que referencia
+      2. ó ser *desconocido* (/ser desconocido se refiere al valor nulo NULL, porque no pertenece al dominio del que se trata/)
     - Permite mantener la *consistencia* de los datos
-      (/Ej. Evita que haya redundancia de datos que generan inconsistencias/)
+      (/Ej. Evita que borre/actualice un registro o varios referenciados/)
     - Asegura la *coherencia* entre datos de dos tablas
        (/Ej. Si un registro de la tabla Alumnos hace referencia a una materia, ésta debe existir en la tabla Materias/)
     - Es el Diseñador quien define la forma en que la *DBMS* manejará la *integridad referencial*
        
      #+BEGIN_QUOTE
+     Por ejemplo para validar la existencia de un registro al que hace referencia la (FK)
+
      Si A hace referencia a B => B debe existir
-   
      B existe por la *regla de integridad de entidades* (existencia de la clave primaria)
+     #+END_QUOTE
+
+     #+BEGIN_QUOTE
+     Otro ejemplo sería el evitar que se borren/actualicen los registros referenciados
+     supongamos que tenemos una tabla con 500 registros llamada *Alumno* que tiene
+     como (FK) ~cod_materia~ que hace referencia a la tabla *Materia*
+     
+     si borraramos alguno de los registros de la tabla *Materia*,
+     la *regla de integridad referencial* que tiene el *motor de base de datos*
+     debería impedirlo.
+
+     Porque el motor impide que lo borremos?
+     El motor tiene un mecanismo que por default restringe el modificar/borrar
+     el *registro padre* al que hace referencia la (FK)
      #+END_QUOTE
 *** Mecanismos para implementar la Regla de Integridad Referencial
 **** Conceptos
