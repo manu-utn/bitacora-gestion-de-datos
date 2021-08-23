@@ -190,7 +190,14 @@ y se utiliza para los sistemas q usan intime
   - También se conocen por *index organized table
 * [TODO] Subqueries
 ** Conceptos
-   Primero se ejecutan las *subqueries* y luego la *query principal*
+   - Primero se ejecutan las *subqueries* y luego la *query principal*
+   
+   #+BEGIN_QUOTE
+   Una subquery en el ~FROM~ produce una perdida de *performance* del comando
+   demorando la ejecución.
+
+   Sintáticamente es válido, pero.. NO SE RECOMIENDA.
+   #+END_QUOTE
 ** SubQuery en UPDATE
 *** Conceptos
    Las subqueries en la operación ~UPDATE~ se pueden colocar en
