@@ -58,6 +58,53 @@
   #+RESULTS:
   [[file:img/instrucciones-sql.png]]
 
+* Secuencialidad Consulta
+  #+BEGIN_QUOTE
+  Una forma de intepretar como ejecuta las instrucciones sería 
+  1. Evalúa la tabla del ~FROM~ para tener el dominio, el conjunto de datos
+  2. Filtra el conjunto del dominio/universo si hubiese un ~WHERE~
+  3. Agrupa por columna si tuviese un ~GROUP BY~
+  4. Filtra del los datos agrupados con ~HAVING~
+  5. Ordena el conjunto
+
+  Si hiciera un *producto cartesiano* se anidaría la tabla con otro for
+  #+END_QUOTE
+  
+  #+BEGIN_SRC c
+  for(not EOF Tabla) // iteraria sobre cada fila de la tabla del FROM
+     if WHERE // filtraría por una o varias condiciones
+               AAA // cada A sería un registro
+  
+  for(not EOF Tabla) // iteraría nuevamente por cada fila, y las agruparía según la columna de GROUP BY
+     if HAVING // filtraría cada fila agrupada 
+               BBB 
+
+   ORDER BY (BBB)
+  #+END_SRC
+* Operador INSERT 
+** Inserción unitaria
+  #+BEGIN_SRC sql
+    -- "INTO" es opcional, cuando queremos definir las columnas
+    -- podemos alterar el orden de las columnas
+    INSERT INTO tabla (col1, col2, ..., coln)
+    VALUES (valor1, valor2, ..., valorn);
+
+    -- Si sólo queremos insertar los valores
+    -- debemos respetar el orden de las columnas
+    -- de la definición de la tabla
+    INSERT tabla VALUES (valor1, valor2, ..., valorn)
+  #+END_SRC
+** Inserción masiva
+* Operador DELETE
+  #+BEGIN_SRC sql
+    -- el "FROM" es opcional
+    -- (aunque depende del motor)
+    DELETE FROM tabla
+     WHERE condicion;
+
+    DELETE tabla
+     WHERE condicion;
+  #+END_SRC
 * Operador SELECT
 ** Estructura
    #+BEGIN_SRC sql
@@ -150,6 +197,7 @@
    El símbolo ~%~ (porcentaje) actúa como el comodín de las regexp osea como la
    *clausula de kleene*. Es decir % representa cero o más caracteres
 * ORDER BY - Ordenamiento
+** Conceptos
   - Ordena por columna los resultados
   - Podemos ordenar de manera
     - ascendente (por default) {1,2,3,4...}
@@ -158,6 +206,10 @@
     - nombre de columna
     - número de columna
 
+  *Observación:*
+  Se pueden ordenar las columnas que estén o no en el ~SELECT~
+  (Ej. ~SELECT col1,col2 FROM tabla ORDER BY col3~)
+** Ejemplos
   #+BEGIN_SRC sql
     -- Ordenamos por nombre de columna
     SELECT dni, nombre, apellido
@@ -197,6 +249,10 @@
     - Son funciones que dado un conjunto de datos (uno o más registros)
       realizan *operaciones agregadas*
     - Se utilizan bastante en conjunto con operador *GROUP BY* y *HAVING*
+    
+    *Observación:*
+    NO se pueden anidar *funciones de agregación*
+    (/Ej. Sintácticamente estaría mal poner MAX(SUM(col)), MIN(SUM(col))/)
 
     |-------------------------+-----------------------------------------------------------------------|
     | Funcion Agregada        | Descripción                                                           |
