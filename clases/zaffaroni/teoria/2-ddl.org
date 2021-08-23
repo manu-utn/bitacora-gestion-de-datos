@@ -128,44 +128,172 @@
     estas necesitas un alta-baja-modificación
     #+END_QUOTE
 *** Tabla Transaccional
-    - Se generan a través de *tablas maestras* y de la interacción entre *tablas maestras*
-    - NO es el usuario quien ingresa los datos. Es el Sistema quien carga los datos
-    - NO las crea los usuarios, si no que surjen a través de *transacciones* que realiza el sistema
-
-    #+BEGIN_QUOTE
-    Por ejemplo una tabla transaccional podría ser *FACTURA*
-    que surje cuando *CLIENTE* interactúa con *PRODUCTO* (/ambas son "tablas maestras"/)
+**** Conceptos
+     - Se generan a través de *tablas maestras* y de la interacción entre *tablas maestras*
+     - NO es el usuario quien ingresa los datos. Es el Sistema quien carga los datos, según las *reglas de negocio* (/la lógica/)
+     - NO las crea los usuarios, si no que surjen a través de *transacciones* que realiza el sistema
+**** Ejemplo - Descriptivo
+     #+BEGIN_QUOTE
+     Por ejemplo una tabla transaccional podría ser *FACTURA*
+     que surje cuando *CLIENTE* interactúa con *PRODUCTO* (/ambas son "tablas maestras"/)
     
-    y su interacción hace que generemos una *factura*
-    que tiene un *cliente*, y muchos *productos*    
-    #+END_QUOTE
+     y su interacción hace que generemos una *factura*
+     que tiene un *cliente*, y muchos *productos*    
+     #+END_QUOTE
 
-    #+BEGIN_QUOTE
-    Otra tabla transaccional podría ser *ITEM_FACTURA*
-    que surje de la relación entre la *factura* y los *productos*
+     #+BEGIN_QUOTE
+     Otra tabla transaccional podría ser *ITEM_FACTURA*
+     que surje de la relación entre la *factura* y los *productos*
 
-    donde un *item_factura* tiene un producto y pertenece a una *factura*
-    #+END_QUOTE
+     donde un *item_factura* tiene un producto y pertenece a una *factura*
+     #+END_QUOTE
+**** Ejemplo - Diagrama Entidad-Relación
+    #+BEGIN_SRC plantuml :file img/tabla-transaccional.png :exports results
+      @startuml
+      title DER - Tablas Maestras - Tabla Transaccionales
+      hide circle
+      skinparam linetype ortho
+
+      note as N1
+      ,**Tablas Transaccionales:**
+      ,* Factura
+      ,* Renglon_Factura
+
+      Las genera el sistema a través de transacciones
+      según las reglas de negocio
+      (interacción entre las entidades/tablas)
+
+      --
+
+      ,**Tablas Maestras:**
+      ,* Cliente
+      ,* Producto
+
+      Es el usuario quien ingresa los datos, y aplican
+      el concepto de ABM (Alta-Baja-Modificación)
+      endnote
+
+      ''''''''''''''''''''''''''''''''''
+      '' ENTIDADES
+
+      entity "Factura" as factura {
+          factura_tipo: char(1)
+          factura_sucursal: char(4)
+          factura_numero: char(8)
+          --
+          factura_fecha: smalldatetime
+          factura_total: decimal(12,2)
+          factura_cliente: char(6) <<FK>>
+      }
+
+      entity "Renglon_Factura" as renglon_factura{
+          renglon_tipo: char(1) <<FK>>
+          renglon_sucursal: char(4) <<FK>>
+          renglon_numero: char(8) <<FK>>
+          --
+          cantidad: int
+          precio: decimal(12,2)
+          producto: char(8) <<FK>>
+      }
+
+      entity "Cliente" as cliente {
+          cliente_codigo: char(6)
+          --
+          cliente_telefonno: char(100)
+          cliente_domicilio: char(100)
+      }
+
+
+      entity "Producto" as producto {
+         producto_id: char(8)
+         --
+         producto_detalle: char(50)
+         producto_precio: decimal(4,2)
+         producto_rubro: char(4) <<FK>>
+         producto_envase: numeric(6) <<FK>>
+      }
+
+
+      ''''''''''''''''''''''''''''''''''
+      '' RELACIONES
+
+      factura ||.down.|{ renglon_factura
+
+      cliente |o.right.o{ factura
+
+      renglon_factura }o.left.|| producto
+
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/tabla-transaccional.png]]
+
 *** Tabla Paramétrica
-    - Es una *tabla maestra* que sirve para paramétrizar *tablas maestras*
-    - Son tablas que *permiten parametrizar atibutos* de otras tablas
+**** Conceptos
+     - Es una *tabla maestra* que sirve para paramétrizar *tablas maestras*
+     - Son tablas que *permiten parametrizar atibutos* de otras tablas
+**** Ejemplo - Descriptivo
+     #+BEGIN_QUOTE
+     Supongamos que tenemos la tabla *PRODUCTO* que tiene como atributos
+     1. (PK) *producto_codigo*
+     2. producto_detalle
+     3. producto_precio
+     4. (FK) ~producto_rubro~
+     5. (FK) ~producto_envase~
 
-    #+BEGIN_QUOTE
-    Supongamos que tenemos la tabla *PRODUCTO* que tiene como atributos
-    1. (PK) *producto_codigo*
-    2. producto_detalle
-    3. producto_precio
-    4. (FK) ~producto_rubro~
-    5. (FK) ~producto_envase~
+     Podemos crear dos *tablas parámetricas* que también son *tablas maestras* (/permiten ABM/)
+     1. *RUBRO:* para parámetrizar los productos en diferentes rubros (/Ej. lacteos, verduras, .../)
+     2. *ENVASE:* para parametrizar los producos en función a su envase de presentación
 
-    Podemos crear dos *tablas parámetricas* que también son *tablas maestras* (/permiten ABM/)
-    1. *RUBRO:* para parámetrizar los productos en diferentes rubros (/Ej. lacteos, verduras, .../)
-    2. *ENVASE:* para parametrizar los producos en función a su envase de presentación
+     Finalmente las relaciones entre las dos *tablas paramétricas* y *PRODUCTO* quedaría..
+     1. ~1 a N~: Un producto puede tener un envase, y un envase puede estar en muchos productos
+     2. ~1 a 1~: UN producto tiene un rubro, y un rubro tiene un producto
+     #+END_QUOTE
+**** Ejemplo - Diagrama Entidad-Relación
+     #+BEGIN_SRC plantuml :file img/tabla-parametrica.png :exports results
+       @startuml
+       title DER - Tablas Maestras - Tabla Parámetrica
+       hide circle
+       skinparam linetype ortho
 
-    Finalmente las relaciones entre las dos *tablas paramétricas* y *PRODUCTO* quedaría..
-    1. ~1 a N~: Un producto puede tener un envase, y un envase puede estar en muchos productos
-    2. ~1 a 1~: UN producto tiene un rubro, y un rubro tiene un producto
-    #+END_QUOTE
+       ''''''''''''''''''''''''''''''''''
+       '' ENTIDADES
+
+       entity "Producto" as producto {
+           producto_id: char(8)
+           --
+           producto_detalle: char(50)
+           producto_precio: decimal(4,2)
+           producto_rubro: char(4) <<FK>>
+           producto_envase: numeric(6) <<FK>>
+       }
+
+       entity "Envase" as envase{
+           envase_codigo: numeric(6)
+           --
+           envase_detalle: char(50)
+       }
+
+       entity "Rubro" as rubro{
+           rubro_id: char(4)
+           --
+           rubro_detalle: char(50)
+       }
+
+
+       ''''''''''''''''''''''''''''''''''
+       '' RELACIONES
+
+       producto }o..o| envase
+       producto |o..o| rubro
+
+       @enduml
+     #+END_SRC
+
+     #+RESULTS:
+     [[file:img/tabla-parametrica.png]]
+
 ** Sintáxis en SQL
    #+BEGIN_SRC sql
      CREATE TABLE clientes(
@@ -178,6 +306,18 @@
 * Alter
 ** Conceptos
    - ~ALTER~ permite alterar una columna de una tabla (agregar/eliminar/cambiar tipo)
+   
+   #+BEGIN_QUOTE
+   Si la tabla que queremos alterar ya tiene registros, y queremos modificar el *tipo de una columna*
+   el nuevo tipo de dato debe ser de un tamaño mayor al anterior, caso contrario el motor lanzará 
+   una excepción.
+
+   Ej. Si era ~nombre CHAR(30)~ y la tabla ya tenía datos,
+   es posible que NO podamos hacer ~ALTER COLUMN nombre CHAR(20)~
+
+   *Posible solución:*
+   Crear un nueva columna, pasarle los datos a esta
+   #+END_QUOTE
 
    |-------------------------------------------------------------+---------------------------------------|
    | INSTRUCCIÓN                                                 | DESCRIPCION                           |
@@ -212,10 +352,21 @@
    #+END_QUOTE
 ** (PK) Primary Key Constraint
 *** Conceptos
-   - Puede estar formada por 1 o más columnas
-   - Representa de forma unívoca a cada fila
-   - NO puede aceptar valores nulos
-   - Se utiliza el concepto de [[Integridad de Entidad][Integidad de Entidad]]
+   + Representa de forma unívoca a cada fila/registro (/lo fija la "regla de integridad de entidad"/)
+   + Puede estar formada por 1 o más columnas (/si tuviese muchas columnas es una "clave compuesta"/)
+   + NO puede aceptar valores nulos (/lo determina la "regla de integridad de entidad"/)
+   + Se utiliza el concepto de [[Integridad de Entidad][Integridad de Entidad]]
+
+   #+BEGIN_QUOTE
+   Qué sucede cuando creamos una tabla con una (PK) ?
+
+   Cuando se crea una tabla, y se le define una (PK), el motor crea un *índice*
+   que es una *estructura adicional* para tener un acceso rápido por esa columna/s
+
+   entonces por cada ~INSERT~ de un nuevo registro, el motor hace *dos acceso a disco para escritura*
+   1. un acceso a disco para la *tabla inicial* donde se definió la (PK)
+   2. un segundo acceso a disco para la *estructura del índice*
+   #+END_QUOTE
 *** Crear PK - Sintáxis en SQL
     Supongamos que tenemos una entidad Pedidos, que tiene varios items.
 
@@ -245,16 +396,33 @@
       );
     #+END_SRC
 *** Agregar/Eliminar PK - Sintáxis en SQL
+    #+BEGIN_QUOTE
+    Si creamos una tabla donde las columnas no le agregamos el constraint ~NOT NULL~
+    y luego usamos ~ALTER~ para agregarle el *constraint* de (PK) a esas columnas,
+    
+    el motor de sql nos lanzará una excepción de que una (PK) NO puede ser ~NULL~
+    porque rompe con la *regla de integridad de la entidades*
+
+    Una posible solución sería alterando la columna
+    ~ALTER TABLE Clientes ALTER COLUMN id_cliente CHAR(4) NOT NULL~
+    y luego si podemos agregar el *constraint* de la (PK)
+    ~ALTE TABLE Clientes ADD CONSTRAINT pk_cliente PRIMARY KEY(id_cliente)~
+    #+END_QUOTE
+
     #+BEGIN_SRC sql
       /*
        ,* Agregar el constraint con la tabla ya creada
        ,*/
 
       CREATE TABLE alumno(
-        dni        INT,
-        legajo        INT,
+        dni        INT NOT NULL, -----> Es FUNDAMENTAL agregarles el constraint "NOT NULL"
+        legajo        INT NOT NULL, --> para que luego podamos agregarles el constraint de PK
         nombre       VARCHAR(20)
       );
+
+      --> Observación:
+      --> Si no agregamos la constraint "NOT NULL" en la definición de las columnas
+      --> lo deberemos hacer luego con un "ALTER COLUMN"
 
       -- 1ra manera:
       -- (el motor le agrega un nombre aleatorio al constraint)
@@ -543,10 +711,29 @@
               PRIMARY KEY (dni, tipo_dni) --> restriccion a nivel de tabla, por ser una clave compuesta
        );
      #+END_SRC
-*** Autoincrement
+*** Identity - Autoincrement
+**** Conceptos
+     - En el motor *sql* se asigna en la definición del campo ~IDENTITY(valor_inicial_semilla, valor_salto_incremento)~
+     - Genera valores autonúmericos/autoincremental que incrementa de tanto en tanto (/Ej. 1,2,3,...,7,8,9,.../)
+     - Es útil si no tiene definida una PK que identifique unívocamente a cada registro de una tabla
+     - Se puede ajustar el valor del salto de incremento y su valor inicial
+
+     #+BEGIN_QUOTE
+     NO siempre es correcto definir un valor autoincremental como PK,
+     poque perderíamos el control/chequeo del motor con la no repetición de registros
+
+     porque si que tenemos una tabla *Clientes* donde definimos la (PK) así ~cliente_id INT IDENTITY(1,1) PRIMARY KEY~
+     nada impide que el usuario ingrese el mismo cliente 10 veces...
+     ~INSERT INTO Clientes (nombre, edad) VALUES ("Carlos", 20), ("Carlos", 20), ("Carlos", 20), ("Samuel", 25)~
+
+     Una posible solución al caso anterior sería definir la PK con el ~{DNI, TIPO_DOC}~
+     #+END_QUOTE
 **** Ejemplos
      #+BEGIN_SRC sql
        CREATE TABLE Clientes(
+         --> al definir (1,1) que es (valor_semilla_inicial, valor_salto_incremento)
+         --  1. el primer registro empezará con valor 1
+         --> 2. por cada nuevo registro, incrementará el valor en 1 (1,2,3,...,8,9,..)
          cliente_id INT IDENTITY(1,1) PRIMARY KEY,
          nombre VARCHAR(30) NOT NULL,
          edad INT
