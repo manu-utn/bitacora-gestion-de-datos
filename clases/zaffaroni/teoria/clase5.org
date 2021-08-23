@@ -152,145 +152,201 @@
    *Observación:*
    - En otras biografías mencionan que ~SELECT~ está en la categoría 
      de *(DQL, Data Query Language)* 
-** SELECT
-*** JOIN
-    Usamos la instrucción ~JOIN~ si queremos hacer *coincidir* (MATCH) filas 
-    de dos o más tablas a partir de un atributo con valores comunes
+* JOINs
+** Conceptos
+   - Hace lo mismo que el *producto cartesiano* (/hace una distributiva entre todos los registros, todas las combinaciones posibles/)
+   - Permite matchear registros según la condición en el ~ON~
+** JOIN segun tipo de relación
+   - Analizar la relación entre las tablas
+   - Hacer ~JOIN~ con una tabla que tiene una relación *1 a N* devolverá una cant mayor que una de *1 a 1*
+     (/puede que esa era la relación que queríamos, pero si NO lo era => devolverá registros de más/)
 
-    #+BEGIN_EXAMPLE
-    Si a partir de una tabla PEDIDOS,
-    queremos los nombres y apellidos de la tabla CLIENTES
+  #+BEGIN_QUOTE
+  Según el tipo de relación que tengan las tablas, al usar el ~JOIN~ puede mostrar más cantidad de registros
+  a la consulta original que sólo tenía un ~SELECT~
+  (/porque hace el producto cartesiano, se multiplica la cantidad de filas/)
 
-    asociamos la FK codCliente de PEDIDOS
-    con la PK codCliente de CLIENTES
+  Supongamos que tenemos las tablas *Productos* y *Renglon_Factura* con una *relación de 1 a 1*
+  Si hacemos ~SELECT * FROM Productos p JOIN Renglon_Factura rf ON p.cod = rf.prod_cod~
+  digamos que devuelve 500 registros
 
-    asi obtendremos sólo los clientes que hicieron al menos un pedido
-    #+END_EXAMPLE
-*** Inner JOIN
-**** Conceptos
-     + El ~INNER JOIN~ sólo devuelve las filas que coincidan (que *MACHEEN*)
-     + El ~INNER~ es opcional, porque lo usa defecto el ~JOIN~
-       (si no lo agregamos, lo usará igual por detrás)
-     + Usamos los *alias* de tabla, en las columnas que se repitan
-       entre las otras tablas que hacemos ~JOIN~
-**** Ejemplo 1 - Con una clave simple
-     Usamos sólo un atributo para evaluar que filas coinciden
-     en este caso solo es ~cliente_num~
+  Si a la consulta anterior además le agregamos ~JOIN Facturas f ON f.num+f.tipo = rf.num+rf.tipo~
+  es decir un ~JOIN~ con la tabla *Facturas* y en la condición del ~ON~ asociamos la (PK),
+  como resultado tendremos como la misma cantidad de registros..
+  Porque *Facturas* y *Renglon_factura* tiene una *relación de 1 a N*
+   
+  y en la primera consulta habíamos usado la *tabla con mayor atomicidad* (/la de Renglon_factura/)
+  distinto hubiera sido si al principio joineabamos con *Facturas* que hubiera devuelto
+  menos registros
+  #+END_QUOTE
+
+  Otro ejemplo a nivel código sería 
+
+  #+BEGIN_SRC sql
+    SELECT *
+      -- sin join, devuelve 100 registros
+      FROM Customers c
+      -- al asociar con la facturación, cuantas compras hizo, devuelve 200 registros
+      -- (está haciendo Clientes*Facturas)
+             JOIN Orders o ON o.CustomerID = c.CustomerID
+      -- al asociar la facturación con la cantidad de productos comprados, devuelve 500 registros
+      -- (está haciendo Clientes*Facturas*Items)
+             JOIN OrderDetails od ON od.OrderID = o.OrderID;
+  #+END_SRC
+** JOINs Vs Producto Cartesiano
+    - Ambas queries devolverán la misma cantidad de registros
+    - Se recomienda usar ~JOIN~ si asociamos las PK de las tablas
+    - Se recomienda usar ~WHERE~ para otras condiciones, no para asociar las PK
+
+  #+BEGIN_SRC sql
+    -- joineamos
+    SELECT col2, col3
+      FROM Tabla1 t1
+             JOIN Tabla2 t2 ON t1.col1 = t2.col1;
+
+    -- producto cartesiano
+    SELECT col2, col3
+      FROM Tabla1 t1, Tabla2 t2
+     WHERE t1.col1 = t2.col1;
+  #+END_SRC
+** JOIN
+   Usamos la instrucción ~JOIN~ si queremos hacer *coincidir* (MATCH) filas 
+   de dos o más tablas a partir de un atributo con valores comunes
+
+   #+BEGIN_EXAMPLE
+   Si a partir de una tabla PEDIDOS,
+   queremos los nombres y apellidos de la tabla CLIENTES
+
+   asociamos la FK codCliente de PEDIDOS
+   con la PK codCliente de CLIENTES
+
+   asi obtendremos sólo los clientes que hicieron al menos un pedido
+   #+END_EXAMPLE
+** Inner JOIN
+*** Conceptos
+    + El ~INNER JOIN~ sólo devuelve las filas que coincidan (que *MACHEEN*)
+    + El ~INNER~ es opcional, porque lo usa defecto el ~JOIN~
+      (si no lo agregamos, lo usará igual por detrás)
+    + Usamos los *alias* de tabla, en las columnas que se repitan
+      entre las otras tablas que hacemos ~JOIN~
+*** Ejemplo 1 - Con una clave simple
+    Usamos sólo un atributo para evaluar que filas coinciden
+    en este caso solo es ~cliente_num~
     
-    #+BEGIN_SRC sql
-      SELECT c.codigo, nombre, apellido
-        FROM cliente c
-        INNER JOIN ordenes o
-        ON (c.cliente_num = o.cliente_num);
-    #+END_SRC
-**** Ejemplo 2 - Con una Clave compuesta
-     - Usamos los operadores lógicos AND, OR, para armarlas
-     - Usamos los *alias* de tabla, en las columnas que se repitan
-       entre las otras tablas que hacemos ~JOIN~
-
-     #+BEGIN_QUOTE
-     Una *clave compuesta* está formada por 2 o más atributos
-     que identifican de manera unívoca a la fila/registro de la Tabla/Entidad
-     #+END_QUOTE
-
-    *Observación:*
-    En este ejemplo sólo usamos el alias ~i~ para la tabla *items*,
-    en las columnas ~stock_num~, ~manu_code~ porque también estan
-    en la tabla *products*
-
-    #+BEGIN_SRC sql
-      SELECT i.stock_num, i.manu_code, description, unit_code
-             SUM(quantity * i.unit_price) total_producto -- columna calculada
-        FROM items i
-               INNER JOIN products p
-               -- aca estaría la clave compuesta
-               ON (i.stock_num=p.stock_num AND i.manu_code=p.manu_code)
-        -- es necesario GROUP BY porque usamos SUM,
-        -- que se clasifica como "función agregada"
-       GROUP BY i.stock_num, i.manu_code, unit_code;
-    #+END_SRC
-
-**** Ejemplo 3 - Join con más de dos tablas
-     #+BEGIN_SRC sql
-       SELECT i.stock_num, i.cod_proveedor, descripcion
-              SUM(i.precio_unitario*cantidad) precio_total
-         FROM items i
-                INNER JOIN productos p
-                    ON (i.stock_num=p.stock_num AND i.cod_proveedor=p.cod_proveedor)
-                INNER JOIN unidades u
-                    ON (p.cod_unidad=u.cod_unidad)
-        GROUP BY i.stock_num, i.cod_proveedor, descripcion;
-     #+END_SRC
-**** Ejemplo 4 - Join con más de dos tablas
-     #+BEGIN_SRC sql
-       SELECT c.cliente_cod, nombre, apellido,
-              p.pedido_cod, pedido_fecha,
-              item_num, i.stock_num, i.proveedor_cod, proveedor_nombre,
-              pt.descripcion, item_num, cantidad, i.precio
-         FROM pedidos p
-                JOIN clientes c       ON (p.cliente_cod=c.cliente_cod)
-                JOIN items i          ON (p.pedido_cod=i.pedido_cod)
-                JOIN producto_tipo pt ON (i.stock_num=pt.stock_num)
-                JOIN proveedor p      ON (i.proveedor_cod=p.proveedor_cod)
-                WHERE proveedor_nombre='nvidia' AND YEAR(pedido_fecha)=2010;
-     #+END_SRC
-*** Outer JOIN
-**** Conceptos
-     Mostrará todas las filas de la *Tabla Dominante* macheen o nó
-     con la otra tabla
-**** Outer LEFT
-     La tabla de la izquierda será la *tabla dominante*
-
-     #+BEGIN_SRC sql
-       SELECT c.cliente_cod, apellido, nombre,
-              COUNT(pedido_cod) cantidad_ordenes -- campo calculado
-         FROM clientes c
-                -- la tabla dominante será "clientes"
-                -- mostrará todos los clientes, tengan o no un pedido
-                -- y los que si tengan un pedido, lo asociará en la fila
-                LEFT JOIN pedidos p ON (c.cliente_cod=p.cliente_cod)
-         -- es necesario usar el "GROUP BY"
-         -- porque usamos "COUNT" que se considera una "funcion agregada"
-        GROUP BY c.cliente_cod, apellido, nombre;
-     #+END_SRC
-**** Outer RIGHT
-     La tabla de la derecha será la *tabla dominante*
-**** Outer FULL
-     Ambas tablas serán *tablas dominantes*
-*** Join Autoreferenciado
-    Cuando hacemos referencia a la misma tabla
-    
-    #+BEGIN_SRC sql
-      SELECT c2.nombre+', '+c2.apellido Padrino,
-             c1.nombre+'. '+c1.apellido Referido
-        FROM clientes c1
-               JOIN clientes c2
-               ON (c1.cod_del_referido=c2.cod_cliente)
-    #+END_SRC
-*** JOIN Columnas Ambiguas
-    + Cuando un *atributo* existe en más de una tabla del ~SELECT~
-      es necesario identificar de que Tabla lo tomaremos
-    + Para especificar de que tabla ó ~alias~ es un atributo 
-       usamos *DOT NOTATION*
-
-    *Observación:*
-    - Usar un ~alias~ de tabla, acorta el nombre/identificador de la tabla
+   #+BEGIN_SRC sql
+     SELECT c.codigo, nombre, apellido
+       FROM cliente c
+       INNER JOIN ordenes o
+       ON (c.cliente_num = o.cliente_num);
+   #+END_SRC
+*** Ejemplo 2 - Con una Clave compuesta
+    - Usamos los operadores lógicos AND, OR, para armarlas
+    - Usamos los *alias* de tabla, en las columnas que se repitan
+      entre las otras tablas que hacemos ~JOIN~
 
     #+BEGIN_QUOTE
-    *DOT NOTATION* es una notación para acceder a miembros de un
-    objeto ó estructura
-
-    En C lo usabamos para acceder a los miembros de un ~struct~
-
-    En SQL lo usamos para acceder a los atributos de una ~tabla~
-    y evitar la *ambiguedad* en caso de que una columna se repita
-    en ambas tablas
-
-    Algo es *ambiguo* si puede tener distintas *interpretaciones*
-    (En el paradigma de objetos, la herencia simple lo evita)
-
-    Algo es *redundante* si es *repetitivo*
+    Una *clave compuesta* está formada por 2 o más atributos
+    que identifican de manera unívoca a la fila/registro de la Tabla/Entidad
     #+END_QUOTE
+
+   *Observación:*
+   En este ejemplo sólo usamos el alias ~i~ para la tabla *items*,
+   en las columnas ~stock_num~, ~manu_code~ porque también estan
+   en la tabla *products*
+
+   #+BEGIN_SRC sql
+     SELECT i.stock_num, i.manu_code, description, unit_code
+            SUM(quantity * i.unit_price) total_producto -- columna calculada
+       FROM items i
+              INNER JOIN products p
+              -- aca estaría la clave compuesta
+              ON (i.stock_num=p.stock_num AND i.manu_code=p.manu_code)
+       -- es necesario GROUP BY porque usamos SUM,
+       -- que se clasifica como "función agregada"
+      GROUP BY i.stock_num, i.manu_code, unit_code;
+   #+END_SRC
+
+*** Ejemplo 3 - Join con más de dos tablas
+    #+BEGIN_SRC sql
+      SELECT i.stock_num, i.cod_proveedor, descripcion
+             SUM(i.precio_unitario*cantidad) precio_total
+        FROM items i
+               INNER JOIN productos p
+                   ON (i.stock_num=p.stock_num AND i.cod_proveedor=p.cod_proveedor)
+               INNER JOIN unidades u
+                   ON (p.cod_unidad=u.cod_unidad)
+       GROUP BY i.stock_num, i.cod_proveedor, descripcion;
+    #+END_SRC
+*** Ejemplo 4 - Join con más de dos tablas
+    #+BEGIN_SRC sql
+      SELECT c.cliente_cod, nombre, apellido,
+             p.pedido_cod, pedido_fecha,
+             item_num, i.stock_num, i.proveedor_cod, proveedor_nombre,
+             pt.descripcion, item_num, cantidad, i.precio
+        FROM pedidos p
+               JOIN clientes c       ON (p.cliente_cod=c.cliente_cod)
+               JOIN items i          ON (p.pedido_cod=i.pedido_cod)
+               JOIN producto_tipo pt ON (i.stock_num=pt.stock_num)
+               JOIN proveedor p      ON (i.proveedor_cod=p.proveedor_cod)
+               WHERE proveedor_nombre='nvidia' AND YEAR(pedido_fecha)=2010;
+    #+END_SRC
+** Outer JOIN
+*** Conceptos
+    Mostrará todas las filas de la *Tabla Dominante* macheen o nó
+    con la otra tabla
+*** Outer LEFT
+    La tabla de la izquierda será la *tabla dominante*
+
+    #+BEGIN_SRC sql
+      SELECT c.cliente_cod, apellido, nombre,
+             COUNT(pedido_cod) cantidad_ordenes -- campo calculado
+        FROM clientes c
+               -- la tabla dominante será "clientes"
+               -- mostrará todos los clientes, tengan o no un pedido
+               -- y los que si tengan un pedido, lo asociará en la fila
+               LEFT JOIN pedidos p ON (c.cliente_cod=p.cliente_cod)
+        -- es necesario usar el "GROUP BY"
+        -- porque usamos "COUNT" que se considera una "funcion agregada"
+       GROUP BY c.cliente_cod, apellido, nombre;
+    #+END_SRC
+*** Outer RIGHT
+    La tabla de la derecha será la *tabla dominante*
+*** Outer FULL
+    Ambas tablas serán *tablas dominantes*
+** Join Autoreferenciado
+   Cuando hacemos referencia a la misma tabla
+    
+   #+BEGIN_SRC sql
+     SELECT c2.nombre+', '+c2.apellido Padrino,
+            c1.nombre+'. '+c1.apellido Referido
+       FROM clientes c1
+              JOIN clientes c2
+              ON (c1.cod_del_referido=c2.cod_cliente)
+   #+END_SRC
+** JOIN Columnas Ambiguas
+   + Cuando un *atributo* existe en más de una tabla del ~SELECT~
+     es necesario identificar de que Tabla lo tomaremos
+   + Para especificar de que tabla ó ~alias~ es un atributo 
+      usamos *DOT NOTATION*
+
+   *Observación:*
+   - Usar un ~alias~ de tabla, acorta el nombre/identificador de la tabla
+
+   #+BEGIN_QUOTE
+   *DOT NOTATION* es una notación para acceder a miembros de un
+   objeto ó estructura
+
+   En C lo usabamos para acceder a los miembros de un ~struct~
+
+   En SQL lo usamos para acceder a los atributos de una ~tabla~
+   y evitar la *ambiguedad* en caso de que una columna se repita
+   en ambas tablas
+
+   Algo es *ambiguo* si puede tener distintas *interpretaciones*
+   (En el paradigma de objetos, la herencia simple lo evita)
+
+   Algo es *redundante* si es *repetitivo*
+   #+END_QUOTE
 * Producto cartesiano
   + NO se recomienda su uso
   + Es una operación MUY COSTOSA para el *motor de base de datos*
