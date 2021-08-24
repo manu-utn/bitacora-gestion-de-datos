@@ -58,29 +58,323 @@
   #+RESULTS:
   [[file:img/instrucciones-sql.png]]
 
-* Secuencialidad Consulta
-  #+BEGIN_QUOTE
-  Una forma de intepretar como ejecuta las instrucciones sería 
-  1. Evalúa la tabla del ~FROM~ para tener el dominio, el conjunto de datos
-  2. Filtra el conjunto del dominio/universo si hubiese un ~WHERE~
-  3. Agrupa por columna si tuviese un ~GROUP BY~
-  4. Filtra del los datos agrupados con ~HAVING~
-  5. Ordena el conjunto
+* Tips
+** SELECT DISTINCT Vs Valor NULL
+*** Conceptos
+   - El ~SELECT DISTINCT~ cuenta al valor ~NULL~ como único valor
+   - Si una columna tiene varios registros ~NULL~  => el ~SELECT DISTINCT~ mostrará sólo un ~NULL~ y los registros restantes
 
-  Si hiciera un *producto cartesiano* se anidaría la tabla con otro for
-  #+END_QUOTE
-  
-  #+BEGIN_SRC c
-  for(not EOF Tabla) // iteraria sobre cada fila de la tabla del FROM
-     if WHERE // filtraría por una o varias condiciones
-               AAA // cada A sería un registro
-  
-  for(not EOF Tabla) // iteraría nuevamente por cada fila, y las agruparía según la columna de GROUP BY
-     if HAVING // filtraría cada fila agrupada 
-               BBB 
+   #+BEGIN_QUOTE
+   Si hacemos ~SELECT DISTINCT col~ con 10 registros, de los cuales 4 son ~NULL~
+   mostrará sólo 1 registro con ~NULL~ y los registros restantes
+   #+END_QUOTE
+*** Ejemplo
+    #+BEGIN_QUOTE
+    Si hacemos ~SELECT country FROM Customers~ y éste nos devuelve lo siguiente
+    #+END_QUOTE
 
-   ORDER BY (BBB)
-  #+END_SRC
+    |-----------|
+    | country   |
+    |-----------|
+    | argentina |
+    | perú      |
+    | bolivia   |
+    | ~NULL~    |
+    | ~NULL~    |
+    | ~NULL~    |
+    | ~NULL~    |
+    |-----------|
+
+    #+BEGIN_QUOTE
+    Si repetimos la operación usando ~SELECT DISTINCT country FROM Customers~ obtendremos 
+    sólo un registro con NULL, porque lo toma como un valor más
+    #+END_QUOTE
+
+    |-----------|
+    | country   |
+    |-----------|
+    | argentina |
+    | perú      |
+    | bolivia   |
+    | ~NULL~    |
+    |-----------|
+** GROUP BY Vs SELECT DISTINCT
+*** Conceptos
+    - Un ~SELECT DISTINCT col1~ filtra los registros duplicados de una columna específica
+    - Un ~SELECT DISTINCT col1,col2,..~ filtra los registros duplicados de una combinación de varias columnas
+    - El ~GROUP BY col1~ *agrupa según una columna* y NO muestra *grupos repetitivos* (/pongamos o no 1 ó varias columnas/)
+
+    #+BEGIN_QUOTE
+    Si usamos ~SELECT DISTINCT~ algunas variantes serían..
+
+    1. Si hacemos ~SELECT DISTINCT col1 FROM Tabla~ es decir mostramos sólo 1 columna, 
+    y sólo a esa le aplicamos ~DISTINCT~ entonces el resultado será registros sin repetir
+
+    2. En cambio si hacemos ~SELECT DISTINCT col1, col2, col3 FROM Tabla~ donde mostramos 3 columnas,
+    el ~DISTINCT~ actúa sobre las 3 columnas, y mostrará registros sin repetir entre la combinación
+    de los datos entre ellas.
+    Por lo cual puede llegar a repetirse datos de una o dos columnas, pero NO de las 3 columnas.
+    #+END_QUOTE
+
+    #+BEGIN_QUOTE
+    Si usamos ~GROUP BY~  algunas variantes serían..
+
+    1. Si ejecutamos ~SELECT col1, COUNT(col2) FROM Tabla GROUP BY col1~ agrupará por la primera columna
+    evitando grupos repetidos (en función a la primera columna)
+    y la cantidad de registros en donde la segunda columna tiene un valor, si tuviese NULL lo cuenta una única vez
+    (/si hubiese registros donde el valor de la segunda columna se repite, los contará también/)
+   
+    2. Si realizamos ~SELECT col1, COUNT(DISTINCT col2) FROM Tabla GROUP BY col1~ mostrará la misma cantidad
+    de registros que la anterior consulta, con la diferencia que sólo contará cuando el valor
+    de la segunda columna sea diferente.
+    Esto es útil por ej. si queremos agrupar por el nombre de un producto, y queremos saber la cantidad
+    de clientes diferentes lo compraron, suponiendo que alguno de los clientes compraron varias veces el mismo producto,
+    sólo contaríamos 1 vez por cada cliente.
+    #+END_QUOTE
+
+    #+BEGIN_QUOTE
+    Diferencias???
+    La diferencia entre si usar ~GROUP BY~ ó solo ~SELECT DISTINCT~ está en que si modificamos la query anterior así
+    1. le sacamos el ~GROUP BY~ 
+    2. le dejamos la *función de agregación* ~COUNT~
+    3. usamos un ~SELECT DISTINCT~ 
+
+    El resultado será TOTALMENTE DIFERENTE..!
+
+    Probamos con ~SELECT DISTINCT col1, COUNT(col2) FROM Tabla~ el resultado será sólo 1 registro,
+    donde el valor de la segunda columna será la cantidad total de registros de la tabla,
+    y el valor de la primera NO TENDRÁ NINGUNA RELACIÓN con la segunda
+    #+END_QUOTE
+*** Ejemplos
+**** Ejemplo 1
+    #+BEGIN_SRC sql
+      -- Mostramos los productos que tengan nombre diferente
+      -- evitamos ver filas con nombre repetido
+      --
+      -- Diferencias con el GROUP BY:
+      -- 1. La "función de agregación" count(*) hará que se muestre un sólo registro
+      -- que es la cantidad de productos en total
+      --
+      -- 2. Mostrará en las dos primeras columnas ProductName y Price,
+      -- el primer registro de ordenar la tabla por nombre de forma ascendente
+      -- (no tiene relación alguna con el resultado del COUNT(), que muestra el total de productos)
+      SELECT DISTINCT(ProductName), Price, count(*)
+        FROM Products
+       ORDER BY 1 ASC;
+
+      -------------------------------------------------------------------------------------------------
+
+      -- Agrupamos los productos por nombre y precio
+      -- evitamos ver filas repetidas
+      --
+      -- Diferencias con el DISTINCT:
+      -- 1. Mostrará cada producto sin repetir (porque lo agrupa por nombre y precio),
+      -- y este COUNT(*) muestra en cada fila, la cantidad de veces que aparece repetido el producto
+      SELECT ProductName, Price, count(*)
+        FROM Products
+       GROUP BY ProductName, Price
+       ORDER BY 1;
+    #+END_SRC
+**** Ejemplo 2 - Select
+     #+BEGIN_QUOTE
+    ~SELECT ProductName, Quantity FROM OrderDetails ORDER BY 1 ASC, 2 ASC~
+    Mostramos de los pedidos cada producto por nombre y cantidad
+    #+END_QUOTE
+
+    |-------------+----------|
+    | ProductName | Quantity |
+    |-------------+----------|
+    | Manzana     | ~10~     |
+    | Manzana     | ~10~     |
+    | Manzana     | 15       |
+    | Pera        | ~5~      |
+    | Pera        | ~5~      |
+    | Pera        | 20       |
+    |-------------+----------|
+**** Ejemplo 3 - Select con DISTINCT
+     #+BEGIN_QUOTE
+    ~SELECT DISTINCT ProductName, Quantity  FROM OrderDetails ORDER BY 1 ASC, 2 ASC~
+    Mostramos de los pedidos cada producto por nombre y cantidad.
+    Pero NO mostramos los que se repitan por nombre y cantidad
+    #+END_QUOTE
+
+    |-------------+----------|
+    | ProductName | Quantity |
+    |-------------+----------|
+    | Manzana     |       10 |
+    | Manzana     |       15 |
+    | Pera        |        5 |
+    | Pera        |       20 |
+    |-------------+----------|
+**** Ejemplo 4 - Select + Función de Agregación
+    #+BEGIN_QUOTE
+    ~SELECT ProductName, SUM(Quantity) Cantidad_total FROM OrderDetails ORDER BY 1~
+    Mostramos de todos los pedidos la cantidad total de cada producto
+    (no hay ninguna relación entre el nombre del producto con el total,
+    aparece sólo un registro porque la "función de agregación" ~SUM()~ devuelve un resultado
+    a menos.. que usemos ~GROUP BY~ y mostrará de cada producto)
+    #+END_QUOTE
+
+    |-------------+----------------|
+    | ProductName | Cantidad_Total |
+    |-------------+----------------|
+    | Manzana     |             65 |
+    |-------------+----------------|
+**** Ejemplo 5 - Select + Distinct + Función de Agregación
+    #+BEGIN_QUOTE
+    ~SELECT DISTINCT ProductName, SUM(Quantity) Cantidad_total FROM OrderDetails ORDER BY 1~
+    Vemos que con ó sin ~DISTINCT~ el resultado es el mismo,
+    porque debemos agrupar los registros con ~GROUP BY~
+    #+END_QUOTE
+    |-------------+----------------|
+    | ProductName | Cantidad_Total |
+    |-------------+----------------|
+    | Manzana     |             65 |
+    |-------------+----------------|
+
+**** Ejemplo 6 - Select + Función de Agregación
+    #+BEGIN_QUOTE
+    ~SELECT ProductName, COUNT(*) Cantidad_total FROM OrderDetails ORDER BY 1~
+
+    Lo mismo que sucedía en el ejemplo anterior, no tiene relación el resultado del ~COUNT(*)~
+    con el registro de la primera columna
+    #+END_QUOTE
+
+    |-------------+----------------|
+    | ProductName | Cantidad_Total |
+    |-------------+----------------|
+    | Manzana     |              6 |
+    |-------------+----------------|
+**** Ejemplo 7 - Select + GROUP BY + Función de Agregación
+    #+BEGIN_QUOTE
+    ~SELECT ProductName, SUM(Quantity) Cantidad_total FROM OrderDetails GROUP BY ProductName ORDER BY 1~
+    Al agrupar ahora si podemos ver de todos pedidos, cada producto y su cantidad total
+    #+END_QUOTE
+    |-------------+----------------|
+    | ProductName | Cantidad_Total |
+    |-------------+----------------|
+    | Pera        | 30             |
+    | Manzana     | 35             |
+    |-------------+----------------|
+**** Ejemplo 8 - Select + GROUP BY + Función de Agregación con DISTINCT
+     Mostramos de todos los productos, cuantos clientes diferentes los compraron
+
+     #+BEGIN_SRC sql
+     SELECT ProductName, count(*), count(DISTINCT CustomerID)
+     FROM Products p
+     JOIN OrderDetails od ON p.ProductID = od.ProductID
+     JOIN Orders o ON o.OrderID = od.OrderID
+     GROUP BY ProductName
+     #+END_SRC
+
+     #+BEGIN_QUOTE
+     La tabla sin el ~GROUP BY~ para ver la repetición de los registros con todas las columnas,
+     observamos como los primeros 3 registros se repite la venta al mismo cliente,
+     #+END_QUOTE
+
+    |-----------+-------------+---------+----------+------------+----------|
+    | ProductID | ProductName | OrderID | Quantity |  OrderDate | ClientID |
+    |-----------+-------------+---------+----------+------------+----------|
+    |         1 | Manzana     |     100 |       10 | 01-10-2009 | ~001~    |
+    |         1 | Manzana     |     102 |       15 | 15-11-2010 | ~001~    |
+    |         1 | Manzana     |     102 |       15 | 29-11-2011 | 002      |
+    |-----------+-------------+---------+----------+------------+----------|
+
+    #+BEGIN_QUOTE
+    Cuando hagamos el ~COUNT(DISTINCT CustomerID)~ contará sólo dos registros,
+    el motor los registros algo similar a esto
+    #+END_QUOTE
+
+    |-----------+-------------+----------|
+    | ProductID | ProductName | ClientID |
+    |-----------+-------------+----------|
+    |         1 | Manzana     | ~001~    |
+    |         1 | Manzana     | 002      |
+    |-----------+-------------+----------|
+
+    #+BEGIN_QUOTE
+    Por lo tanto el resultado de la query del principio sería algo asi..
+    ponemos las dos columnas con y sin ~DISTINCT~ para diferenciar el resultado,
+    - la tercera columna muestra los registros repetidos (cosa que no queremos)
+    - la cuarta columna muestra el resultado deseado
+    #+END_QUOTE
+
+    |-----------+-------------+----------+----------------------------|
+    | ProductID | ProductName | count(*) | count(DISTINCT CustomerID) |
+    |-----------+-------------+----------+----------------------------|
+    |         1 | Manzana     |        3 |                          2 |
+    |-----------+-------------+----------+----------------------------|
+** [DOING] Atomicidad de Tablas (Al usar JOINs)
+*** Conceptos
+   #+BEGIN_QUOTE
+   Si hacemos un ~JOIN~ entre tablas => debemos analizar el *tipo de relación* entre ellas
+   (/Ej. Si la relación entre las tablas es 1 a 1 ó 1 a N/)
+
+   Si NO chequeamos el *tipo de relación*
+   - tendremos una cantidad de registros mayor ó menor a la que queríamos
+   - tendremos errores de cálculo al usar *funciones de agregación* (/Ej. SUM, AVG, COUNT, .../)
+   #+END_QUOTE
+*** Ejemplo
+    #+BEGIN_QUOTE
+    Si queremos mostrar la descripción de todos los productos,
+    seguido de la cantidad de clientes que los compraron,
+    seguido del total vendido de ese producto..
+
+    Veremos como la siguiente consulta devolverá un resultado INCORRECTO
+    para la última columna, por no analizar el *tipo de relación* entre las tablas,
+
+    ya que nos devolverá la cantidad de veces que se vendieron,
+    y a esa cantidad se le agregará la cantidad que haya de ese producto en stock..
+    #+END_QUOTE
+
+    #+BEGIN_SRC sql
+      SELECT p.producto_descripcion, COUNT(DISTINCT f.cliente), SUM(item_precio)
+      --> 1. digamos que "productos" devuelve 100 registros
+        FROM productos p
+        --> 2. lo asociamos con cada renglón de las facturas
+        --> que tiene mayor nivel de atomicidad entre "Facturas" y "item_Factura"
+        -->
+        --> y devolverá un producto cartesiano (PRODUCTOS x ITEM_FACTURA)
+        --> pero sólo los que estén asociados a un item_factura
+               JOIN item_factura i ON p.producto_codigo = i.producto_codigo
+        --> 3. asociamos los "item_factura" (renglones de las facturas) con las "facturas"
+        --> devolverá la misma cantidad de registros, ni más ni menos
+        --> porque la relación entre factura y item_factura es 1 a N,
+        --> siendo item_factura el que mayor cantidad de registros tiene
+               JOIN facturas f ON f.factura_tipo+f.factura_numero = i.factura_tipo+f.factura_numero
+        --> 4. asociamos los "productos" con lo que tengamos en "stock"
+        -->
+        --> OJO..! La relación entre "stock" y "productos" es 1 a N,
+        --> por tanto hará otro producto cartesiano con "stock"
+        -->
+        --> y.. si hay muchos productos repetidos en "stock"
+        --> entonces el cálculo de SUM(item_precio) SE HARÁ MAL! repetirá productos que estén en stock
+               JOIN stock s ON s.producto_codigo = p.producto_codigo
+       GROUP BY p.producto_descripcion;
+    #+END_SRC
+** SQL Secuencialidad
+   #+BEGIN_QUOTE
+   Una forma de intepretar como SQL ejecuta las consultas de manera algorítmica sería
+   1. Evalúa la tabla del ~FROM~ para tener el dominio, el conjunto de datos
+   2. Filtra el conjunto del dominio/universo si hubiese un ~WHERE~
+   3. Agrupa por columna si tuviese un ~GROUP BY~
+   4. Filtra del los datos agrupados con ~HAVING~
+   5. Ordena el conjunto
+
+   Si hiciera un *producto cartesiano* se anidaría la tabla con otro for
+   #+END_QUOTE
+  
+   #+BEGIN_SRC c
+   for(not EOF Tabla) // iteraria sobre cada fila de la tabla del FROM
+      if WHERE // filtraría por una o varias condiciones
+                AAA // cada A sería un registro
+  
+   for(not EOF Tabla) // iteraría nuevamente por cada fila, y las agruparía según la columna de GROUP BY
+      if HAVING // filtraría cada fila agrupada 
+                BBB 
+
+    ORDER BY (BBB)
+   #+END_SRC
 * Operador INSERT 
 ** Inserción unitaria
   #+BEGIN_SRC sql
