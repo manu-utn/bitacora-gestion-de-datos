@@ -58,7 +58,114 @@
   #+RESULTS:
   [[file:img/instrucciones-sql.png]]
 
-* Tips
+* Tricks && Tips
+** DER - Ejemplos Interesantes
+*** Relación Recursiva
+    #+BEGIN_SRC plantuml :file img/relacion-recursiva.png :exports results
+      @startuml
+      title DER - Relación recursiva
+      hide circle
+      skinparam linetype ortho
+
+      note as N1
+      ,**Productos**
+      |= emp_codigo   | emp_nombre    | emp_salario   | emp_jefe  |
+      | **001**           | carlos        | 150000         | NULL      |
+      | 002           | fede          | 15000         | **001**      |
+      | 003           | ricardo       | 25000         | **001**      |
+      | 004           | samuel        | 5000         | **003**      |
+
+      ,* El primer registro tiene emp_jefe en NULL 
+      porque no tiene ningún jefe, es el jefe de todos
+      ,* El empleado 002 y 003 tienen como jefe al 001
+      ,* El empleado 004 tiene sólo un jefe, el 003
+      endnote
+
+      ''''''''''''''''''''''''''''''''''
+      '' ENTIDADES
+
+      entity "Empleado" as empleado {
+         empleado_codigo: int
+         --
+         empleado_nombre: char(50)
+         empleado_salario: decimal(4,2)
+         empleado_jefe: int
+      }
+
+      ''''''''''''''''''''''''''''''''''
+      '' RELACIONES
+
+      empleado ||..|| empleado
+
+
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/relacion-recursiva.png]]
+
+*** Doble Relación
+    #+BEGIN_SRC plantuml :file img/relacion-doble.png :exports results
+      @startuml
+      title DER - Relación doble
+      hide circle
+      skinparam linetype ortho
+
+      note as N1
+      ,**Productos**
+      |= prod_id   | prod_detalle  | prod_precio   |
+      | 001       | gaseosa         | 50           |
+      | 002       | fritas        | 100           |
+      | 003       | hamburguesa     | 300           |
+      | **004**       | bigmac        | 700           |
+      | **005**       | superbigmac        | 900           |
+
+      --
+
+      ,**Combos**
+      |= combo_producto    |= combo_componente  | combo_cant    |
+      | 004               | 001               | 2             |
+      | 004               | 002               | 2             |
+      | 004               | 003               | 1             |
+      | 005               | 001               | 2             |
+      | 005               | 002               | 3             |
+      | 005               | 003               | 2             |
+
+      Un combo puede estar compuesto por varios productos
+
+      Ej. Una bigmac es un producto, que está formado por 
+      tres productos: 2 fritas+ 2 gaseosas +hamburgesa
+      endnote
+
+      ''''''''''''''''''''''''''''''''''
+      '' ENTIDADES
+
+      entity "Producto" as producto {
+         producto_id: char(8)
+         --
+         producto_detalle: char(50)
+         producto_precio: decimal(4,2)
+      }
+
+      entity "Combo" as combo {
+         combo_producto: char(8) <<FK>>
+         combo_componente: char(8)
+         --
+         combo_cantidad: int
+      }
+
+      ''''''''''''''''''''''''''''''''''
+      '' RELACIONES
+
+      producto ||.down.o{ combo : R1
+      producto ||.down.o{ combo : R2
+
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/relacion-doble.png]]
+
 ** SELECT DISTINCT Vs Valor NULL
 *** Conceptos
    - El ~SELECT DISTINCT~ cuenta al valor ~NULL~ como único valor
@@ -314,7 +421,55 @@
    - tendremos una cantidad de registros mayor ó menor a la que queríamos
    - tendremos errores de cálculo al usar *funciones de agregación* (/Ej. SUM, AVG, COUNT, .../)
    #+END_QUOTE
-*** Ejemplo
+*** Ejemplo 1 - Código SQL
+    #+BEGIN_SRC sql
+      /*
+        ,* Nota (1):
+        ,* 1. Si partimos que nuestro dominio es "Facturas",
+        ,* entonces el COUNT no necesita del "DISTINCT" ya que la relación
+        ,* entre Factura-Cliente es 1 a 1, una factura puede pertenecer sólo
+        ,* a un Cliente.
+       ,*/
+      SELECT factura_cliente,
+             count(*) clientes_cant --> (1)
+        FROM facturas
+       GROUP BY factura_cliente;
+
+      ---------------------------------------------------------------------
+      /*
+        ,* Nota (1)
+        ,* 1. Como necesitamos saber la facturación total de cada venta,
+        ,* asociamos cada factura con su renglón.
+        ,* 2. Al estar agrupando por "factura_cliente" hacer COUNT(*)
+        ,* nos daría un resultado incorrecto, por tener registros repetidos
+        ,* por JOINear con renglon_factura que tiene mayor atomicidad que Facturas.
+        ,* 3. Si hicieramos COUNT(factura_cliente) nos devolverá el valor 1,
+        ,* porque estamos agrupando por ese campo, y no se repitirían.
+        ,* 4. En el COUNT hacemos DISTINCT de la PK de Factura,
+        ,* porque la relación entre Factura-Cliente es 1 a 1,
+        ,* en el dominio de Facturas, ya que una factura pertenece sólo a 1 cliente
+        ,*
+        ,* Nota (2):
+        ,* 1. Como la relación entre Factura y Renglon_Factura es 1 a N
+        ,* afecta la atomicidad, y nos devuelve una mayor cantidad de registros
+        ,* pero no afecta el resultado de AVG para calcular el promedio.
+        ,* Pero si nos pidieran la suma total, tendriamos que usar SUM
+        ,* y ahi veriamos un resultado incorrecto.
+        ,*
+        ,* Nota (3):
+        ,* 1. Suponiendo que nos piden contar la cantidad productos comprados
+        ,* que sean diferentes/distintos
+        ,*
+       ,*/
+      SELECT factura_cliente,
+             COUNT(DISTINCT f.letra+f.tipo) clientes_cant, --> (1)
+             AVG(factura_total), --> (2)
+             COUNT(DISTINCT rf.item_producto) --> (3)
+        FROM facturas f
+               JOIN renglon_factura rf ON rf.letra+rf.tipo = f.letra+f.tipo --> (1)
+       GROUP BY factura_cliente;
+    #+END_SRC
+*** Ejemplo 2 - Descriptivo + Código SQL
     #+BEGIN_QUOTE
     Si queremos mostrar la descripción de todos los productos,
     seguido de la cantidad de clientes que los compraron,
@@ -328,27 +483,39 @@
     #+END_QUOTE
 
     #+BEGIN_SRC sql
+      /*
+        Paso (1):
+        digamos que "productos" devuelve 100 registros
+
+        Paso (2):
+        lo asociamos con cada renglón de las facturas
+        que tiene mayor nivel de atomicidad entre "Facturas" y "item_Factura"
+         y devolverá un producto cartesiano (PRODUCTOS x ITEM_FACTURA)
+         pero sólo los que estén asociados a un item_factura
+
+        Paso (3):
+        asociamos los "item_factura" (renglones de las facturas) con las "facturas"
+        devolverá la misma cantidad de registros, ni más ni menos
+        porque la relación entre factura y item_factura es 1 a N,
+        siendo item_factura el que mayor cantidad de registros tiene
+
+        Paso (4):
+        asociamos los "productos" con lo que tengamos en "stock"
+        OJO..! La relación entre "stock" y "productos" es 1 a N, (stock puede tener muchos productos)
+        por tanto hará otro producto cartesiano con "stock"
+
+        y.. si hay muchos productos repetidos en "stock"
+        entonces el cálculo de SUM(item_precio) SE HARÁ MAL! repetirá productos que estén en stock
+       ,*/
+
       SELECT p.producto_descripcion, COUNT(DISTINCT f.cliente), SUM(item_precio)
-      --> 1. digamos que "productos" devuelve 100 registros
+        --> (Paso 1)
         FROM productos p
-        --> 2. lo asociamos con cada renglón de las facturas
-        --> que tiene mayor nivel de atomicidad entre "Facturas" y "item_Factura"
-        -->
-        --> y devolverá un producto cartesiano (PRODUCTOS x ITEM_FACTURA)
-        --> pero sólo los que estén asociados a un item_factura
+        --> (Paso 2)
                JOIN item_factura i ON p.producto_codigo = i.producto_codigo
-        --> 3. asociamos los "item_factura" (renglones de las facturas) con las "facturas"
-        --> devolverá la misma cantidad de registros, ni más ni menos
-        --> porque la relación entre factura y item_factura es 1 a N,
-        --> siendo item_factura el que mayor cantidad de registros tiene
+        --> (Paso 3)
                JOIN facturas f ON f.factura_tipo+f.factura_numero = i.factura_tipo+f.factura_numero
-        --> 4. asociamos los "productos" con lo que tengamos en "stock"
-        -->
-        --> OJO..! La relación entre "stock" y "productos" es 1 a N,
-        --> por tanto hará otro producto cartesiano con "stock"
-        -->
-        --> y.. si hay muchos productos repetidos en "stock"
-        --> entonces el cálculo de SUM(item_precio) SE HARÁ MAL! repetirá productos que estén en stock
+        --> (Paso 4)
                JOIN stock s ON s.producto_codigo = p.producto_codigo
        GROUP BY p.producto_descripcion;
     #+END_SRC
@@ -375,7 +542,343 @@
 
     ORDER BY (BBB)
    #+END_SRC
-* Operador INSERT 
+** Subquery correlacionada Vs JOIN
+*** Conceptos
+   #+BEGIN_QUOTE
+   Cuando hacemos una *subquery correlacionada* en las columnas de ~SELECT~ es lo mismo que un ~JOIN~
+  
+   Es útil cuando queremos realizar una operación sobre todos los registros de una tabla
+   pero el resultado de la *query principal* está afectada por un filtro por tanto no tenemos el total de los registros,
+   y si tratasemos de aplicar una *funcion de agregación* (/Ej. SUM,COUNT,.../) el resultado podría no ser correcto
+
+   Entonces una *subquery correlacionada* en las columnas del ~SELECT~ 
+   hará la operación sobre todos los registros de la tabla indicada
+   comparando cada registro de la *query principal* contra la tabla de la *subquery correlacionada*
+   haciendo lo mismo que un ~JOIN~
+   
+   Debajo usaremos de ejemplo la query donde hablabamos sobre la *Atomicidad de las Tablas*
+   donde debiamos analizar el *tipo de las relaciones* entre las tablas (/1 a 1, 1 a N/)
+   antes de hacer ~JOINs~ para no tener una cantidad de registros de más ó de menos
+   #+END_QUOTE
+*** Ejemplo 1 - Implementación SQL
+   #+BEGIN_SRC sql
+     /*
+       Paso (1):
+       1. Esta subquery correlacionada, actúa como un JOIN, entre las tablas Productos y Stock.
+       Es necesaria porque la relación entre Facturas-item_factura es 1 a N, y entre Stock-Producto es 1 a N,
+       esto nos trae registros de productos repetidos,
+
+       porque en una Factura puede tener 10 Productos, y en Stock quizás sólo hay 1 producto
+       y cuando hagamos SUM(stock_cantidad) nos dará mal el resultado, sumará 11 veces el stock_cantidad
+       de ese producto
+
+       2. Opera por cada registro (producto) de la query principal,
+       suma la cantidad de stock de cada producto, chequeando si está en la tabla "Stock"
+       y luego lo agrega como valor en cada fila la tercera columna
+
+       Paso (2):
+       1. Necesitamos agregar la columna "producto_codigo" en el GROUP BY,
+       porque la "subquery correlacionada" está usando una columna que no fue agrupada.
+
+       2. Al usar las "funciones de agregación" y "group by" cada columna del SELECT
+       debe estar agrupada para que la implementación del "GROUP BY" sepa con que columnas igualar
+
+       3. Además que la relación entre item_factura y Productos es "1 a 1",
+       pero el motor no lo entiende así (relacionado con la primera parte del paso 1)
+      ,*/
+     SELECT p.producto_descripcion, COUNT(DISTINCT f.cliente),
+            --> (Paso 1) debajo está la subquery correlacionada
+            (SELECT SUM(stock_cantidad) FROM stock s WHERE s.stock_producto = p.producto_codigo)
+       FROM productos p
+              JOIN item_factura i ON p.producto_codigo = i.producto_codigo
+              JOIN facturas f ON f.factura_tipo+f.factura_numero = i.factura_tipo+f.factura_numero
+              JOIN stock s ON s.producto_codigo = p.producto_codigo
+       --> (Paso 2)
+      GROUP BY p.producto_descripcion, p.producto_codigo;
+   #+END_SRC
+*** Ejemplo 2 - Estructuras
+    Creamos las estructuras para los ejemplos
+
+    #+BEGIN_SRC sql
+      CREATE TABLE stock(
+        stock_almacen INTEGER NOT NULL,
+        stock_prod INTEGER NOT NULL,
+        stock_cantidad INTEGER DEFAULT 0,
+        PRIMARY KEY (stock_almacen, stock_prod)
+      );
+
+      CREATE TABLE productos(
+        prod_codigo INTEGER NOT NULL PRIMARY KEY,
+        prod_nombre CHAR(30),
+        prod_precio DECIMAL(12,2) DEFAULT 0
+      );
+
+      CREATE TABLE combos(
+        combo_producto INT NOT NULL,
+        combo_componente INT NOT NULL,
+        PRIMARY KEY (combo_producto, combo_componente),
+        FOREIGN KEY (combo_producto) REFERENCES productos (prod_codigo)
+      );
+
+      INSERT INTO stock (stock_almacen, stock_prod, stock_cantidad) --> 16 registros
+      VALUES
+            (001, 001, 10), (001, 002, 10), (001, 003, 10), (001, 004, 10), --> almacen (1) -> {10 manzanas,10 zanahorias, 10 bananas, 10 calabazas }
+            (002, 001, 10), (002, 002, 10), (002, 003, 10), (002, 004, 10), --> almacen (2) -> {10 manzanas,10 zanahorias, 10 bananas, 10 calabazas }
+            (003, 001, 10), (003, 002, 10), (003, 003, 10), (003, 004, 10), --> almacen (3) -> {10 manzanas,10 zanahorias, 10 bananas, 10 calabazas }
+            (004, 001, 10), (004, 002, 10), (004, 003, 10), (004, 004, 10); --> almacen (4) -> {10 manzanas,10 zanahorias, 10 bananas, 10 calabazas }
+
+      INSERT INTO productos (prod_codigo, prod_nombre, prod_precio) --> 10 registros
+      VALUES
+            (001, 'manzana', 200), (002, 'banana', 150), --> ingredientes para licuado frutal ($350)
+            (003, 'zanahoria', 100), (004, 'calabaza', 300), --> ingredientes para sopa de verduras ($400)
+            (005, 'licuado frutal', 120), --> mas barato que cada ingrediente por separado ($120)
+            (006, 'sopa de verduras', 150), --> mas barato que cada ingrediente por separado ($150)
+            (007, 'licuado saludable', 200);
+
+      INSERT INTO combos (combo_producto, combo_componente)
+      VALUES --> 7 registros
+        (005, 001), (005, 002), --> licuado frutal = {manzana, banana}
+        (006, 003), (006, 004), --> sopa de verduras = {zanahora, calabaza}
+        (007, 001), (007, 003), (007, 004); --> licuado saludable = {manzana, zanahoria, calabaza}
+    #+END_SRC
+*** Ejemplo 2 - Diagrama
+    #+BEGIN_SRC plantuml :file img/joins-vs-subquery.png :exports results
+      @startuml
+      hide circle
+      skinparam linetype ortho
+
+      note as N1
+      ,**Stock** (16 registros) "Clave Compuesta"
+
+      Ponemos de ejemplo solo 4 productos para el almacen=1,
+      pero hagamos de cuenta que tenemos 4 almacenes
+
+      |= stock_almacen |= stock_prod | stock_cantidad |
+      | 001             | 001         | 10            |
+      | 001             | 002         | 10            |
+      | 001             | 003         | 10            |
+      | 001             | 004         | 10            |
+
+
+      ,**Productos** (7 registros) "Clave Simple"
+      |= codigo   | nombre            | precio |
+      | 001       | manzana           | 200    |
+      | 002       | banana            | 150    |
+      | 003       | zanahoria         | 100    |
+      | 004       | calabaza          | 300    |
+      | **005**       | **licuado frutal**    | 120    |
+      | **006**       | **sopa de verduras**  | 150    |
+      | **007**       | **licuado saludable**  | 200    |
+
+      ,**Combos** (7 registros) "Clave Compuesta"
+      |= codigo_prod   |= codigo_componente |
+      | 005           | 001               |
+      | 005           | 002               |
+      | 006           | 003               |
+      | 006           | 004               |
+      | 007           | 002               |
+      | 007           | 003               |
+      | 007           | 004               |
+      endnote
+
+      note as N2
+      1. iteramos con un SELECT sobre la tabla Combos
+      2. iteramos con el JOIN sobre Productos para asociar cada producto para ver si es un combo
+      3. iteramos con otro JOIN sobre Productos para asociar que producto es un componente
+
+      En (1) recorre 7 registros, en (2) y (3) recorre dos veces 10 registros..
+      Terminará mostrando 7 registros, los que tiene los Combos,
+      porque la **relación es 1 a 1** entre **producto.codigo_prod = combo.combo_producto**
+      lo mismo para **producto.codigo_prod = combo.combo_componente**
+      esto sucede porque la (PK) de Productos es una "clave simple" y la de Combos
+      es una "Clave compuesta"
+
+      <code>
+      SELECT * FROM combos c
+          JOIN productos p1 ON p1.prod_codigo = c.combo_producto
+          JOIN productos p2 ON p2.prod_codigo = c.combo_componente
+      </code>
+
+      --
+      ,**2) Query + 2 Joins**
+      ,* Opción sugerida, evitar subqueries
+
+      <code>
+      SELECT  p1.prod_nombre combo_nombre, 
+              SUM(p2.prod_precio) precio_sin_combo,
+              p1.prod_precio precio_con_combo
+        FROM combos c
+               JOIN productos p1 ON p1.prod_codigo = c.combo_producto
+               JOIN productos p2 ON p2.prod_codigo = c.combo_componente
+       GROUP BY p1.prod_nombre
+      </code>
+      --
+      ,**3) Query + JOIN + (Subquery correlacionada + Join)**
+      ,* NO es muy eficiente, se puede evitar la subquery
+
+      <code>
+      SELECT 	prod_nombre, prod_precio precio_con_combo,
+              (SELECT SUM(prod_precio) FROM productos p2
+              JOIN combos c2 ON c2.combo_componente=p2.prod_codigo
+              WHERE c2.combo_producto = c.combo_producto) precio_sin_combo
+        FROM combos c
+               JOIN productos p ON p.prod_codigo = c.combo_producto
+       GROUP BY p.prod_nombre;
+      </code>
+      --
+
+      Para las opciones (2) y (3) el resultado es el mismo
+
+      | nombre                | precio_con_combo  | precio_sin_combo |
+      | **licuado frutal**    | 120               | 350           |
+      | **sopa de verduras**  | 150               | 400               |
+      | **licuador saludable**  | 200               | 600               |
+
+
+      endnote
+
+      ''''''''''''''''''''''''''''''''''
+      '' ENTIDADES
+
+      ''''''''''''''''''''''''''''''''''
+      '' RELACIONES
+
+
+      @enduml
+    #+END_SRC
+
+    #+RESULTS:
+    [[file:img/joins-vs-subquery.png]]
+*** Ejemplo 2 - Atomicidad (1)
+    #+BEGIN_SRC sql
+      --> 1) Probamos el nivel de atomicidad entre "Combos" y "Productos"
+      --
+      --> 1.1 La tabla "Combos" es la que mayor nivel de atomicidad tiene entre dichas tablas,
+      --> porque su (PK) Clave Primaria es una "clave compuesta" formada por {combo_producto, combo_componente}
+      --> por cada "combo" se va a repetir, porque hay mayor cantidad de combinaciones al ser una "clave doble"
+      --
+      --> 1.2. La tabla "Combos" permite más cantidad de combinaciones que "Productos"
+      --> porque "Productos" sólo tiene una (PK) simple formada por {prod_codigo}
+      --> por tanto no se puede repetir más de 1 vez en esa tabla "por la regla de integridad de entidad" (unicidad)
+      --
+      --> 1.3. cuando hagamos "SELECT * FROM Combos" y hagamos JOIN de "Productos" con la PK de Producto
+      --> no importa que "Productos" tenga o no más registros que "Combos"
+      --> porque la relación de la PK de Productos con Combos es "1 a 1" <--- combo.combo_producto = producto.codigo
+      --> Ej. si combos tiene 2 registros, en el JOIN sólo se mostrarán 2 registros
+      --> Ej. si combos tiene 4 registros, en el JOIN sólo se mostrarán 4 registros
+      --> Ej. si combos tiene N registros, en el JOIN sólo se mostrarán N registros
+
+      SELECT * FROM combos c --> devuelve 7 registros
+                      JOIN productos p1 ON p1.prod_codigo = c.combo_producto --> se mantiene en 7 (relación 1 a 1)
+                      JOIN productos p2 ON p2.prod_codigo = c.combo_componente;  --> se mantiene en 7 (relación 1 a 1)
+
+
+      --> 2) Probamos con la tabla "Stock" que tiene una relación de "1 a N" con productos
+      -->   y que además tiene una "clave compuesta" formada por {stock_almacen, stock_prod}
+      -->   por tanto permite mayor cantidad de combinaciones al poder repetir el codigo de producto
+      --
+      --> 2.1 Veremos como con el JOIN con "stock" aumenta la cantidad de registros multiplicado por 4
+      --> porque cada producto está repetido 4 veces, aunque en distintos almacenes de stock
+      -->
+      --> Ej. (almacen_1, productoA), (almacen_2, productoA), (almacen_3, productoA), (almacen_4, productoA), ...
+
+      SELECT * FROM combos c --> 7 registros
+                      JOIN productos p ON p.prod_codigo = c.combo_componente --> se mantiene en 7 registros
+                      JOIN stock s ON s.stock_prod = p.prod_codigo; --> aumenta a 28 registros  (7*4 repeticiones en stock)
+    #+END_SRC
+*** Ejemplo 2 - Atomicidad (2)
+    #+BEGIN_SRC sql
+      /*
+       ,* Nota (1):
+       ,* Si hacemos un JOIN con stock asociando el codigo de producto
+       ,* el resultado del SUM(p2.prod_precio) se ve afectado,
+       ,* porque repite la cantidad de registros según cuantos haya en la tabla Stock
+       ,*
+       ,* Nota (2):
+       ,* 1. Relacionamos el producto del combo, para obtener sus datos
+       ,*
+       ,* 2.Como la relación entre la PK de Productos y Combos es 1 a 1,
+       ,* es decir por cada combo no habrá repetición de productos
+       ,* Ej. {(combo_1, prod_1), (combo_1, prod_2), ...}
+       ,*
+       ,* por tanto es indistinto si usamos o no el DISTINCT,
+       ,* es opcional el COUNT(DISTINCT p2.prod_codigo)
+       ,*
+       ,* Nota (3):
+       ,* Es necesario volver a JOINear con Productos para saber el precio de c/componente
+       ,* */
+      SELECT
+          p1.prod_nombre combo_nombre,
+          SUM(p2.prod_precio) precio_sin_combo, --> (1)
+          p1.prod_precio precio_combo, --> (3)
+          COUNT(*) cant_productos --> (2)
+          --,(SELECT SUM(stock_cantidad) FROM stock s WHERE stock_prod=c.combo_componente) cantidad_en_stock
+        FROM combos c
+               JOIN productos p1 ON p1.prod_codigo = c.combo_producto --> (2)
+               JOIN productos p2 ON p2.prod_codigo = c.combo_componente --> (3)
+               --JOIN stock s ON s.stock_prod = p2.prod_codigo --> (1)
+       GROUP BY p1.prod_nombre, p1.prod_precio --,c.combo_componente
+       ORDER BY 1
+    #+END_SRC
+*** Ejemplo 2 - Atomicidad (3)
+    #+BEGIN_SRC sql
+       /*
+        ,* Nota 4:
+        ,* 1. Al hacer JOIN con Stock se multiplica la cantidad de registros porque la relación
+        ,* entre Stock y Productos es 1 a N, ya que sólo JOINeamos con la clave de Producto "prod_codigo"
+        ,* pero como Stock tiene una "clave doble" (compuesta) le falta la otra parte de la clave
+        ,* que es stock_almacen. Por lo que aparecerán productos repetidos.
+        ,*
+        ,* 2. Por ese motivo usamos el DISTINCT en el COUNT() de los productos que se repitan en el mismo combo
+        ,* a causa del JOIN con Stock. Dejamos comentado uno sin DISTINCT para ver la diferencia.
+        ,*
+        ,* Nota 5:
+        ,* 1. Similar al (4) al haber registros repetidos, se sumarán los precios por cada producto repetido
+        ,* a diferencia del COUNT() no podemos usar un DISTINCT
+        ,* 2. Si usamos este SUM como está, el resultado NO será correcto
+        ,*
+        ,* Nota 6:
+        ,* 1. La subquery actúa como un JOIN
+        ,* 2. Al usar "funciones de agregación" necesitamos agrupa por GROUP BY
+        ,* y por el hecho de agrupar, debemos agregar "p2.prod_codigo" que usamos en la subquery correlacionada
+        ,* como columna en el GROUP BY
+        ,* */
+       SELECT
+          p1.prod_nombre,
+          COUNT(DISTINCT p2.prod_nombre) productos_cant, --,COUNT(*) --> (4)
+          p1.prod_precio combo_precio,
+          SUM(stock_cantidad) stock_productos
+          --SUM(p2.prod_precio) precio_sin_combo --> (5)
+          --(SELECT SUM(prod_precio) FROM productos WHERE prod_codigo=p2.prod_codigo) precio_sin_combo --> (6)
+        FROM combos c
+               JOIN productos p1 ON p1.prod_codigo = c.combo_producto --> (2)
+               JOIN productos p2 ON p2.prod_codigo = c.combo_componente --> (3)
+               JOIN stock s ON s.stock_prod = p2.prod_codigo --> (1) (4)
+        GROUP BY p1.prod_nombre, p1.prod_precio --, p2.prod_codigo
+       ORDER BY 1
+    #+END_SRC
+*** Ejemplo 2 - Joins Vs Subquery Correlacionada
+    #+BEGIN_SRC sql
+      --> 1) Query + JOIN + (Subquery correlacionada + JOIN)
+      --> Se puede evitar esa subquery, usando otro JOIN
+      SELECT 	prod_nombre, prod_precio precio_con_combo,
+              (SELECT SUM(prod_precio)
+                 FROM productos p2
+                        JOIN combos c2 ON c2.combo_componente=p2.prod_codigo
+                WHERE c2.combo_producto = c.combo_producto) precio_sin_combo
+        FROM combos c
+               JOIN productos p ON p.prod_codigo = c.combo_producto
+       GROUP BY p.prod_nombre;
+
+
+      --> 2) Query + 2 Joins
+      SELECT p1.prod_nombre combo_nombre, SUM(p2.prod_precio) precio_sin_combo, p1.prod_precio precio_con_combo
+        FROM combos c
+               JOIN productos p1 ON p1.prod_codigo = c.combo_producto
+               JOIN productos p2 ON p2.prod_codigo = c.combo_componente
+       GROUP BY p1.prod_nombre
+    #+END_SRC
+* Operador INSERT
 ** Inserción unitaria
   #+BEGIN_SRC sql
     -- "INTO" es opcional, cuando queremos definir las columnas
