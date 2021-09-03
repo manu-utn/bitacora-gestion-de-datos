@@ -1,0 +1,500 @@
+#+TITLE: Transact-SQL
+* Conceptos
+  Los objetos que se crean con *transact-sql*
+  - NO son visibles desde otras DB
+  - Sólo son visibles en la db seleccionada
+* Propiedades de un RDBMS
+  Foco en la ejecución de *transacciones*
+  + (A)tomicidad
+  + (C)onsistencia
+  + (I)solation (aislamiento)
+  + (D)urabilidad
+* Objetos
+  - Vistas (/equivalente a una "tabla virtual"/)
+  - Funciones de usuario (/rutinas guardadas de transact-sql, NO genera efecto y retorna un valor/)
+  - Procedures (/colección almacenada de instrucciones transact-sql, que genera efecto/)
+  - Triggers (/similar a un procedure, pero se ejecuta automáticamente ante eventos, por lo general para auditoría/)
+* Variables
+** Declarar Variables
+   - Se pueden declarar variables en el cuerpo de
+     1. procesos por lotes (/funciones, triggers, cursores, .../)
+     2. procedimientos almacenados
+   - La sintáxis es ~DECLARE @nombre_variable data_type~
+
+   *Observación:*
+   Las variables en transact-sql SIEMPRE deben empezar con ~@~
+** Asignación de valor
+  - Para asignar valor se utilizan las instrucciones ~SET~ ó ~SELECT~ (/es indistinto/)
+  - Se asigna el valor de derecha a izquierda
+
+  Los *operadores de asignación compuesta* figuran en esta tabla
+
+  #+name: operadores-asignacion-compuesta
+  |----------+-------------------------|
+  | Operador | Descripción             |
+  |----------+-------------------------|
+  | +=       | Sumar y asignar         |
+  | -=       | Restar y asignar        |
+  | *=       | Multiplicar y asignar   |
+  | /=       | Dividir y asignar       |
+  | %=       | Módulo y asignar        |
+  | &=       | AND bit a bit y asignar |
+  | ^=       | XOR bit a bit y asignar |
+  |----------+-------------------------|
+** Ejemplos
+*** Ejemplo 1 - Asignación de valor
+   #+BEGIN_SRC sql
+     SET @variable1 = valor
+
+     SELECT @variable2 = valor;
+   #+END_SRC
+*** Ejemplo 2 - Asignarle el resultado de una consulta a una variable
+    - Al asignar el resultado de una consulta a una variable, la podemos reutilizar fuera de esta
+    - Es útil para cuando se utilizan *cursores*
+
+   #+BEGIN_SRC sql
+     SELECT @variable = nombre
+       FROM clientes WHERE codCliente = 500;
+
+     SELECT @telefono = tel
+       FROM clientes WHERE codCliente = 500;
+   #+END_SRC
+*** Ejemplo 3 - Función - Calcular el doble de un número
+  #+BEGIN_SRC sql
+      CREATE FUNCTION eldoble (@var1 DECIMAL(6,2)) --> identificador + parámetros
+        RETURNS DECIMAL(6,2) AS --> el tipo de retorno
+      BEGIN
+        DECLARE @var2 DECIMAL(6,2); --> cuerpo
+        SET @var2 = @var1 * 2;      -->
+        RETURN @var2; --> valor escalar que retornamos (del mismo tipo que definimos al principio)
+    END
+    GO
+
+    SELECT dbo.eldoble(2) --> invocamos la función escalar
+    GO
+  #+END_SRC
+*** Ejemplo 4 - Procedimiento Almacenado - Con dos parámetros y retornando valor
+    #+BEGIN_SRC sql
+      CREATE PROCEDURE suma @var1 INT, @var2 INT AS
+      DECLARE @var3 INT         -- declaramos una tercera variables
+      SET @var3 = @var1 + @var2 -- le asignamos un valor
+      RETURN @var3              -- la retornamos
+      GO
+
+      DECLARE @resultado INT
+      EXECUTE @resultado = suma 3 2 -- alternativa: usar "exec"
+      SELECT @resultado
+      GO
+    #+END_SRC
+*** Ejemplo 5 - Procedimiento Almacenado - Con un parámetro de entrada y otro de salida
+    #+BEGIN_SRC sql
+      CREATE PROCEDURE suma @var1 INT, @var2 INT OUT
+      AS
+      SET @var2 = @var1 + 10;
+      GO
+
+      DECLARE @resultado INT --> declaramos la variable donde se guardará el cambio
+      EXECUTE suma 2, @resultado OUT
+      SELECT @resultado
+      GO
+    #+END_SRC
+* Controles de Flujos
+** Sentencias de manejo de bloques
+*** Conceptos
+    + Encierran un conjunto de *instrucciones* Transact-SQL
+    + Un *bloque explícito* se inician con ~BEGIN~ y finalizan con ~END~
+    + Un *bloque implícito* se forma con lo que esté despues del ~AS~ y antes del ~BEGIN .. END~
+*** Sintáxis SQL
+    #+BEGIN_SRC sql
+      BEGIN
+        sql_statement | statement_block
+      END
+    #+END_SRC
+*** Ejemplo 1 - Procedimiento Almacenado
+    #+BEGIN_SRC sql
+      CREATE PROCEDURE nombre AS
+      -- principio de un "bloque implícito"
+      DECLARE @var1 INT  
+      SET @var1 = 10
+
+      BEGIN -- inicio de "bloque explícito"
+            -- sentencias
+      END   -- fin de "bloque explícito"
+    #+END_SRC
+** Sentencias condicionales
+*** Sentencia IF-ELSE
+**** Sintáxis SQL
+     Para usar un *sentencia de bloque* se deben usar las palabras claves ~BEGIN~ y ~END~
+
+   #+BEGIN_QUOTE
+     IF boolean_expression
+         sql_statement | block_statement
+     [ELSE
+       sql_statement | block_statement]
+   #+END_QUOTE
+**** Ejemplo 1 - Sentencia Simple
+   #+BEGIN_SRC sql
+     IF (@var1 > 5)
+        PRINT 'Hola'
+     ELSE
+        PRINT 'olis'
+   #+END_SRC
+**** Ejemplo 2 - Sentencia de bloque explícito
+   #+BEGIN_SRC sql
+     IF (@var1 > 5)
+       BEGIN
+         PRINT 'Hola'
+         PRINT 'Otra linea...'
+       END
+     ELSE
+        PRINT 'olis'
+   #+END_SRC
+**** Ejemplo 3 - Consultas como expresiones
+   #+BEGIN_SRC sql
+     DECLARE @cod_cliente INT;
+     SET @cod_cliente = 199;
+
+     IF EXISTS(SELECT nombre FROM clientes WHERE cod_cliente=@cod_cliente)
+        PRINT 'Este cliente existe..! :o'
+     ELSE
+        PRINT 'El cliente no existe, que pasó acá? Agregalo!'
+   #+END_SRC
+*** Sentencia CASE
+**** Conceptos
+     Se puede utilizar en
+     + En la instrucción ~SELECT~
+       1) Dentro de la cláusula ~SELECT~  (esto sería en donde van la lista de columnas)
+       2) Dentro de la cláusula ~ORDER BY~ 
+       3) Dentro de la cláusula ~HAVING~
+     + En la instrucción ~UPDATE~
+     + En la instrucción ~SET~
+**** Ejemplo 1 - En la cláusula SELECT de un SELECT
+     Lo colocamos en la cláusula ~SELECT~ (que es donde se listan las columnas a seleccionar)
+     de la instrucción ~SELECT~.
+
+     #+BEGIN_EXAMPLE
+     La sintáxis para este caso sería
+
+     un_alias=CASE nombre_columna
+       WHEN valor1_de_la_columna THEN nuevo_valor_de_columna
+       WHEN valor2_de_la_columna THEN otro_valor_de_columna
+     END
+    
+     un_alias: es el nombre que aparecerá en el resultado de la consulta,
+     nombre_columna: es el nombre real de la columna que queremos usar
+     valor_de_columna: es el valor que la columna
+     nuevo_valor_de_columna: por el que vamos a reemplazar el que viene como dato
+     #+END_EXAMPLE
+
+     #+BEGIN_SRC sql
+       SELECT 'Fabricante'=CASE cod_fabricante
+         WHEN 'HRO' THEN 'HERO'
+         WHEN 'HSK' THEN 'HUSKY'
+         ELSE 'OTRO'
+         END,
+         precio, descripcion FROM dbo.productos
+       GO
+     #+END_SRC
+**** Ejemplo 2 - En la cláusula SELECT como condicional tipo IF
+     Igual que el ejemplo anterior, pero podemos agregarle que condiciones
+     debería cumplir.
+     Además podemos usarlo como columna para ordenar el resultado final.
+
+     #+BEGIN_SRC sql
+       SELECT cod_producto, cod_fabricante,
+         'Criterio Precio' =
+            CASE
+              WHEN precio = 0 THEN  'SIN PRECIO'
+              WHEN precio < 50 THEN 'SAFA'
+              WHEN precio < 100 THEN 'ESTAFA'
+              WHEN precio BETWEEN 150 AND 200 THEN 'NI LOCO'
+              ELSE 'NI MIRO'
+              END
+         FROM dbo.productos
+        ORDER BY 'Criterio Precio', cod_producto
+       GO
+     #+END_SRC
+**** Ejemplo 4 - En la cláusula ORDER BY con 1 criterio de ordenamiento
+     Si usamos la sintáxis de los anteriores ~case~ sólo podríamos ordenar por todos los campos,
+     pero no de manera individual. En el próximo ejemplo se muestra como hacer.
+
+     #+BEGIN_SRC sql
+       SELECT stock_num, manu_code, unit_price
+         FROM products
+        WHERE manu_code IN ('HRO', 'HSK')
+        ORDER BY CASE
+                 WHEN manu_code='HRO' THEN stock_num  -- no podemos pone ASC ni DESC acá
+                 WHEN manu_code='HSK' THEN unit_price -- no podemos pone ASC ni DESC acá
+                 END ASC; -- sólo acá podemos poner la manera de ordenar
+     #+END_SRC
+**** Ejemplo 5 - En la cláusula ORDER BY con varios criterios de ordenamiento
+     En este la sintáxis cambia un poco a diferencia de los primeros dos ejemplos.
+     Tenemos que usar ~CASE WHEN nombre_columna=valor_columna THEN otra_columna END~
+     es decir por cada posible valor repetimos la *sentencia case*
+
+     *Observación:*
+     Podemos notar que cada ~case~ puede tener su forma de ordenar (~ASC~ y ~DESC~) de forma independiente.
+     Si quisieramos aplicar la sintáxis de los ejemplos anteriores, NO sería posible para cada uno por separado.
+
+     #+BEGIN_SRC sql
+       SELECT cod_producto, cod_fabricante, precio FROM productos
+        WHERE cod_fabricante IN ('HRO', 'HSK')
+        ORDER BY CASE WHEN cod_fabricante='HRO' THEN cod_producto END ASC,
+                 CASE WHEN cod_fabricante='HSK' THEN precio END DESC;
+     #+END_SRC
+**** Ejemplo 6 - En la instrucción UPDATE con un condicional tipo IF
+     Similar al ejemplo (2) que usabamos en la *cláusula* ~SELECT~ de la instrucción ~SELECT~
+
+     #+BEGIN_SRC sql
+       UPDATE productos
+          SET precio=(
+            CASE
+            WHEN precio < 100 THEN precio*1.10 -- aumentamos un 10%
+            WHEN precio < 200 THEN precio*1.20 -- aumentamos un 20%
+            ELSE precio*1.50 -- aumentamos el valor un 50%
+            END
+          ) WHERE fabricante='IBM';
+     #+END_SRC
+**** Ejemplo 7 - En la instrucción SET con consultas
+     - Utilizamos el ~WHEN EXISTS~ seguido entre paréntesis de una *query*
+     - El ~SET~ como instrucción se usa para asignar un valor a una *variable* que declaremos
+       (también podíamos usar la instrucción ~SELECT~)
+
+     #+BEGIN_SRC sql
+       -- 1. Declaramos las variables
+       DECLARE @cod_empleado INT;
+       DECLARE @TipoContacto VARCHAR(30); -- en esta guardaremos el resultado
+
+       -- 2. Le asignamos un valor (del mismo tipo) según lo que devuelva la consulta
+       SET @TipoContacto=
+         CASE
+           -- si se cumple, su valor será Empresario
+           WHEN EXISTS(SELECT * FROM Ventas.empleados v WHERE v.cod_empleado=@cod_empleado)
+           THEN 'Empresario'
+
+           -- si se cumple, su valor será Vendedor
+           WHEN EXISTS(SELECT * FROM Compras.empleados c WHERE c.cod_empleado=@cod_empleado)
+           THEN 'Vendedor'
+         END;
+     #+END_SRC
+** Sentencias Cíclicas
+*** Conceptos
+    - Podemos utilizar la sentencia ~WHILE~ para generar el ciclo
+    - Se puede controlar la ejecución del ~WHILE~ con las palabras clave ~BREAK~ y ~CONTINUE~
+*** BREAK
+    Con la cláusula ~BREAK~ abandona el bloque del ~WHILE~ y sigue con la próxima instrucción
+    que le siga a ~END~ (el que finaliza el bloque explícito)
+*** CONTINUE
+    Con la cláusula ~CONTINUE~ NO ejecuta la próxima instrucción y sigue con la próxima iteración del ~WHILE~
+*** Ejemplo 1 - Modificar varios registros
+   #+BEGIN_SRC sql
+     -- Mientras el promedio de todos los precios sea menor  a 900 que siga iterando
+     WHILE (SELECT AVG(precio) FROM productos) < 1000
+       BEGIN
+         -- aumentamos todos los precios en un 10%
+         UPDATE productos SET precio = precio*1.10
+
+         -- si algún registro supera los 1500, cortamos la iteración con BREAK
+         IF (SELECT MAX(precio) FROM productos) > 4500
+           BREAK
+         ELSE
+           PRINT 'Estamos actualizando los precios.. Muahaha..!'
+       END
+       PRINT 'Se actualizaron todos los precios.. NO te asustes (?)' -- termina el ciclo
+     GO
+   #+END_SRC
+* Throw - Lanzar Excepciones
+** Try y Catch
+*** Conceptos
+   - Dentro del bloque de ~TRY~ se agregan las sentencias que pueden lanzar alguna excepción/error
+   - Dentro del bloque de ~CATCH~ agregamos las sentencias a ejecutar en caso de haber eror en el ~TRY~
+
+   #+BEGIN_SRC sql
+     BEGIN TRY
+       -- sentencias sql
+     END TRY
+     BEGIN CATCH
+       -- sentencias sql
+     END CATCH
+   #+END_SRC
+*** Ejemplo
+  #+BEGIN_SRC sql
+    CREATE tabla(
+      numero INT PRIMARY KEY
+    );
+
+    BEGIN try
+      BEGIN tan
+      INSERT INTO tabla VALUES (1)
+      INSERT INTO tabla VALUES (1)
+      COMMIT tran
+    END try
+
+    BEGIN catch
+      print 'error no se pueden repetir las PK'
+      ROLLBACK tran
+    END catch
+  #+END_SRC
+** Throw
+  - El ~throw 50099~ es el normal para manejar en programas
+  - Cuando la excepcioń es ~level 16~ se detiene toda ejecucion
+** Raiserror
+  - NO se recomienda utilizar el ~RAISE~ para capturar excepciones
+  - Se puede usar para notificar WARNINGS
+
+  #+BEGIN_SRC sql
+    RAISERROR('error catch', 16, 1);
+
+    -- El 2do parámetro: es el nivel de error
+    -- El 3ro parámetro: es el estado
+    -- El mensaje que devuelve es el 5000
+    -- OJO..! NO CAPTURA EL ERROR, SIGUE EJECUTANDO EL RESTO DE LAS SENTENCIAS...
+  #+END_SRC
+
+* Manejo de excepciones y Transacciones
+** Ejemplo 1
+  #+BEGIN_SRC sql
+    CREATE tabla(
+      numero INT PRIMARY KEY
+    );
+
+    BEGIN try
+      BEGIN tan
+      INSERT INTO tabla VALUES (1)
+      INSERT INTO tabla VALUES (1)
+      COMMIT tran
+    END try
+
+    BEGIN catch
+      print 'error no se pueden repetir las PK'
+      ROLLBACK tran
+    END catch
+  #+END_SRC
+** Ejemplo 2
+   #+BEGIN_SRC sql
+     ALTER TABLE #clientes
+       ADD PRIMARY KEY (customer_num);
+
+     BEGIN TRY -- "intentamos" ejecutar la siguiente transaccion, que tiene varios INSERT
+       BEGIN TRANSACTION
+       -- ahora.. si intentamos insertar varios registros, con mismo valor en la columna que es PK, fallara..!
+       INSERT INTO #clientes (customer_num, fname, address1) VALUES (900, 'pedrito', 'Viamonte 955')
+       INSERT INTO #clientes (customer_num, fname, address1) VALUES (900, 'pedrito', 'Viamonte 955')
+       INSERT INTO #clientes (customer_num, fname, address1) VALUES (900, 'pedrito', 'Viamonte 955')
+       COMMIT TRANSACTION
+     END TRY
+     BEGIN CATCH -- capturamos la excepción
+       PRINT 'ERROR..! REGISTROS CON PK REPETIDA!! >:('
+     END CATCH
+   #+END_SRC
+* Sentencia Merge
+** Conceptos
+   - Para realizar *procesamientos batch* (migraciones, apareos, ..)
+   - Su traducción al español es *procesamiento por lotes*
+   - Operaciones que no requieren la interacción/supervisión del usuario
+
+   #+BEGIN_COMMENT
+   Es útil para tecnología (ELT) *Extract, Transform and Load* enfocada a (DW) *Data Warehousing*
+   #+END_COMMENT
+
+   #+BEGIN_SRC sql
+     MERGE <tabla_destino> -- tabla que será modificada
+       USING <tabla_fuente> -- tabla base
+       ON <condicion_inicial> -- podemos asociar PK y FK
+
+       -- Si la condicion inicial se cumple, coinciden PK y FK
+       -- y.. algunas condiciones extra (si queremos)
+       [ WHEN MATCHED [AND <condicion>]
+       -- podemos actualizar las columnas de la "Tabla destino"
+       -- en base a lo que tiene la "Tabla fuente"
+       THEN <operaciones>]
+
+       -- Si la condicion inicial NO coincide, NO coinciden las PK y FK
+       -- (porque tabla_fuente tiene registros, que no tiene tabla_destino)
+       [WHEN NOT MATCHED [BY TARGET] [AND <condicion>]
+       -- Podriamos insertar los datos, en la tabla destino
+       THEN <operaciones>]
+
+       -- Si la condicion inicial NO coincide con la "Tabla fuente"
+       -- (porque la tabla_destino tiene registros, que no tiene tabla_fuente)
+       [WHEN NOT MATCHED BY SOURCE [AND <ccondicion>]
+       -- Podriamos borrar los registros de la tabla_destino
+       THEN <operaciones>]
+       [ <output_clause> ]; -- y esta?
+   #+END_SRC
+** Ejemplos
+   #+BEGIN_SRC sql
+     MERGE tabla_destino d
+       USING tabla_fuente f
+       ON d.codigo = f.codigo
+
+       -- si la condición de codigos se cumple
+       -- y además las direcciones son diferentes
+       WHEN MATCHED AND d.direccion <> f.direccion THEN
+       -- actualizamos la columna dirección de la tabla_destino
+       SET d.direccion = f.direccion
+
+       -- si la condición de codigos no se cumple
+       -- respecto de tabla_destino (target)
+       WHEN NOT MATCHED BY TARGET THEN
+       -- insertamos los registros faltantes, que no tiene
+       INSERT (codigo, nombre, direccion)
+       VALUES (f.codigo, f.nombre, f.direccion)
+
+       -- si la condición de codigos no se cumple
+       -- respecto de tabla_fuente (source)
+       WHEN NOT MATCHED BY SOURCE THEN
+       -- borramos de tabla_destino los registros
+       -- que no tenga la tabla_fuente
+       DELETE;
+   #+END_SRC
+* Operación
+* Transacción
+* Mecanismos para garantizar consistencia de datos
+** Transacciones
+*** Conceptos
+  + Es un *conjunto de sentencias SQL* que se ejecutan *atómicamente*
+  + Es un *mecanismo* que *asegura la consistencia de los datos*
+  + Permite controlar que una operación completa se ejecute ó falle
+    (impidiendo que queden datos inconsistentes)
+*** BEGIN TRANSACTION
+    Es la sentencia que precede a un conjunto de instrucciones
+*** COMMIT TRANSACTION
+    + Para actualizar los datos
+    + Se utiliza *en caso de finalizar correctamente* la operación
+    + Después de un ~COMMIT TRANSACTION~ NO se puede 
+       deshacer la transacción con ~ROLLBACK TRANSACTION~ 
+       se deben deshacer los cambios a mano...
+*** ROLLBLACK TRANSACTION
+    + Para deshacer la transacción (sólo si NO se hizo ~COMMIT~)
+    + Se utiliza *en caso de fallar* la operación
+*** [TODO] Ejemplo 1
+** [TODO] Save Tran
+*** Conceptos
+    + Permite establecer puntos intermedios de guardado de información
+    + Se puede realizar más de un ~SAVE TRAN~ en cada *transacción*
+*** [TODO] Ejemplo 1
+** [TODO] Transacciones Anidadas
+*** [TODO] Ejemplo 1
+** Singleton Transaction
+   Cada sentencia de alteración de datos es un *SINGLETON TRANSACTION*
+   (Como el ~INSERT~ ó ~UPDATE~ ó ~DELETE~ ) 
+** Logs transaccionales
+   - Es un registro con la información de cada operación
+* Mecanismos de recuperación
+** Recovery
+*** Conceptos
+   + Se ejecuta de forma automática al iniciar el motor de DB
+   + Es un *método de recuperación* ante caídas
+   + Se utiliza como *dispositivo de tolerancia a fallas*
+   + Lleva al motor al punto consistente más reciente (*checkpoint*)
+
+   #+BEGIN_QUOTE
+   *Checkpoint* es el punto en el que el motor sincronizó 
+   memoria y disco
+   #+END_QUOTE
+*** Como lo hace
+   Utiliza los *logs transaccionales* para llevar a un estado consistente
+   + realizando ~ROLLING FOWARDS~ de las transacciones exitosas
+     (utilizando el *checkpoint* más reciente)
+   + realizando ~ROLLING BACK~ de las transacciones fallidas
