@@ -1,0 +1,189 @@
+#+TITLE: Transact-SQL - Views
+
+#+BEGIN_COMMENT
+  1. Pagina 10,11,14 - Views
+  2. Pagina 28 - Joins, se podría haber usado ~GROUP BY~ ?
+  3. [[DUDA 1]]
+  4. Una *columna virtual* representan operaciones calculadas
+     que se le agregan alias? SI
+  5. Pag. 38, como es que se pueden borrar filas si tiene 
+     columnas virtuales?
+  6. Pag. 28. cuál sería el resultado si en vez de JOIN
+     usaramos solo la cláusula ~WHERE~ ?
+#+END_COMMENT
+* Vista - Views
+** Conceptos
+*** Cuando utilizar
+    - Cuando accedemos a información frecuentemente
+*** Mayor Velocidad de Acceso
+    - Se accede aún más rápido a la información que con el propio ~SELECT~ que contiene
+*** Que representa
+    - Conjunto de columnas *reales* ó *virtuales* de una o varias tablas
+    - Representa los datos de una o más tablas ó de otras vistas
+    - Está definida por una consulta (en una o más tablas)
+      - Puede tener filtros << Importante
+*** No aloca espacio
+    - NO ocupa espacio de almacenamiento (sólo metadata)
+*** Seguridad
+    Restringe el acceso a determinadas filas/columnas de una tabla
+*** Oculta Complejidad
+    Simplifica las sentencias al usuario
+    (evitando hacer queries largas ó complejas)
+** Sintáxis
+   #+BEGIN_SRC sql
+     CREATE VIEW [<database_name>.][<owner>.] nombre
+       [(column_name [,..n])]
+       AS
+       <select_statement>
+   #+END_SRC
+** Restricciones
+*** Indices
+    NO se pueden crear *índices*
+*** Dependen de las tablas
+    Dependen de las tablas a las que hace referencia
+     - Siendo *eliminadas* si esas tablas se borraron
+     - Quedando *inválidas* si se borraron las tablas
+     - Se pueden borrar/agregar/modifica a las tablas que hace referencia
+*** Restricción de operaciones Insert/Delete/Update
+    Si se utilizó ~JOIN~ ó ~TRIGGERS~ una *funciòn agregada*
+    NO se podrán utilizar operaciones
+    + insert
+    + delete
+    + update
+
+    *Observación:*
+    Las *funciones agregadas* son ~COUNT, SUM, MAX, MIN, AVG~
+    aquellas que operan un conjunto de datos, y devuelven 
+    un solo resultado
+*** Clausulas ORDER BY y UNION
+    NO se pueden utilizar las cláusulas ~ORDER BY~ y ~UNION~
+*** With Check Option
+    - Realiza un *chequeo de integridad de los datos* a insertar/modificar
+    - Impide que se inserten/modifiquen MAL los registros, los valida
+    - Al modificar/insertar se debe cumplir las condiciones
+      de la clásula ~WHERE~ definida en la *view*
+*** Tablas temporales
+    NO pueden hacer referencia a *tablas temporales*
+** Ejemplos
+*** Ejemplo 1 - Insertar registros
+   #+BEGIN_SRC sql
+     -- con "WITH CHECK OPTION"
+     -- restringimos los insert/update/delete,
+     -- sólo a los que cumplan la condición del WHERE
+     CREATE VIEW v_clientes_brasil (codigo, apellido, nombre, pais)
+       AS
+       SELECT codigo_cliente, apellido, nombre
+         FROM clientes
+        WHERE pais='BR'
+              WITH CHECK OPTION;
+
+     -- lo siguiente FALLARÁ..! y NO se insertará el registro
+     -- porque NO cumple con la condición de la clásula WHERE pais='BR
+     -- de la vista v_clientes_brasil
+     INSERT INTO clientes (codigo, apellido, nombre, pais)
+     VALUES (99, 'fernandez', 'carlos', 'UK');
+   #+END_SRC
+*** Ejemplo 2 - Actualizar registros
+    #+BEGIN_SRC sql
+      -- con "WITH CHECK OPTION"
+      -- restringimos los insert/update/delete,
+      -- sólo a los que cumplan la condición del WHERE
+      CREATE VIEW v_clientes_brasil (codigo, apellido, nombre, pais)
+        AS
+        SELECT codigo_cliente, apellido, nombre
+          FROM clientes
+         WHERE pais='BR'
+               WITH CHECK OPTION;
+
+     -- lo siguiente FALLARÁ..! y NO se actualizará el registro
+     -- porque NO cumple con la condición de la clásula WHERE pais='BR'
+     -- de la vista v_clientes_brasil pais='BR'
+      UPDATE v_clientes_brasil
+         SET pais = 'UK'
+       WHERE codigo=99;
+    #+END_SRC
+*** Ejemplo 3
+    #+BEGIN_SRC sql
+      DROP VIEW totalOrdenes;
+
+      CREATE VIEW totalOrdenes (cod, ape, nom, cant, total)
+        AS SELECT c.customer_num, SUM(quantity*unit_price) totalComprado
+             FROM customer c
+                    JOIN orders o ON o.customer_num=c.customer_num
+                    JOIN items i ON o.order_num = i.order_num
+                    -- importante usar el group by
+                    -- porque estamos usando funciones SUM() agrupacion (???)
+                    -- o eran agregadas (?)
+                    GROUP BY c.customer_num, lname, fname;
+
+      SELECT * FROM totalOrdenes;
+    #+END_sRC
+** Operaciones 
+   #+BEGIN_QUOTE
+   Se pueden realizar las mismas operaciones (DML) que con las tablas
+   pero *la operación se propaga* a las tablas que esté asociada.
+
+   Por ese motivo se recomienda no realizar operaciones
+   como ~DELETE~, ~UPDATE~ ó ~INSERT~ sobre las vistas
+   #+END_QUOTE
+
+   Operaciones (DML) permitidas
+   - INSERT
+   - DELETE
+   - UPDATE
+   - SELECT
+* Vista Materializada - Snapshots
+** Conceptos
+  + Similar a una *View* pero *persisten en disco* por tanto ocupan espacio
+  + Permite *mostrar operaciones calculadas de manera rápida* (/porque se calcularon al crear la vista/)
+  + Muestra una *captura de un instante dado* (/no se actualiza por si solo como en una View común/)
+  + Se suele actualizar cada un tiempo determinado (/se hace con jobs, como un cronjob/)
+  + Si se actualizan las tablas maestras => el Snapshot se debe crear de nuevo
+  + Son objetos del esquema de una DB
+
+  #+BEGIN_QUOTE
+  Aumentan la perfomance a nivel de velocidad en el acceso a los datos
+  1. Porque se guardaron en el momento de crear la vista materializada
+  2. El motor crea y optimiza las Vistas para un acceso rápido que un ~SELECT~
+     porque sabe que se accede frecuentemente a ellas
+    
+  Lo segundo es tanto para las Vistas materializadas como las Vistas comunes
+  #+END_QUOTE
+** Sintáxis
+   #+BEGIN_SRC sql
+     CREATE MATERIALIZED VIEW nombre as <select_statement>
+   #+END_SRC
+* Ejemplos de clase
+  
+  #+BEGIN_SRC sql
+    SELECT c1.customer_num, c1.lname+', '+c1.fname Cliente_padre_Referente,
+           c2.customer_num, c2.lname+', '+c2.fname Cliente_hijo_Referido
+      FROM customer c1 JOIN customer c2 
+                           ON (c1.customer_num = c2.customer_num_referedBy);
+
+    select * from customer where customer_num in (102,103);
+
+    --------------------------------------------------------------------
+
+    DROP VIEW v_totalesordenes2
+      CREATE VIEW v_totalesOrdenes2
+      (Codcli, ape, nom, cantOC, total)
+      AS
+      SELECT c.customer_num,lname,fname, COUNT(DISTINCT o.order_num), SUM(quantity*unit_price) totalComprado
+      FROM customer c JOIN orders o ON o.customer_num=c.customer_num
+      JOIN items i ON o.order_num = i.order_num
+      GROUP BY c.customer_num,lname,fname;
+
+      select * from v_totalesOrdenes2;
+      ------------------------------------------------------------------
+
+      select * from items i  join orders o  on (o.order_num=i.order_num) where customer_num=104;
+  #+END_SRC
+* Dudas Resueltas
+** Duda (1)
+  #+BEGIN_QUOTE
+  Las columnas virtuales, se refiere a columnas de otra View?
+  #+END_QUOTE
+
+  *Rta:*
+  Las columnas virtuales son las columnas calculadas
