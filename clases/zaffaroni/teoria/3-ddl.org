@@ -111,9 +111,10 @@
    #+END_SRC
 * Tablas
 ** Concepto
-   - Es la unidad básica de almacenamiento de datos
+   - Es la *unidad básica de almacenamiento de datos*
    - Son de existencia *permanente* (/persiste en disco/)
-   - Los datos se guarda en filas/columnas
+   - Poseen un identificador único por *esquema* ó *base de datos*
+   - Los datos se guardan en filas/columnas
    - Cada columna puede tener
      - nombre
      - tipo de dato
@@ -717,6 +718,9 @@
      - Genera valores autonúmericos/autoincremental que incrementa de tanto en tanto (/Ej. 1,2,3,...,7,8,9,.../)
      - Es útil si no tiene definida una PK que identifique unívocamente a cada registro de una tabla
      - Se puede ajustar el valor del salto de incremento y su valor inicial
+     - NO se deben ingresar valores en la columna definida con ~IDENTITY~
+     - Cada vez que se inserta un registro en la tabla, el valor de ese campo se incrementará (según como se haya definido)
+     - El valor de último ~IDENTITY~ se guarda en una tabla de la sesión actual
 
      #+BEGIN_QUOTE
      NO siempre es correcto definir un valor autoincremental como PK,
@@ -728,7 +732,7 @@
 
      Una posible solución al caso anterior sería definir la PK con el ~{DNI, TIPO_DOC}~
      #+END_QUOTE
-**** Ejemplos
+**** Ejemplo 1
      #+BEGIN_SRC sql
        CREATE TABLE Clientes(
          --> al definir (1,1) que es (valor_semilla_inicial, valor_salto_incremento)
@@ -739,3 +743,29 @@
          edad INT
          );
      #+END_SRC
+**** Ejemplo 2
+  #+BEGIN_SRC sql
+    -- Creamos una tabla de ejemplo
+    CREATE TABLE productos (cod_producto UNIQUE NOT NULL, descripcion VARCHAR(250) NOT NULL)
+
+    -- Simulamos que nos olvidamos de agregar la columna,
+    -- y queremos agregarla sin borrar y crear la tabla de nuevo
+    ALTER TABLE productos
+    ADD idProducto INT IDENTITY(1,1)
+    GO
+
+    -- Insertamos múltiples registros, con datos ficticios
+    INSERT INTO productos VALUES (NEWID(), 'auto rojo'), (NEWID(), 'casa vieja'), (NEWID(), 'moto nueva'), (NEWID(), 'coche moderno')
+
+    -- Guardamos el valor en nuestra variable @ultimo_producto_id
+    -- el alcance es más amplio con @@ (porque es una variable global)
+    SET @ultimo_producto_id = @@IDENTITY
+
+     -- Otra manera.. pero para obtener el identity local
+    SELECT @ultimo_producto_id = SCOPE_IDENTITY()
+
+    -- modificamos la tabla, y borramos la nueva la columna que tenia IDENTITY
+    ALTER TABLE #clientesPremium
+    DROP Column idCliente  -- suponiendo si queriamos borrar la columna.. :(
+    GO
+  #+END_SRC
