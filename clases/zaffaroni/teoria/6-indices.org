@@ -1,0 +1,229 @@
+#+TITLE: Indices
+
+#+BEGIN_COMMENT
+leadtime es el tiempo promedio de entrega que tiene el proveedor
+y se utiliza para los sistemas q usan intime
+
+  Ordenadas por prioridad
+  1. [[DUDA 4]] (pag. 11 pdf=30-DML...)
+  2. [[DUDA 5]] (pag. 12, pdf=30-DML...)
+  3. [[DUDA 1]]
+  4. [[DUDA 2]]
+  5. [[DUDA 3]]
+  6. DUDA 6: Pag. 27,28, pdf=30-DML.. no hace falta un ~DISTINCT~ en el SELECT?
+#+END_COMMENT
+
+* Conceptos
+ + Son _estructuras opcionales a las tablas_
+ + Son _físicamente independientes_ de los datos a la tabla asociada
+   (por tanto el borrar los índices, no afecta a las tablas que estén asociadas)
+ + Para _acceder más rápido a las tablas_
+ + Se pueden crear sobre uno (simple) ó varios campos (compuesto)
+ + Ayuda a la *integridad* y *unicidad*
+* [TODO] Tipos de Indices
+** Conceptos
+   La diferencia entre ellos es la estructura en como se guardan
+** Btree Index
+   Es el más utilizada (para índices relacionales)
+    
+   <<DUDA 1>>: mongodb lo usa dijo en clase ? me suena raro porque no es no-relacional?
+** Btree +
+** Btree Cluster Index
+   - _Ordena fisicamente la tabla_ (los datos) en el momento que se crea
+   - Solo puede haber 1 por tabla
+
+   <<DUDA 2>>: También ordena el índice??
+** Bitmap Index (Oracle)
+   + Arma un mapa de bit
+   + Cada *bit* en el *bitmap* representa una fila (con valor 0 ó 1)
+** Hash Index (Mysql)
+   + Están implementados en *tablas de hash*
+   + Se basan en otros índices *Btree*
+   + Es la _manera más rápida de ejecutar consultas a una tabla, si está cargada en memoria_
+   <<DUDA 3>>: En una clase posterior habia mencionado algo más acerca
+   cuando las tablas se cargan en memoria?
+** Functional Index / function based index
+   La *clave* de estos indices, derivan del resultado de una *función*
+   (suelen ser _funciones que son definidas por el usuario_)  
+** Reverse key index (Oracle)
+   + Invierte los *bytes* de la clave a indexar
+* [TODO] Características diferenciadoras
+** Conceptos
+   - Cuando dice *filas*, se refiere a la fila de la estructura de índices,
+     no de la tabla asociada
+   - Cuando menciona *clave* se refiere a la clave del índice, porque este
+     está formado por una relación de *clave-valor*
+** Único
+   Una sola fila por clave (es decir único)
+** Duplicado
+   Muchas filas asociadas a la misma clave
+** Simple
+   Clave formada _por una columna_
+** Compuesto
+   Clave formada _por varias columnas_ (Ej. dni y tipo de documento)
+* Beneficios de su uso
+  - Mejor perfomance en el acceso y en el ordenamiento
+  - Nos evita tener que ordenarlos (/ya los deja ordenados cuando se crean/)
+  - Es una *búsqueda n-aria*, por tanto más potente que una *búsqueda binaria*
+  - Se evita realizar *lecturas secuenciales*, se accede a través de los índices
+  - Cuando usemos los ~JOIN~ será más eficiente (/nested join, join con indices/)
+* Desventajas
+  - Costo de espacio en disco
+    (/puede que el espacio ocupado por los índices sea mayor que los datos de tabla asociada/)
+  - Costo de procesamiento y mantenimiento
+    (/porque tiene que actualizar e insertar en varias partes/)
+
+  *Observación:*
+  El índice se bloquea cada vez que una fila es actualizada/insertada/borrada
+  para que el sistema pueda recorrer/actualizar los índices
+* Algoritmos - Complejidad
+   |-------------+--------------------------------|
+   | Complejidad | Algoritmo                      |
+   |-------------+--------------------------------|
+   | Secuencial  | NxN elementos                  |
+   |             |                                |
+   | Binarias    | N x log(n+1) con log en base 2 |
+   |             |                                |
+   | Btree       | N x log(n+1) con log en base N |
+   |-------------+--------------------------------|
+* Cuando deberiamos Indexar
+  Indexeamos Columnas en las que frecuentemente
+  + Asociamos tablas con ~JOIN~
+  + Hay filtros aplicados con ~WHERE~
+  + Ordenamos con ~ORDER BY~
+* [TODO] Precauciones al Indexar
+  + Que el tamaño del índice sea menor comparado con la fila
+    - Crear índices en columnas donde la longitud del atributo sea chico
+      (/ya sean letras o números, aplica en cualquiera de los casos/)
+  + Limitar la cantidad de indices en tablas
+    (/por el tema de los costos de espacio y de procesamiento/)
+
+  #+BEGIN_COMMENT
+  _RESPUESTA:_
+  si tiene pocas filas va a acceder rápido igual
+  el motor no trabaja con bytes, si no con páginas
+
+  <<DUDA 4>>
+  Cómo es el tema de crear indices con poca cant. de filas,
+  por lo de la cant de páginas? (pag. 11, 30-DML..pdf)
+  
+  El apunte dice:
+  No crear índices sobre tablas con poca cantidad de filas, no olvidar que
+  siempre se recupera de a páginas. De esta manera evitaríamos que el sistema
+  lea el árbol de índices
+  #+END_COMMENT
+
+  #+BEGIN_QUOTE
+  Se tiende a decir que los índices formados con una clave numérica son más eficientes que aquellos
+  formados por letras. La realidad es que NO importa si es un número ó una letra.
+  Lo que importa es que la longitud de la clave sea mínima, por tanto puede ser alfanumérica.
+  #+END_QUOTE
+* [TODO] Recomendaciones al Indexar
+  + Si usamos *Indices Compuestos* incrementamos los valores únicos
+  + Si utilizamos *Cluster Index* se agiliza la recuperacion de filas, porque
+    - su objetivo es _reducir la entrada/salida de disco_
+    - las filas se guardan en Bloques Contiguos permitiendo
+      1. facilitar el acceso
+      2. reduci la cant. de accesos (/porque se recuperan en menos páginas los mismos datos/)
+
+    #+BEGIN_COMMENT
+    <<DUDA 5>>
+    Como sería lo de *Búsqueda de clave parcial* ? (pag. 12, 30-DML..pdf)
+    
+    El apunte dice:
+    Tratar de usar índices compuestos para incrementar los valores únicos
+    Tener en cuenta que si una o más columnas intervienen en un índice
+    compuesto el optimizador podría decidir acceder a través de ese índice
+    aunque sea solo para la búsqueda de los datos de una columna, esto se
+    denomina “partial key search
+    #+END_COMMENT
+* [TODO] Construccion de Indices en Paralelo
+  - Se sugiere _migrar sin los índices_ y luego recrearlos
+
+  #+BEGIN_EXAMPLE
+  El Btree + se construye a partir de 2 o más pocesos paralelos. 
+  #+END_EXAMPLE
+* Implementación de Indices
+  Estas implementaciones son para el *motor sql server*
+
+  #+BEGIN_SRC sql
+    -- indice único y simple
+    CREATE UNIQUE index ix1_ordenes ON ordenes (n_orden);
+
+    -- índice duplicado y compuesto
+    CREATE UNIQUE index ix2_ordenes ON ordenes (cliente, n_orden);
+
+    -- índice clustered
+    CREATE CLUSTERED index ix3_ordenes ON ordenes (n_orden);
+  #+END_SRC
+* [TODO] Manejo de Load Factor - Fill Factor 
+  El ~fillfactor~ es el porcentaje de cada página del índice a ser dejado
+  como espacio libre en su creación. 
+  Si no utilizamos el ~fillfactor~, las páginas de los datos de los índices
+  se llenan completamente
+
+  #+BEGIN_EXAMPLE
+  Si el fillfactor=20, cuando se cree el índice, este ocupará hasta el 80%
+  de cada nodo y un 20% quedará libre
+  #+END_EXAMPLE
+
+  #+BEGIN_SRC sql
+    CREATE UNIQUE INDEX i_ordenes ON ordenes(n_orden)
+      WITH FILLFACTOR=20;
+  #+END_SRC
+* IOT - Tablas organizadas por índice (Oracle)
+ - También se conocen por *index organized table
+* Parte práctica en clase
+** Ejercicio 1
+  #+BEGIN_SRC sql
+    SELECT m.manu_code, m.manu_name, lead_time, SUM(quantity*unit_price) AS monto_total
+    FROM manufact m LEFT JOIN items i ON m.manu_code = i.manu_code
+    GROUP BY m.manu_name, m.manu_code, lead_time
+    ORDER BY m.manu_name
+  #+END_SRC
+** Ejercicio 2
+  #+BEGIN_SRC sql
+    select s1.stock_num, tp.description, s1.manu_code, s2.manu_Code
+    from products s1
+    left join products s2 on (s1.stock_num=s2.stock_num AND s1.manu_code != s2.manu_code)
+    join product_types tp on (s1.stock_num=tp.stock_num)
+    order by 1;
+
+    -- duda q dieron en clase
+    select s1.stock_num, tp.description, s1.manu_code, s2.manu_Code
+    from products s1
+    left join products s2 on (s1.stock_num=s2.stock_num AND s1.manu_code != s2.manu_code)
+    join product_types tp on (s1.stock_num=tp.stock_num)
+    -- si no le agregamos el "IS NULL" nos estaria sacando fabricantes
+    --where s1.manu_code < s2.manu_code OR s2.manu_code IS NULL
+    -- El COALESE  reemplaza los NULL por la cadena q pongamos
+    where s1.manu_code < COALESE(s2.manu_code, 'ZZZ')
+    order by 1;
+  #+END_SRC
+** Ejercicio 3
+  #+BEGIN_SRC sql
+    SELECT customer_num, fname, lname, company, address1, address2, city,
+    state, zipcode, phone, status
+    FROM customer
+    WHERE customer_num IN (SELECT customer_num FROM orders
+    GROUP BY customer_num HAVING COUNT(order_num)>1)
+
+    -- alternativa (1)
+    SELECT customer_num, fname, lname, company, address1, address2, city,
+    state, zipcode, phone, status
+    FROM customer
+    WHERE EXISTS (SELECT customer_num FROM orders WHERE o.customer_num = c.customer_num
+    GROUP BY customer_num HAVING COUNT(order_num)>1)
+
+    -- alternativa (2)
+    select customer_num, fname, lanem
+    from custoer c
+    where (select count(order_num) from orders o where o.customer_num=c.customer_num) >1
+  #+END_SRC
+** Ejercicio 4
+  #+BEGIN_SRC sql
+    select c.customer_nu, fname, lname
+    from customer c join orders o on (c.customer_num=o.customer_num)
+    group by c.customer_num, fname, lname
+    having counter(order_num)>1
+  #+END_SRC
