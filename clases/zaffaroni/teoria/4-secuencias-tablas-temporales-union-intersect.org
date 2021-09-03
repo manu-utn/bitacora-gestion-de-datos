@@ -1,0 +1,260 @@
+#+TITLE: Secuencias + Tablas Temporales + Operadores multi-select
+
+#+BEGIN_COMMENT
+  1. Pagina 8 - Secuencias (???) como sin huecos (?)
+  2. <<DUDA 1>> (pagina 29)
+#+END_COMMENT
+
+* Secuencias
+** Conceptos
+  - Es un *objeto Secuence* que todos los motores de db soportan
+    (En myql es autoincrement, en sql es identity, ...)
+  - Genera valores consecutivos únicos (Ej. 1,2,3,... )
+  - La implementación en *SQL Server* es como *propiedad de una columna* 
+    llamada ~IDENTITY~
+  - Las columnas con este objeto NO se puede modificar con ~INSERT~
+** Identity
+    - al hace un ~insert~ no se deben agregar las columnas  que tengan
+      la propiedad ~identity~ en la definición  de la tabla
+    - es un autonumerador constante
+    - está relacionado con las *secuencias*
+
+    #+BEGIN_SRC sql
+      CREATE TABLE empleados(
+        -- cada vez que se inserten registros
+        -- codEmpleado incrementará de 1 en 1
+        codEmpleado INT IDENTITY (1,1) PRIMARY KEY,
+        nombre VARCHAR(60),
+        apellido VARCHAR(60)
+      );
+
+      -- no estamos agregando la columna codEmpleado
+      INSERT INTO empleados (nombre, apellido)
+                  VALUES ('Carlos', 'Romero');
+    #+END_SRC
+** Ejemplo en SQL Server
+   #+BEGIN_SRC sql
+     -- en el motor SQLServer
+     CREATE TABLE ordenes(
+       orden IDENTITY (1,1), -- incrementará de 1 en 1
+       cliente INT NULL,
+       total decimal(15,2)
+     );
+   #+END_SRC
+** Ejemplo en otros motores de DB
+  #+BEGIN_SRC sql
+    -- en el motor Informix
+    CREATE TABLE ordenes(
+      N_orden SERIAL,
+      N_cliente INTEGER,
+    );
+
+    -- en el motor MySql el objeto secuence es AUTO_INCREMENT
+    CREATE TABLE ordenes(
+      N_orden AUTO_INCREMENT,
+      N_cliente INTEGER,
+    );
+
+    -- en el motor Oracle
+    CREATE SECUENCE ordenes
+      INCREMENT BY 1
+      START WITH 10
+      MAXVALUE 9999
+      NOCYCLE
+      NOCACHE;
+  #+END_SRC
+* Tablas Temporales
+** Conceptos
+  + Son de *existencia temporal*
+  + En SQLServer se deben crear anteponiendo el # numeral en el nombre
+  + Con doble numeral ## se crea una tabla temporal del tipo *global*
+  + NO se pueden alterar (osea agregar/eliminar columnas, cambiar tipos, ..)
+    (Si se pudiera se usaría ~ALTER TABLE~ pero NO se puede)
+  
+   #+BEGIN_SRC sql
+     -- creación de tabla temporal
+     -- de forma Explícita
+     CREATE TABLE #productos(
+       N_orden INTEGER,
+       N_cliente INTEGER,
+       C_estado SMALLINT
+     );
+
+     INSERT INTO #productos
+     SELECT * FROM ordenes WHERE c_estado = 1;
+
+     -- creación de tabla temporal
+     -- de forma Implícita
+     SELECT *
+       INTO #ordenes_Pendientes -- esta tabla no existe
+       FROM ordenes
+      WHERE c_estado = 1;
+   #+END_SRC
+** Por que usarlas
+   - optimizar accesos a una consulta varias veces en una aplicación
+   - almacenar resultados intermedios en una aplicación
+*** Almacenamiento intermedio de consultas MUY grandes
+    - Para dividir una consulta grande en pequeñas consultas
+    - Es poco *perfomante* una consulta de gran tamaño
+    - Es muy *costoso* una consulta con muchos ~JOIN~
+*** Optimizar accesos
+    - Para evitar realizar varias veces consultas que demoran mucho en ejecutarse
+    - Permite realizar la consulta una sola vez, y consultar directo
+      a la tabla temporal
+*** Almacenar resultados intermedios
+    - Para evitar actualizar las tablas reales de la DB
+    - Utilizar las *tablas temporales de sesión* para volcar información
+      y luego reutilizar para crear *tablas físicas*
+** Tipos
+*** De sesión (locales)
+    + visibiles *solo para los creadores*
+    + se eliminan cuando
+      - el usuario se desconecta
+      - ó el usuario decide eliminarla
+*** Globales
+    - visibles para *cualquier usuario*
+    - visibles para cualquier sesón
+** Tipos de Creacion
+*** Explicita
+    + Mediante la instrucción ~CREATE~
+    + Se debe definir
+      * el nombre
+      * sus campos (columnas)
+      * tipos de datos
+      * restricciones (constraints)
+
+    *Observaciones:*
+    + NO se recomienda utilizar el * (asterísco) para insertar mútiples registros porque
+      1. porque puede haber problemas de tipos de columnas
+      2. porque si llegase a cambiar la tabla, los registros quizás tipan pero se ingresarían mal
+    + Al insertar multiples registros con ~INSERT INTO~ y ~SELECT~, _no agregar paréntesis_ en la consulta
+      del  ~SELECT~ porque NO es una subquery
+
+    #+BEGIN_SRC sql
+      -- Es importante notar el símbolo # numeral
+      -- antes del identificador/nombre de la tabla
+      CREATE TABLE #ordenes_pendientes(
+        codOrden INTEGER,
+        codCliente INTEGER,
+        fecha DATE,
+        alta TIMESTAMP
+        );
+
+      -- OBS: OJO CON LOS PARÉNTESIS EN EL SELECT.. NO ES UNA "SUBQUERY" (produciría un error sintáctico)
+      INSERT INTO #ordenes_pendientes
+                  SELECT * FROM ordenes WHERE estado = 1;
+    #+END_SRC
+*** Implícita
+    - Mediante el *resultado de una consulta* ~SELECT~
+    
+    #+BEGIN_SRC sql
+      -- Esto CREA la tabla, no solo inserta datos
+      SELECT *
+        INTO #ordenes_pendientes
+        FROM ordenes
+       WHERE estado = 1;
+    #+END_SRC
+* [TODO] Tablas anidadas
+* Operadores Multi-Select
+** Operador UNION
+*** Conceptos
+   - La tabla resultante adquiere los nombres de las columnas del primer ~SELECT~
+   - Devuelve las filas del primer ~SELECT~ y del segundo ~SELECT~
+   - Trae la unión de ambas consultas pero _NO repite los datos_
+     (a menos que usemos ~union all~, similar a un distinct)
+
+   *Observaciones:*
+   1. La _cantidad de columnas_ y los _tipos de datos_ de los ~SELECT~ deben ser iguales
+   2. Sólo se puede _ordenar indicando la posición de las columnas_ en el ~ORDER BY~
+*** Ejemplo 1
+   #+BEGIN_SRC sql
+     -- El resultado será una tabla nueva, con el nombre de las columnas del primer SELECT
+     SELECT cod_producto, precio -- las columnas de los SELECT deben ser las mismas (1)
+       FROM productos
+      WHERE precio < 10
+      UNION -- << ACA ESTÁ EL UNION >>
+     SELECT cod_producto, precio  -- las columnas de los SELECT deben ser las mismas (1)
+       FROM items
+      WHERE cod_prod = 10
+      ORDER BY 1, 2; -- solo se puede ordenar con la posición de las columnas (2)
+   #+END_SRC
+*** Ejemplo 2 - Elegir el orden de los resultados
+    Podemos agregar una columna extra para ordenarlos, usando un número entero y agregandole un ~alias~
+    (Ej. ~SELECT 1 orden, nombre, apellido~)
+
+    En este ejemplo a la primera columna de cada ~SELECT~ le pusimos un número entero y le pusimos de alias ~orden~
+    luego en el ~ORDER BY~ indicamos que ordene por la nueva columna (que tiene posición 1).
+    Además aplicamos un filtro diferente para cada una en el ~WHERE~
+    El resultado final sería
+    1. muestra los registros que tengan precio igual a 10
+    2. luego los registros que tenga precio mayor a 50
+    3. por último los registros que tengan precio entre 15 y 20
+
+    Recordemos que dice ~ORDER BY 1 ASC~ ordenará de manera ascendente 1,2,3,4,..
+    usando de referencia los valores que tenga la primera columna
+
+   #+BEGIN_SRC sql
+     SELECT 1 orden, cod_producto, precio -- las columnas de los SELECT deben ser las mismas (1)
+       FROM productos WHERE precio = 10
+     UNION -- << UNION >>
+     SELECT 3 orden, cod_producto, precio -- las columnas de los SELECT deben ser las mismas (1)
+       FROM productos WHERE precio BETWEEN 15 AND 20
+     UNION -- << UNION >>
+     SELECT 2 orden, cod_producto, precio -- las columnas de los SELECT deben ser las mismas (1)
+       FROM productos WHERE precio > 50
+      ORDER BY 1 ASC, 2 DESC; -- solo se puede ordenar con la posición de las columnas (2)
+   #+END_SRC
+** Operador UNION ALL
+*** Conceptos
+   + Tiene las mismas restricciones que el ~UNION~ para los ~SELECT~
+     1. Misma cantidad de columnas
+     2. Mismo tipos de datos
+     3. Ordenar por posición de columna
+   + NO hace el ~DISTINCT~, por tanto _repite filas_
+*** Ejemplos
+   #+BEGIN_SRC sql
+     -- El resultado será una tabla nueva, con el nombre de las columnas del primer SELECT
+     SELECT cod_producto, precio -- las columnas de los SELECT deben ser las mismas (1)
+       FROM productos
+      WHERE precio < 10
+      UNION ALL -- << ACA ESTÁ EL UNION ALL>>
+     SELECT cod_producto, precio  -- las columnas de los SELECT deben ser las mismas (1)
+       FROM items
+      WHERE cod_prod = 10
+      ORDER BY 1, 2; -- solo se puede ordenar con la posición de las columnas (2)
+   #+END_SRC
+** Operador INTERSECT
+*** Conceptos
+   + Devuelve las filas que están en ambas consultas
+   + Tiene las mismas restricciones que el ~UNION~ para los ~SELECT~
+     1. Misma cantidad de columnas
+     2. Mismo tipos de datos
+     3. Ordenar por posición de columna
+*** Ejemplos
+   #+BEGIN_SRC sql
+     -- El resultado será una tabla nueva, con el nombre de las columnas del primer SELECT
+     SELECT cod_producto, precio -- las columnas de los SELECT deben ser las mismas (1)
+       FROM productos
+      WHERE precio < 10
+      INTERSECT -- << ACA ESTÁ EL INTERSECT>>
+     SELECT cod_producto, precio  -- las columnas de los SELECT deben ser las mismas (1)
+       FROM items
+      WHERE cod_prod = 10
+      ORDER BY 1, 2; -- solo se puede ordenar con la posición de las columnas (2)
+   #+END_SRC
+** Operador EXCEPT
+*** Conceptos
+   + Actúa como la operación *diferencia* de *teoría de conjuntos* 
+     (/Ej.Si decimos A-B, es lo mismo que decir todos los elementos de A menos los de B/)
+   + Tiene las mismas restricciones que el ~UNION~ para los ~SELECT~
+     1. Misma cantidad de columnas
+     2. Mismo tipos de datos
+     3. Ordenar por posición de columna
+*** Ejemplos
+   #+BEGIN_SRC sql
+     -- seleccionamos los clientes de la tabla "customer"
+     -- y que NO estén en la tabla temporal #clientesParaBorrar
+     SELECT customer_num FROM customer
+     EXCEPT
+     SELECT customer_num FROM #clientesParaBorrar;
+   #+END_SRC
