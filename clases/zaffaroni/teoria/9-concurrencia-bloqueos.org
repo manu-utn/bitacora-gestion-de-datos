@@ -1,0 +1,352 @@
+#+TITLE: Concurrencia y Bloqueos
+* Propiedades de un RDBMS
+** Conceptos
+  Foco en la ejecución de *transacciones*
+  + (A)tomicidad
+  + (C)onsistencia
+  + (I)solation (aislamiento)
+  + (D)urabilidad
+** Atomicidad
+   - Permite unificar un conjunto de sentencias en un solo bloque llamado *transacción*
+   - Las sentencias de una *transacción* o se ejecutan todas ó ninguna
+** Consistencia
+   - Consistencia de los datos
+   - Que empiece en un estado consistente y termine en otro estado consistente
+** Aislamiento
+* Concurrencia
+  - Conceptualmente se da cuando muchos intentan quieren acceder al mismo recurso
+  - El motor maneja la *concurrencia* mediante *bloqueos* y *asignando tiempos*
+  - El motor *aísla* las transacciones
+* Tipo de bloqueo
+** Conceptos
+   Estar utilizando sql ya bloquea 
+** Compartido (shared)
+   El estar usando sql ya un usuario, éste esta bloqueando
+** Exclusivo
+   - Tiene que estar solo una persona conectada
+   - Si hay otra persona conectada NO se puede bloquear (/se lo debe desconectar, matar su conexión/)
+** Promovible (promotable-update)
+* Granularidad
+  - nivel DB
+  - nivel de Tabla
+  - nivel de Página
+  - nivel de Fila
+  - nivel de clave-indice
+
+  #+BEGIN_QUOTE
+  Si se bloquea una tabla, tampoco se va a poder acceder a las vistas que la utilizan,
+  porque recordá que son queries y.. no pueden acceder a una tabla bloqueada.
+  #+END_QUOTE
+* Interlockeo - Deadlock
+  - Ocurre cuando dos transacciones son *concurrentes* (/quieren operar sobre los mismos datos/)
+
+  *Observación:*
+  El motor mata la transacción más nueva
+* Niveles de Aislamiento
+** Conceptos
+   - Consiste en que si hay dos transacciones a la vez (/concurrentes/), no deberían molestarse entre ellas
+   - Existen 4 tipos de aislamiento, de la mas permisiva a la menos permisiva
+
+   *Observaciones:*
+   1. Cada vez que abrimos una pestaña de queries, se abre una nueva conexion 
+   2. Si al crear una tabla usamos doble numeral ~##~ se crean a nivel sesion
+** Mayor aislamiento implícita
+   Mayor aislamiento implíca que habrá
+   1. Mayor cant. de bloqueos => Menor velocidad (/habrán transacciones que deben esperar que terminen otras transacciones/)
+   2. Baja la performance a nivel de usuario (/los usuarios deberán esperar más/)
+   3. Aumenta la seguridad de que no habrá información *inconsistente* (/porque se verá datos que fueron confirmados y persisten en disco/)
+** Menor aislamiento implícita
+   1. Menor cant. de bloqueos => Mayor velocidad para el sistema (/habrán transacciones que no deban esperar tanto para ejecutarse/)
+   2. Aumenta la probabilidad de información *inconsistente* en distintos instantes de tiempo (/porque está en caché y puede variar/)
+** SET TRANSACTION ISOLATION LEVEL
+  *Controla el comportamiento de bloqueo* de TODAS las instrucciones ~SELECT~ ejecutadas en la misma conexión
+
+  #+BEGIN_SRC sql
+    -- sintáxis sql
+    SET TRANSACTION ISOLATION LEVEL READ COMMITED |
+      READ UNCOMMITTED | REPEATABLE READ | SERIALIZABLE
+  #+END_SRC
+** Tabla comparativa
+   |----------------------+---------------+-------------------+---------------|
+   | Nivel de Aislamiento | Lectura Sucia | Lectura repetible | Dato fantasma |
+   |----------------------+---------------+-------------------+---------------|
+   | READ UNCOMMITTED     |       X       |                   |       X       |
+   | READ COMMITED        |               |                   |       X       |
+   | REPEATABLE READ      |               |         X         |       X       |
+   | SERIALIZABLE         |               |         X         |               |
+   |----------------------+---------------+-------------------+---------------|
+** Tipos de Niveles de Aislamiento
+*** Read uncommitted - Lectura no confirmada
+    - Es el mas permisivo de los niveles
+    - NO aplica bloqueos en ninguna instrucción (/SELECT, UPDATE, DELETE/)
+    - NO hay *bloqueos compartidos*, y NO se garantizan los *bloqueos exclusivos*
+    - Lee datos del *caché* de la DB (/produce lecturas más rápidas/), son datos que no fueron *confirmados* (/son inconsistentes/)
+    - *Tipos de lecturas* que pueden ocurrir
+      1. ~DIRTY READ~ (/lecturas sucias/)
+      2. ~PHANTOM RECORD~ (/registros fantasmas/)
+      3. No asegura ~REPEATABLE READ~ (/lecturas repetibles/) <-- "no confundir con el nivel de aislamiento, esto es el tipo de lectura"
+    - NO chequea los bloqueos de todas las instrucciones ~SELECT~ de la *transacción*
+
+    #+BEGIN_QUOTE
+    1. Las lecturas pueden ser sucias (/dirty read/) porque si una *transacción (A)* hace una lectura y lee ~X~
+       y luego otra *transacción (B)* modifica esos datos, la primera transacción leerá ~M~
+       y si la que modificó hace un ~ROLLBACK~ la otra verá nuevamente datos diferentes (/lectura sucia/)
+
+    2. Las lecturas pueden ser fantasmas, porque si una *transacción (A)* hace una lectura y lee 10 registros
+       porque otra *transacción (B)* había insertado 5 filas, y esta que había insertado hace un ~ROLLBACK~
+       entonces la que había hecho lectura ahora verá 5 filas menos (/registros fantasmas/)
+
+    3. Similar podria suceder en el caso anterior de los registros fantasmas, si se habia hecho un ~DELETE~
+       de 5 registros, y luego se hizo un ~ROLLBACK~ donde esta vez aparecerían 5 registros más (/registros fantasmas/)
+       que antes no estaban.
+    #+END_QUOTE
+*** Read commited - Lectura confirmada
+    - Este es el nivel que viene por default en SQL Server
+    - NO aplica bloqueos en ninguna instrucción (/SELECT, UPDATE, DELETE/)
+    - Se mantienen *bloqueos compartidos* mientras se hagan lecturas (/para evitar lecturas NO actualizadas/)
+    - Lee datos que fueron *confirmados*, se evita el tipo de lectura ~DIRTY READ~ (/porque ya no lee de caché/)
+    - *Tipos de lecturas* que pueden ocurrir
+      1. ~PHANTOM RECORD~ (/registros fantasmas/)
+      2. No asegura ~REPEATABLE READ~ (/lecturas repetibles/) <-- "no confundir con el nivel de aislamiento, esto es el tipo de lectura"
+
+    #+BEGIN_QUOTE
+    Se repiten las *lecturas fantasmas* y *lecturas repetidas* como en el nivel ~READ UNCOMMITTED~
+    porque no bloqueá las instrucciones ~UPDATE~ ni ~INSERT~, no asegura que otra sesión/transacción
+    alguien utilice esas instrucciones.
+
+    Por tanto pueden haber insertado registros, luego que hicieran ~ROLLBACK~ y en el segundo instante de lectura
+    que falten registros (/registros fantasmas/)
+    Como también que hayan borrado registros, luego que hicieran ~ROLLBACK~ y en el segundo instante de lectura
+    veríamos que sobran registros (/registros fantasmas/)
+    #+END_QUOTE
+*** Repeteable read - Lectura repetida
+    - *Bloquea a nivel filas* (todas las que estemos leyendo con un SELECT por ej.)
+    - Bloquea modificaciones (~UPDATE~ y ~DELETE~) de un rango de filas que se leyeron con ~SELECT~ + ~WHERE~
+    - Permite realizar inserciones (~INSERT~) lo que provoca "registros fantasmas"
+    - *Tipos de lecturas* que pueden ocurrir
+      1. ~PHANTOM RECORD~ (/registros fantasmas/)
+
+    #+BEGIN_QUOTE
+    1. Éste si asegura las *lecturas repetibles* (/repeatable read/), porque digamos que una sesión 
+       hace un ~SELECT~ de un rango de registros porque lo delimitó con el ~WHERE~
+       entonces el motor bloquea el ~UPDATE~ sobre ese rango de filas que filtra el ~WHERE~
+       para cualquier otra sesión/transacción, de modo que asegure *lecturas repetibles* (/repeatable read/).
+       Es decir el permitir que al ejecutar varias veces un mismo ~SELECT~ el resultado sea el mismo,
+       y no de un resultado diferente.
+
+    2. NO asegura los *registros fantasmas* (/phantom record/) porque NO bloquea el ~INSERT~,
+       sólo bloquea la modificación de datos ante un rango de SELECT
+
+    3. Repetimos el primer caso, para aclarar dudas.
+       Si estamos haciendo un ~SELECT~ de una tabla con 5 registros, y solo agarramos
+       los primeros 3, entonces en la otra sesión no podremos hacer un ~UPDATE~ de esas filas
+       porque quedan bloqueadas... Pero SI podemos hacerlo con las 2 ultimas.
+       *Observación:* si hacemos un ~COMMIT~ ó ~ROLLBACK~ podremos modificar esas 3 primeras filas
+    #+END_QUOTE
+*** Serializable
+    - Bloquea la tabla completa, bloquea todos los comandos (~UPDATE~ , ~DELETE~, ~INSERT~, ~SELECT~)
+    - Es el mas restricto
+    - Asegura *lectura repetible* (/al ejecutar varias veces un SELECT, el resultado será el mismo/)
+    - Si la tabla no tiene Indice, va a bloquear la tabla completa
+    - Convierte al sistema en monousuario
+** Tipos de lectura
+*** Dirty read - Lectura Sucia
+    - Lee datos que NO estan completos (/son inconsistentes, porque no fueron confirmados/)
+    - Cuando desde una *transacción (A)* leo datos de otra *transacción (B) concurrente* que aún no esta *confirmada*
+    - Cuando hay transacción que aún no ejecutó ~COMMIT~ (/confirmación de los cambios/)
+
+    #+BEGIN_QUOTE
+    Por ejemplo cuando en un ~SELECT~ nos trae *N* registros y al ejecutar nuevamente nos devuelve *P* registros
+
+    Esto sucede porque el motor lee de la *caché*, es decir datos que no fueron confirmados a disco
+    #+END_QUOTE
+*** [TODO] Phantom records - Registros Fantasmas
+    - Cuando desde una *transacción* se ejecutan *dos consultas idénticas devuelven resultados diferentes*
+    - Los resultados de la segunda consulta no aparecen
+    
+    #+BEGIN_QUOTE
+    Cuando una *transacción (A)* que insertó ó borró filas, ésta luego hizo un ~ROLLBACK~
+    y otra *transacción (B)* tiene lecturas diferentes..
+    A) porque aparecen registros que antes no había (al borrar, y luego deshacer el cambio)
+    B) porque faltan registros que antes aparecían y ahora no (al insertar, y luego deshacer el cambio)
+    #+END_QUOTE
+*** Repeatable reads - Lectura repetible
+    - Cuando al ejecutar la *misma query varias veces y devuelve el mismo resultado*
+
+    *Observación:*
+    A diferencia de las otros dos tipos de lectura, esta NO es malo...
+    Los niveles de aislamiento que no aseguran esta lectura, provocan que el usuario obtenga distintos
+    resultados ante una misma consulta.
+    No confundir con registros repetidos, asegurar que se cumpla, hace permite que ante el mismo ~SELECT~
+    en distintos instantes de tiempo, el resultado obtenido será consistente, osea el mismo.
+* Ejemplos
+** Ejemplo (1) - Elemental
+   #+BEGIN_SRC sql
+     /*
+       ,* Nota (1):
+       ,* -> Hasta que no termine la transacción, el motor bloquea los UPDATE
+       ,* en las tablas donde se hace SELECT
+      ,*/
+     SET TRANSACTION ISOLATION LEVEL REPEATABLE READ
+       BEGIN TRANSACTION
+         SELECT * FROM libros  --> (1)
+         SELECT * FROM autores --> (1)
+       COMMIT TRANSACTION
+   #+END_SRC
+** Ejemplo (2) - Interesante
+   Si tenemos 2 transacciones (A) y (B), cada una pertenece a una sesión diferente
+   (/cada sesión puede pertenecer al mismo usuario, ó dos usuarios/)
+
+   |--------+----------------------------------------------------+-------------------------------------------------|
+   | Tiempo | TRANSACCION (A)                                    | TRANSACCION (B)                                 |
+   |--------+----------------------------------------------------+-------------------------------------------------|
+   |      1 | ~SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED~ |                                                 |
+   |      2 | ~BEGIN TRANSACTION T1~                             | ~SET TRANSACTION ISOLATION LEVEL READ COMMITED~ |
+   |      3 |                                                    | ~BEGIN TRANSACTION T2~                          |
+   |      4 |                                                    | ~INSERT INTO PRUEBA VALUES (1)~                 |
+   |      5 |                                                    | ~SELECT COUNT(*) FROM PRUEBA~                   |
+   |      6 |                                                    |                                                 |
+   |      7 | ~SELECT COUNT(*) FROM PRUEBA~                      | ~COMMIT TRANSACTION T2~                         |
+   |      8 |                                                    | ~ROLLBACK TRANSACTION T2~                       |
+   |      9 |                                                    |                                                 |
+   |     10 | ~SELECT COUNT(*) FROM PRUEBA~                      |                                                 |
+   |     11 | ~COMMIT TRANSACTION T1~                            |                                                 |
+   |--------+----------------------------------------------------+-------------------------------------------------|
+
+   El resultado final de hacer un ~SELECT COUNT(*) FROM PRUEBA~ en ambas sesiones será ~1~, detallamos el porque
+   1. En *t=6* el resultado del ~SELECT~ es ~1~ (/porque es su sesión/)
+   2. En *t=7* el resulado también es ~1~, porque es ~READ UNCOMMITTED~ (/datos de transacciones que aún no fueron confirmadas/)
+   3. EN *t=10* el resultado sigue siendo ~1~ porque el ~ROLLBACK~ se hace sobre la *cache*, NO de una transacción confirmada
+      que ya se hizo ~COMMIT~ (/y ahora persiste en disco, no se puede deshacer/)
+** Ejemplo (3) - Interesante
+   Si la tabla ~prueba~ está vacía, no tiene *triggers* y se ejecutan dos *transacciones concurrentes*
+
+   |--------+------------------------------------------------+------------------------------------------------|
+   | Tiempo | TRANSACCION (A)                                | TRANSACCION (B)                                |
+   |--------+------------------------------------------------+------------------------------------------------|
+   |      1 | ~SET TRANSACTION ISOLATION LEVEL SERIALIZABLE~ | ~SET TRANSACTION ISOLATION LEVEL SERIALIZABLE~ |
+   |      2 | ~BEGIN TRANSACTION~                            | ~BEGIN TRANSACTION~                            |
+   |      3 | ~SELECT * FROM dbo.prueba~                     |                                                |
+   |      4 | ~INSERT INTO dbo.prueba values(1, 'TRAN1')~    | ~INSERT INTO dbo.prueba values(1, 'TRAN2')~    |
+   |      5 | ~COMMIT TRANSACTION~                           | ~COMMIT TRANSACTION~                           |
+   |--------+------------------------------------------------+------------------------------------------------|
+    
+   El resultado final será que la tabla ~prueba~ tendrá dos registros, detallamos el porque
+   1. En *t=3* la transacción (A) *bloquea* la tabla, por ser la primera en ejecutar una instrucción
+      (/el resultado será no rows, porque la tabla está vacía/)
+   2. En *t=4* es la transacción (A) la que ejecuta el ~INSERT~ porque es quien primero bloqueó la tabla
+      (/la transacción (B) deberá esperar que termine la transacción (A)/)
+   3. Luego que la transacción (A) finalizó, la transacción (B) procede a ejecutar su ~INSERT~
+
+   *Observaciones:*
+   1. Cuando el nivel de aislamiento es *serializable* la primer transacción en ejecutar un comando en la tabla,
+      será quien la bloquee, y sólo esta transacción podrá usarla hasta que termine. Por más que hayan otras
+      transacciones con el mismo nivel de aislamiento *serializable*, estas otras NO tendrán acceso a la tabla,
+      deberán esperar hasta que la primera transacción la desbloquee.
+   2. En este caso, cualquiera hubiera sido el nivel de aislamiento (/read uncommited, read commited, repeatable read/),
+      el resultado hubiese sido el mismo, osea 2 filas. La única diferencia hubiese sido la velocidad de la transacción, 
+      porque en este caso se ejecuta la transaccion (A) y luego la (B)
+   3. El iniciar la transacción con ~BEGIN TRANSACTION~ no bloquea la tabla. Solo se bloquea cuando se ejecuta
+      una operación (DML).
+** Ejemplo (4) - Interesante
+   #+BEGIN_QUOTE
+   Las variables ~@a~, ~@b~ y ~@c~ ya se encontraban declaradas.
+   Describir si existe un *interlockeo* en la ejecución y en donde,
+   caso contrario responder cuales son los valores de las 3 variables al finalizar la ejecución
+   de las 2 sesiones.
+   #+END_QUOTE
+
+   |--------+----------------------------------------------+-------------------------------------------------------|
+   | Tiempo | Sesión (1)                                   | Sesión (2)                                            |
+   |--------+----------------------------------------------+-------------------------------------------------------|
+   |      1 | ~SET TRANSACTION ISOLATION READ UNCOMMITTED~ | ~SET TRANSACTION ISOLATION LEVEL SERIALIZABLE~        |
+   |      2 | ~BEGIN TRANSACTION~                          | ~BEGIN TRANSACTION~                                   |
+   |      3 | ~SELECT @a=COUNT(*) FROM tabla~              |                                                       |
+   |      4 |                                              | ~INSERT INTO tabla (SELECT MAX(numero)+1 FROM tabla)~ |
+   |      5 | ~SELECT @b=COUNT(*) FROM tabla~              |                                                       |
+   |      6 |                                              | ~ROLLBACK~                                            |
+   |      7 | ~COMMIT~                                     |                                                       |
+   |      8 | ~SELECT @c=COUNT(*) FROM tabla~              |                                                       |
+   |--------+----------------------------------------------+-------------------------------------------------------|
+    
+   1. El *interlockeo* se da en *t=5* cuando la *sesión (1)* intenta hacer una lectura de la tabla.
+      Porque en *t=4* la *sesión (2)* bloqueó la tabla al ejecutar el ~INSERT~ porque tiene configurado
+      el *nivel de aislamiento* como ~SERIALIZABLE~. Por tanto en *t=5* la *sesión (1)* deberá esperar
+      que la transaccion de la *sesión (2)* termine su ejecución.
+   2. En *t=3* la variable ~@a~ valdrá ~0~ si la tabla estuviera vacía
+   3. En *t=5* la variable ~@b~ no tendrá valor hasta que termine la transacción de la *sesión (2)*
+      finalizada esa transacción, el valor será ~0~ si la tabla estuviera vacía, porque la otra transacción
+      hizo un ~ROLLBACK~ deshaciendo el ~INSERT~
+   4. En *t=8* la variable ~@c~ seguirá valiendo lo mismo que ~@a~ y ~@b~
+
+   *Observaciones:*
+   1. Si el *nivel de aislamiento* hubiese sido cualquiera menos el de enunciado que era ~SERIALIZABLE~
+      el valor de la variable ~@b~ hubiese sido ~1~
+   2. Siempre que el *nivel de aislamiento* sea ~SERIALIZABLE~ se puede producir un *interlockeo*,
+      porque se bloquea la tabla paa el resto, y no se puede realizar lectura ni modificación de la misma,
+      hasta que la *transacción* que la bloqueó, la desbloquee
+** Ejemplo (1)
+  #+BEGIN_SRC sql
+    CREATE TABLE ##nums (num INT);
+
+    -- En una conexion hacemos
+    BEGIN TRANSACTION
+    INSERT INTO ##nums VALUES (1)
+    INSERT INTO ##nums VALUES (2)
+    INSERT INTO ##nums VALUES (3)
+    ROLLBACK
+
+    -- en otra conexion (pestaña)
+    -- veremos que queda ahi esperando..
+    -- a menos que agreguemos lo siguiente.. cambiando el tipo de "aislamiento"
+    -- con esto podremos ir viendo los datos
+    -- SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+    -- BEGIN TRANSACTION
+    SELECT * ##nums
+  #+END_SRC
+** Ejemplo (2)
+  #+BEGIN_SRC sql
+    -- ejemplo de las phantom read, si hacemos commit de una,
+    -- despues un rollback o algo asi, en la sesion 2
+    -- creamos otra transaccion e insertamos datos
+    -- veremos filas en el select del la sesion 1 de la primera tansaccion
+    -- esos son los phantom read
+
+    -- SESION 1
+    SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+    BEGIN TRANSACTION
+    SELECT * FROM ##nums
+
+    -- SSION 2
+    ROLLBACK
+  #+END_SRC
+** Ejemplo (3)
+  #+BEGIN_SRC sql
+    -- el repeatable read, le pone un bloqueo exclusivo a cada fila que lee
+    -- NO asegura el phantom record
+    -- Asegura que los datos NO pueden modificar los datos
+
+    -- SESION 1
+    SET TRANSACTION ISOLATION LEVEL REPEATABLE READ
+    BEGIN TRANSACTION
+    SELECT * FROM ##nums
+
+    -- SESION 2
+    BEGIN TRANSACTION
+    UPDATE ##nums SET valor=2 WHERE valor=1
+    COMMIT
+  #+END_SRC
+** Ejemplo (4)
+  #+BEGIN_SRC sql
+    -- sesion 1
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE
+    BEGIN TRANSACTION
+    SELECT * FROM #nums WHERE valor < 7
+    -- al hacer esto, crar indices, me deja lo de la sesion 2
+    -- nos permite porque se bloquea el indice.. (???)
+    -- create index ix1 ON ##nums (valor)
+
+    -- sesion 2
+    BEGIN TRANSACTION
+    INSERT INTO ##nums VALUES (3)
+  #+END_SRC
