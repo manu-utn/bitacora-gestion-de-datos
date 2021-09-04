@@ -3,12 +3,6 @@
   Los objetos que se crean con *transact-sql*
   - NO son visibles desde otras DB
   - Sólo son visibles en la db seleccionada
-* Propiedades de un RDBMS
-  Foco en la ejecución de *transacciones*
-  + (A)tomicidad
-  + (C)onsistencia
-  + (I)solation (aislamiento)
-  + (D)urabilidad
 * Objetos
   - Vistas (/equivalente a una "tabla virtual"/)
   - Funciones de usuario (/rutinas guardadas de transact-sql, NO genera efecto y retorna un valor/)
@@ -303,20 +297,39 @@
        PRINT 'Se actualizaron todos los precios.. NO te asustes (?)' -- termina el ciclo
      GO
    #+END_SRC
-* Throw - Lanzar Excepciones
-** Try y Catch
+* Manejo de errores
+** Niveles de Severidad del Error
+   |----------------------+------------------------------------------------------------------------|
+   | Niveles de Severidad | Descripción                                                            |
+   |----------------------+------------------------------------------------------------------------|
+   | Entre 0 y 10         | No son errores graves, el DBMS no los muestra como errores             |
+   | Entre 11 y 16        | Son errores que los puede resolver el usuario (/Ej. de tipo de datos/) |
+   | Entre 17 y 19        | Son errores de SW que NO puede resolver el usuario                     |
+   | Entre 20 y 24        | Son errores de sistema, y son irrecuperables                           |
+   |----------------------+------------------------------------------------------------------------|
+** Funciones para manejo de errores
+   |--------------------+-------------------------------------------------------|
+   | Función            | Descripción                                           |
+   |--------------------+-------------------------------------------------------|
+   | ~ERROR_NUMBER()~   | Devuelve el número de error                           |
+   | ~ERROR_STATE()~    | Devuelve el estado del error                          |
+   | ~ERROR_MESSAGE()~  | Devuelve el mensaje del error                         |
+   | ~ERROR_SEVERITY()~ | Devuelve la severidad del error                       |
+   | ~ERROR_LINE()~     | Devuelve el número de linea donde se produjo el error |
+   |--------------------+-------------------------------------------------------|
+** Bloques Try y Catch
 *** Conceptos
    - Dentro del bloque de ~TRY~ se agregan las sentencias que pueden lanzar alguna excepción/error
    - Dentro del bloque de ~CATCH~ agregamos las sentencias a ejecutar en caso de haber eror en el ~TRY~
-
-   #+BEGIN_SRC sql
-     BEGIN TRY
-       -- sentencias sql
-     END TRY
-     BEGIN CATCH
-       -- sentencias sql
-     END CATCH
-   #+END_SRC
+*** Sintáxis SQL
+    #+BEGIN_SRC sql
+      BEGIN TRY
+        -- sentencias sql
+      END TRY
+      BEGIN CATCH
+        -- sentencias sql
+      END CATCH
+    #+END_SRC
 *** Ejemplo
   #+BEGIN_SRC sql
     CREATE tabla(
@@ -324,7 +337,7 @@
     );
 
     BEGIN try
-      BEGIN tan
+      BEGIN tran
       INSERT INTO tabla VALUES (1)
       INSERT INTO tabla VALUES (1)
       COMMIT tran
@@ -335,58 +348,67 @@
       ROLLBACK tran
     END catch
   #+END_SRC
-** Throw
+** Throw - Lanzar Excepciones
   - El ~throw 50099~ es el normal para manejar en programas
   - Cuando la excepcioń es ~level 16~ se detiene toda ejecucion
 ** Raiserror
-  - NO se recomienda utilizar el ~RAISE~ para capturar excepciones
+*** Conceptos
+  - Lanza un mensaje de error de los definidos en ~sys.messages~ ó definido por el usuario
   - Se puede usar para notificar WARNINGS
+  - NO se recomienda utilizar el ~RAISE~ para capturar excepciones
+*** Sintáxis SQL
+    Si pasamos el msg_id debemos elegirlo de ~sys.messages~
 
+    #+BEGIN_SRC sql
+      RAISERROR(msg_id | msg_str, severity)
+    #+END_SRC
+*** Ejemplo
   #+BEGIN_SRC sql
+    --> El 2do parámetro: es el nivel de error
+    --> El 3ro parámetro: es el estado
+    --> El mensaje que devuelve es el 5000
+    --> OJO..! NO CAPTURA EL ERROR, SIGUE EJECUTANDO EL RESTO DE LAS SENTENCIAS...
     RAISERROR('error catch', 16, 1);
 
-    -- El 2do parámetro: es el nivel de error
-    -- El 3ro parámetro: es el estado
-    -- El mensaje que devuelve es el 5000
-    -- OJO..! NO CAPTURA EL ERROR, SIGUE EJECUTANDO EL RESTO DE LAS SENTENCIAS...
+    --> Si queremos ver los mensajes de errores ya definidos
+    SELECT * FROM sys.messages
   #+END_SRC
-
-* Manejo de excepciones y Transacciones
-** Ejemplo 1
-  #+BEGIN_SRC sql
-    CREATE tabla(
-      numero INT PRIMARY KEY
-    );
-
-    BEGIN try
-      BEGIN tan
-      INSERT INTO tabla VALUES (1)
-      INSERT INTO tabla VALUES (1)
-      COMMIT tran
-    END try
-
-    BEGIN catch
-      print 'error no se pueden repetir las PK'
-      ROLLBACK tran
-    END catch
-  #+END_SRC
-** Ejemplo 2
+** Ejemplos
+*** Ejemplo (1)
    #+BEGIN_SRC sql
-     ALTER TABLE #clientes
-       ADD PRIMARY KEY (customer_num);
+     CREATE tabla(
+       numero INT PRIMARY KEY
+     );
 
-     BEGIN TRY -- "intentamos" ejecutar la siguiente transaccion, que tiene varios INSERT
-       BEGIN TRANSACTION
-       -- ahora.. si intentamos insertar varios registros, con mismo valor en la columna que es PK, fallara..!
-       INSERT INTO #clientes (customer_num, fname, address1) VALUES (900, 'pedrito', 'Viamonte 955')
-       INSERT INTO #clientes (customer_num, fname, address1) VALUES (900, 'pedrito', 'Viamonte 955')
-       INSERT INTO #clientes (customer_num, fname, address1) VALUES (900, 'pedrito', 'Viamonte 955')
-       COMMIT TRANSACTION
-     END TRY
-     BEGIN CATCH -- capturamos la excepción
-       PRINT 'ERROR..! REGISTROS CON PK REPETIDA!! >:('
-     END CATCH
+     BEGIN try
+       BEGIN tan
+       INSERT INTO tabla VALUES (1)
+       INSERT INTO tabla VALUES (1)
+       COMMIT tran
+     END try
+
+     BEGIN catch
+       print 'error no se pueden repetir las PK'
+       ROLLBACK tran
+     END catch
    #+END_SRC
+*** Ejemplo (2)
+    #+BEGIN_SRC sql
+      ALTER TABLE #clientes
+        ADD PRIMARY KEY (customer_num);
+
+      BEGIN TRY -- "intentamos" ejecutar la siguiente transaccion, que tiene varios INSERT
+        BEGIN TRANSACTION
+        -- ahora.. si intentamos insertar varios registros, con mismo valor en la columna que es PK, fallara..!
+        INSERT INTO #clientes (customer_num, fname, address1) VALUES (900, 'pedrito', 'Viamonte 955')
+        INSERT INTO #clientes (customer_num, fname, address1) VALUES (900, 'pedrito', 'Viamonte 955')
+        INSERT INTO #clientes (customer_num, fname, address1) VALUES (900, 'pedrito', 'Viamonte 955')
+        COMMIT TRANSACTION
+      END TRY
+      BEGIN CATCH -- capturamos la excepción
+        PRINT 'ERROR..! REGISTROS CON PK REPETIDA!! >:('
+      END CATCH
+    #+END_SRC
 * Sentencia Merge
 ** Conceptos
    - Para realizar *procesamientos batch* (migraciones, apareos, ..)
@@ -448,34 +470,59 @@
        -- que no tenga la tabla_fuente
        DELETE;
    #+END_SRC
-* Operación
-* Transacción
-* Mecanismos para garantizar consistencia de datos
-** Transacciones
+* Transaccionalidad - Mecanismos para garantizar consistencia de datos
+** Caché del motor
+   - El motor implementa una caché única compartida para todos los usuarios
+   - Contiene los datos que NO fueron *confirmados*, es decir no se ejecutó la instrucción ~COMMIT TRAN~
+   - Permite lecturas rápidas por ser una caché, pero tiene *datos inconsistentes* porque pueden ser borrados/modificados
+   - Cuando una *transacción* es confirmada, pasa de la *caché* a *disco*
+
+   *Observación:*
+   Cuando un usuario se conecta a la DB tiene una sesión diferente, pero ésta sólo guarda datos sobre las variables declaradas,
+   pero cuando se manipulan los datos de la DB que no fueron confirmados, se está modificando los datos de la caché,
+   que es la misma para todos los usuarios/sesiones.
+** Objetos autotransaccionales
+   - Consideran todo el objeto como una transacción apesar que no utilizamos ~BEGIN TRANSACTION~, ~COMMIT TRANSACTION~, ...
+   - Los objetos autotransaccionales son
+     1. Triggers 
+     2. Procedure
+
+   #+BEGIN_QUOTE
+   Si creamos un *trigger* y no usamos las instrucciones ~BEGIN TRANSACTION~, ~COMMIT TRANSACTION~, ...
+   considera a todo el bloque del trigger como una *transacción*
+   1. si tuvo éxito al ejecutar el *trigger*, por tanto no falló => al final hace un autocommit
+   2. si fallara alguna instrucción del *trigger* => hace un autorollback
+   #+END_QUOTE
+** Transacción
 *** Conceptos
-  + Es un *conjunto de sentencias SQL* que se ejecutan *atómicamente*
+  + Es un *conjunto de sentencias SQL* en un bloque, que se ejecutan *atómicamente*
   + Es un *mecanismo* que *asegura la consistencia de los datos*
-  + Permite controlar que una operación completa se ejecute ó falle
-    (impidiendo que queden datos inconsistentes)
+  + Asegura que se cumpla la *regla de integridad referencial* (/evita realizar operaciones por la mitad/)
+  + El DBMS considera al conjunto de sentencias como una sola instrucción
+  + Si todas las sentencias se ejecutan exitosamente => se puede cerrar la transacción
+  + Si falla alguna sentencia del conjunto => se vuelve al estado anterior, previo a ejecutarla
+
+  #+BEGIN_QUOTE
+  Llevado a la práctica, las instrucciones para el manejo de transacciones sólo se utiliza
+  en procesos muy grandes que llevan mucho tiempo, a modo de segmentarlo en bloques
+  #+END_QUOTE
 *** BEGIN TRANSACTION
-    Es la sentencia que precede a un conjunto de instrucciones
+    - Marca el inicio de una transacción local
+    - Es la sentencia que precede a un conjunto de instrucciones
 *** COMMIT TRANSACTION
-    + Para actualizar los datos
-    + Se utiliza *en caso de finalizar correctamente* la operación
+    + Marca el final de una transacción exitosa
+    + Si no se aplica en una *transacción explícita* => entonces *confirma* alguna transacción pendiente
     + Después de un ~COMMIT TRANSACTION~ NO se puede 
        deshacer la transacción con ~ROLLBACK TRANSACTION~ 
        se deben deshacer los cambios a mano...
 *** ROLLBLACK TRANSACTION
-    + Para deshacer la transacción (sólo si NO se hizo ~COMMIT~)
     + Se utiliza *en caso de fallar* la operación
-*** [TODO] Ejemplo 1
-** [TODO] Save Tran
-*** Conceptos
-    + Permite establecer puntos intermedios de guardado de información
-    + Se puede realizar más de un ~SAVE TRAN~ en cada *transacción*
-*** [TODO] Ejemplo 1
+    + Si no se aplica en una *transacción explícita* => entonces *deshace* alguna transacción pendiente
+    + Para deshacer una transacción (sólo si NO se hizo ~COMMIT~)
+** Save Tran
+   + Permite establecer puntos intermedios de guardado de información
+   + Se puede realizar más de un ~SAVE TRAN~ en cada *transacción*
 ** [TODO] Transacciones Anidadas
-*** [TODO] Ejemplo 1
 ** Singleton Transaction
    Cada sentencia de alteración de datos es un *SINGLETON TRANSACTION*
    (Como el ~INSERT~ ó ~UPDATE~ ó ~DELETE~ ) 
@@ -490,8 +537,7 @@
    + Lleva al motor al punto consistente más reciente (*checkpoint*)
 
    #+BEGIN_QUOTE
-   *Checkpoint* es el punto en el que el motor sincronizó 
-   memoria y disco
+   *Checkpoint* es el punto en el que el motor sincronizó memoria y disco
    #+END_QUOTE
 *** Como lo hace
    Utiliza los *logs transaccionales* para llevar a un estado consistente
