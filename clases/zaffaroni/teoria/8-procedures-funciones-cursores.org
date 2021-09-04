@@ -7,6 +7,12 @@
   - sys.all_sql_models
     paa ver el codigo de los procedures
 #+END_COMMENT
+* [TODO] Tricks && Tips
+** Cursores Vs Query Complejas
+*** Conceptos
+    - En algunos casos podemos evitar los cursores
+    - Cuando NO usar cursores?
+    - Cuando SI usar cursores?
 * Funciones
 ** Conceptos
 
@@ -274,7 +280,7 @@
        ,* -> DYNAMIC: Cada vez que avanza, ejecuta a cada rato el SELECT (más lento, porque actualiza a c/rato)
        ,*
        ,* Nota (4):
-       ,* -> Si se definió como "FORWARD_ONLY" => Solo tiene [NEXT | LAST]
+       ,* -> Si se definió como "FORWARD_ONLY" => Solo tiene [NEXT | LAST] (y por default es NEXT)
        ,* -> Si se definió como "SCROLL" => Se puede elegir cualquiera (en este caso se nota, que trabaja como un ptr*)
        ,*
        ,* Nota(5):
@@ -304,21 +310,29 @@
         CLOSE [GLOBAL] nombre_cursor --> lo cierra (pero si hace un nuevo OPEN, se ejecuta again el SELECT y quizás arroja otro resultado)
         DEALLOCATE [GLOBAL] nombre_cursor --> libera las estructuras en memoria que lo componen (NO se puede volver a hacer OPEN)
    #+END_SRC
-** Sintáxis SQL (2) - Menos descriptiva
+** Sintáxis SQL (2) - Resumida
    #+name: cursor-sintaxis
    #+BEGIN_SRC sql
      /*
-      * Nota (1):
-      * -> Se deben mantener la mismas variables, y en el mismo orden en ambos FETCH
-     */
-     DECLARE nombre_cursor CURSOR
+      ,* Nota (1):
+      ,* -> Se deben mantener la mismas variables, y en el mismo orden en ambos FETCH
+      ,*
+      ,* Nota (2):
+      ,* 1. Al no elegir al cusor entre "STATIC" y "DYNAMIC", quedó por default "STATIC"
+      ,* -> sólo itera hacia adelante, no se puede alternar el recorrido
+      ,*
+      ,* 2. Al ser "STATIC" el FETCH tiene por default "NEXT"
+      ,* -> Podemos poner o no "FETCH NEXT", es lo mismo porque ya quedó por default
+      ,* al ser STATIC
+     ,*/
+     DECLARE nombre_cursor CURSOR --> (2)
      FOR sentencia_sql
      OPEN nombre_cursor
-     FETCH NEXT nombre_cursor INTO lista_variables --> (1)
+     FETCH nombre_cursor INTO lista_variables --> (1) (2)
      WHILE (@@FETCH_STATUS=0)
        BEGIN --> bloque de sentencia "explícita" - inicio
        -- sentencias sql
-       FETCH NEXT nombre_cursor INTO lista_variables --> (1)
+       FETCH nombre_cursor INTO lista_variables --> (1) (2)
      END   --> bloque de sentencia "explícita" - fin
      CLOSE nombre_cursor
      DEALLOCATE nombre_cursor
