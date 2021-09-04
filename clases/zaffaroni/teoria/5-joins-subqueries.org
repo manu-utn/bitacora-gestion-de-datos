@@ -445,6 +445,16 @@
                JOIN productos p2 ON p2.prod_codigo = c.combo_componente
        GROUP BY p1.prod_nombre
     #+END_SRC
+** [TODO] Atomicidad y Funciones de Agregación
+   Algunas funciones de agregación SUM, COUNT, AVG...
+   se ven afectadas cuando no consideramos la atomicidad de la query
+
+   Por lo general el AVG tiende a dar ok, por mas que esté mal la atomicidad
+   UN SUM, COUNT, se puede ver afectado
+
+   UN MAX, MIN, puede no verse afectado
+** [TODO] Atomicidad y DISTINCT
+   NO siempre es necesario usar DISTINCT
 * JOINs
 ** Conceptos
    - Hace lo mismo que el *producto cartesiano* (/hace una distributiva entre todos los registros, todas las combinaciones posibles/)
@@ -820,3 +830,29 @@
 ** Subquery Estático
 *** Conceptos
    - Es lo opuesto a un *subquery dinámico*, porque éste no depende de la *query principal*
+   - Se pueden ejecutar sin necesidad de la *consulta principal* donde se utiliza
+*** Ejemplo (1)
+    #+BEGIN_SRC sql
+      /*
+        ,* Nota (1):
+        ,* -> Ambas son subqueries estáticas, no dependen de la query principal
+        ,* -> Al ser estáticas, el motor optimiza y las ejecuta una sola vez
+        ,* y el resultado lo compara con la query principal
+        ,*
+        ,* Nota (2):
+        ,* -> JOINear con "Stock" rompe la atomicidad, e implíca que aparezcan registros repetidos
+        ,* -> porque el JOIN hace un producto cartesiano entre las tablas.
+        ,*
+        ,* -> Por ese motivo usamos DISTINCT en COUNT de la 2da columna del SELECT
+       ,*/
+      SELECT rubro_id, rubro_detalle, COUNT(DISTINCT prod_codigo), SUM(stock_cantidad)
+        FROM rubro r
+               JOIN productos p ON p.prod_rubro=r.rubro_id
+               JOIN stock s ON s.stock_prod=p.prod_cod --> (2)
+       WHERE prod_codigo IN
+             (
+               SELECT stock_prod FROM STOCK GROUP BY stock_prod
+               HAVING SUM(stock_cantidad) > (SELECT stock_cantidad FROM stock WHERE stock_producto LIKE '00_')
+             ) --> (1)
+       GROUP BY rubro_id, rubro_detalle
+    #+END_SRC
