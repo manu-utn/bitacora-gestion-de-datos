@@ -1,0 +1,82 @@
+* Triggers
+** Datos capturados ante un evento
+   #+BEGIN_QUOTE
+   Ante un evento un trigger puede llegar a obtener múltiples registros,
+   por tanto puede ser necesario utilizar un *cursor* según el caso.
+   #+END_QUOTE
+** Evaluar los distintos eventos
+  #+BEGIN_SRC sql
+    CREATE TRIGGER nombre ON ITEM_FACTURA AFTER INSERT, DELETE, UPDATE
+      AS
+      BEGIN
+        IF SELECT COUNT(*) FROM INSERTED > 0
+          IF SELECT COUNT(*) FROM DELETED = 0
+            PRINT 'hizo insert'
+          ELSE
+            PRINT 'hizo update'
+        ELSE
+          PRINT 'hizo delete'
+      END
+  #+END_SRC
+** Rollback + Evento con INSTEAD OF Vs AFTER DELETE
+*** Escenario 1 - Deshacer más cambios de los necesarios
+     #+BEGIN_QUOTE
+     Si tenemos como escenario que ante un ~DELETE~ que dada ciertas una condicion imprimir un mensaje,
+     caso contrario realizar el ~DELETE~.
+
+     Entonces planteamos como solución crear un trigger que espere el evento con ~AFTER DELETE~
+     en vez de un ~INSTEAD OF DELETE~, donde si no se cumpliese la condición hicieramos 
+     un ~PRINT~ para imprimir el mensaje y luego un ~ROLLBACK~.
+
+     Tendriamos como resultado que se deshace la operación de borrar, pero para TODOS los registros
+     que se borraron, llevando al estado inicial antes del ~DELETE~, y esto NO soluciona el problema
+     planteado.
+
+     *¿Por qué no soluciona el problema?*
+     Porque ante un borrado dada una condición debemos imprimir un mensaje en vez de borrar,
+     y si no se cumpliese borrar. La diferencia está en que la solución anterior, deshace todas
+     las operaciones de borrado por hacer ~rollback~, no sólo la que no cumple con la condición solicitada.
+
+     *¿Qué si lo soluciona?*
+     Utilizar un ~INSTEAD OF DELETE~ en vez del ~AFTER DELETE~ que contiene el ~ROLLBACK~
+
+     *Un ejemplo práctico sería..?*
+     Un caso práctico sería la auditoría del borrado de articulos, donde ante el intento de borrar articulos,
+     se valide si hay stock del mismo en la tabla Stock, si se cumple se borra, caso contrario 
+     imprimir un mensaje.
+     #+END_QUOTE
+*** [WAITING] Escenario 2 - Objetos Autotransaccionales - Triggers anidados
+    #+BEGIN_QUOTE
+    Si tenemos un *procedimiento almacenado* que ejecuta ~INSERT~ y ante ese evento de inserción
+    se despierta un *trigger* de tipo ~INSTEAD OF~ que hace un ~DELETE~ y seguido un ~ROLLBACK~
+
+    El ~ROLLBACK~ actúa sobre la operación que despertó al *trigger* es decir al ~INSERT~
+    y esto provoca que el *stored procedure* tenga un error, y como el motor maneja al objeto
+    *stored procedure* como una única transacción, éste falla por completo y no continúa.
+    #+END_QUOTE
+*** [WAITING] Escenario 3 - Facturación de artículos
+    #+BEGIN_QUOTE
+    Un caso donde no sería necesario manejar una inserción con ~INSTEAD OF~ sería..
+    Si nos pidieran que controlemos los renglones de una factura, y en caso de no haber stock del
+    artículo que se va a facturar se deshaga todas esa inserción y las anteriores.
+    En este caso seria conveniente usar un ~AFTER~ por lo cual, si ese renglón no ingresa, tampoco debería el resto.
+
+    Por tanto estaría bien hacer un ~rollback~ de toda la operación, de ese intento de inserción
+    como las inserciones de los renglones anteriores.
+
+    Sería similar al primer ejemplo, sólo que en este caso estaría bien deshacer el resto de las operaciones.
+    #+END_QUOTE
+* Funciones de Agregación y el Valor Desconocido NULL
+  #+BEGIN_QUOTE
+  Cuando usamos funciones de agregación como ~SUM~ puede ser necesario
+  reemplazar el valor desconocido ~NULL~ por un valor númerico,
+  para poder realizar la operación arimética.
+
+  Podemos utilizar ~ISNULL(nombre_columna, 0)~ ó ~COALESCE(nombre_columna, 0)~
+  en el caso que alguna de las filas sea ~NULL~ y utilizar su valor de retorno
+  para la función de agregación.
+  Quedando ~SUM(ISNULL(nombre_columna, 0))~ ó ~SUM(COALESCE(nombre_columna, 0))~
+  #+END_QUOTE
+* Aclaraciones de Ejercicios Transact SQL
+  1. Ejercicio 8, 11: son función recursiva
+  2. Ejercicio 17: el último parrafo sólo está aclarando que es un *trigger*, y son varias las aplicaciones que accederan al mismo tiempo
