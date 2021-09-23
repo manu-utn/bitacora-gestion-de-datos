@@ -6,19 +6,44 @@
   - El índice es un *componente físico* trata de acceder *fisicamente* a los datos
     (/NO ordenado lógicamente, sino el acceso físico/)
 
-  #+BEGIN_QUOTE
-  "chequear"
+  #+BEGIN_COMMENT
   Cuando se habla de un acceso lógico, se tiende hacer referencia *ordenar los datos*
   que es lo que implementa el ~ORDER BY~ a través de los *métodos de clasificación*
   (que son algoritmos para ordenamiento)
-  #+END_QUOTE
+  #+END_COMMENT
 * Conceptos
  - Tener índices, NO quiere decir que los datos estén ordenados
    (/lo están pero por las claves de los indices/)
  - Por lo general los archivos se guardan de forma secuencial
  - Es otra estructura, para acceder más rapido a los datos (/similar a un acceso directo/)
  - Evita evaluar los datos de manera secuencial (/Ej. evita leer dato por dato, si no acceder directamente/)
-* [DOING] Conceptos anteriores aplicados al Btree y Clusters
+* Hash Table Vs. B-Tree
+  #+BEGIN_QUOTE
+  El objetivo principal de las *tablas de hash* y el *árbol b* es "CREAR INDICES"
+
+  *Tablas de Hashing*
+  1. Las *tablas de hash* usan funciones de hash que calculan/retornan la posición relativa, que es donde se guarda la PK del índice en disco.
+  2. Las *funciones de hash/dipersión* son funciones matemáticas que pueden generar colisiones, porque pueden devolver el mismo valor (la posición relativa)
+  3. Si hay muchas colisiones entre las *funciones de dispersión* entonces ya no es tan rápido comparado con un árbol-b
+
+  *Arbol B*
+  1. El *árbol b*, usa su estructura de árbol m-ario/multicamino para realizar búsquedas secuenciales indexadas y decidir donde guardar la PK del índice en disco
+  2. A mayor grado tiene, más se reduce la cantidad de accesos a disco (accesos de lectura/escritura)
+  #+END_QUOTE
+  
+  |---------------------------+-------------------------------------------------+------------------------------------------------------------------|
+  |                           | Hash Table                                      | B-Tree                                                           |
+  |---------------------------+-------------------------------------------------+------------------------------------------------------------------|
+  | Estructura                | Estática (Se crea al principio)                 | Dinámica (Se crea/crece a medida que se necesita)                |
+  | Puede crecer              | NO                                              | SI                                                               |
+  | Orden de Complejidad      | ~O(1)~                                          | ~O(logn)~                                                        |
+  | Velocidad acceso          | Más rápido (por ser acceso directo)             | Más lento (por tener que hacer búsqueda secuencial en los nodos) |
+  | Tipo de Acceso Natural    | Acceso Directo                                  |                                                                  |
+  |---------------------------+-------------------------------------------------+------------------------------------------------------------------|
+  | Consultas de Comparación  | Permite sólo operaciones de igualdad ~=~ y ~!=~ | Permite operaciones de igualdad/rango con <, >, <=, >=, =        |
+  | Admite consultas de Rango | NO (porque sólo usa =, !=)                      | SI (porque permite usar operadores relacionales <, >, <=, >=)    |
+  |---------------------------+-------------------------------------------------+------------------------------------------------------------------|
+* [WAITING] Conceptos anteriores aplicados al Btree y Clusters
 ** Niveles y Grado
   NO olvidar que la cantidad total de elementos de un árbol es ~(grado_arbol^cant_niveles)-1~
   - el *grado* la cant. max. nodos-hijos que puede tener cada nodo-padre
@@ -32,15 +57,18 @@
   el grado por defecto de btree es de 200 => tendrá 200 nodos c/u con 200 claves (osea 200 filas)
   si tenemos un Btree con 3 pisos/niveles => ~200^3 = 40.000*200 = 8.000.000~ el árbol tendrá 8 millones de accesos
   #+END_QUOTE
-** Inserción elementos - Estabilidad
-   Cuando se insertan elementos en el *arbol b* (btree) que tienen misma *clave* 
+** [WAITING] Inserción elementos - Estabilidad
+  - *Orden Estable* <=> Si se mantiene el *orden relativo* original para registros con misma *clave*
+  - *Orden Estable* <=> Si dos elementos con igual clave mantienen el mismo orden que al principio
+    
+   #+BEGIN_QUOTE
+   Cuando se insertan elementos en el *árbol b* (btree) que tienen misma *clave* 
    entra el concepto de *estabilidad* de los *métodos de clasificación*.
+   
    Donde al insertar un elemento en un *nodo hoja* que ya contiene otro con misma clave,
    usará este concepto, respetando el orden original, e insertando el nuevo elemento 
    luego del que ya estaba.
-
-  - *Orden Estable* => Si se mantiene el *orden relativo* original para registros con misma *clave*
-  - *Orden Estable* => Si dos elementos con igual clave mantienen el mismo orden que al principio
+   #+END_QUOTE
 * Conceptos relacionados de AyED
 ** Posición relativa - Desplazamiento
 *** Conceptos
@@ -63,8 +91,8 @@
    ~*(ptr+3)~ nos desplazamos 3 unidades de la posición inicial y obtenemos el valor del elemento
    #+END_QUOTE
 *** Ejemplo 2 - Tabla de Indice y Tabla de Hash
-    En las siguientes tablas vemos como la primera tabla guarda la *posición relativa* de un registro 
-    que guarda los datos en otra tabla. Son posiciones *relativas al inicio* (1,2,3,...) son distantes de la posicion=0
+    En las siguientes tablas vemos como la primera tabla que es la *tabla de indices* guarda la *posición relativa* de un registro 
+    que guarda los datos en otra tabla que persiste en la db. Son posiciones *relativas al inicio* (1,2,3,...) son distantes de la posicion=0
 
     Observamos que en la primera tabla las posiciones relativas están en desorden, porque sólo se ordenan por la *clave*
 
@@ -91,17 +119,17 @@
 ** Conceptos
   - Es la _menor unidad de medida de información_ para lectura/escritura en *Disco*
   - Suelen tener un tamaño de ~4 (K)ilobytes~ (4.000 Bytes)
-  - Significa como un *conjunto de elementos*
-  - su tamaño depende del disco
+  - Representa un *conjunto de elementos*
+  - Su tamaño depende del fabricante del disco
   - dentro de un *cluster* puede haber *fragmentación interna*
-    (/si se escribe información mas chica que el cluster, quedandole espacio libre/)
-  - si se graba información en tamaño del *cluster* => NO hay *fragmentación interna*
+    (/Ej. si se escribe información mas chica que el cluster, quedando espacio libre/)
+  - NO hay *fragmentación interna* <=> si se graba información del mismo tamaño que el *cluster*
     (/sucede en los sistemas operativos de Mainframe/)
 
   #+BEGIN_QUOTE
   Supongamos que las *claves* tienen un tamaño de ~20 Bytes~
   si le sumamos el tamaño *puntero* de ~4 Bytes~
-  y lo multiplicamos por el *grado* del árbol que suele ser ~200~ (/cada _nodo padre_ tiene hasta un max. de 200 _nodos hijos_./)
+  y lo multiplicamos por el *grado* del árbol-b que suele ser ~200~ (/cada _nodo padre_ tiene hasta un max. de 200 _nodos hijos_./)
 
   ~(20 Bytes + 4 Bytes) * 200 = 4800 Bytes~ <-- cada nodo ocuparía más de 1 cluster (lo supera por 800 Bytes)
 
@@ -112,29 +140,32 @@
   #+END_QUOTE
 ** Relación Fragmentación Interna con los nodos y clusters
 *** Tamaño del cluster
-    Si el cluster es muy grande => habrá *fragmentación interna*
-    (/Ej. si en el cluster escribimos "carlos" veremos lo sig. ~CARLOSXXXX~ donde cada ~X~ es espacio libre)
+    - Si el _cluster es muy grande_ => habrá *fragmentación interna*
+      (Ej. si en el cluster escribimos "carlos" se guardará lo sig. ~CARLOSXXXX~ donde cada ~X~ es espacio libre)
 *** Tamaño de los nodos y tamaño de la clave
-   1. Si tenemos *nodos* muy chicos (pocas filas/elementos) => habrá *fragmentación interna*
-      (xq voy a generar nodos de más para completar el cluster)
+   1. Si tenemos _*nodos* muy chicos_ (pocas filas/elementos) => habrá *fragmentación interna*
+      (/xq voy a generar nodos de más para completar el cluster/)
    2. Si tenemos *nodos* con _clave muy grande_ => tendrá que hacer _más lecturas+lento_
+      (/Esto desmitifica y explica porque no es verdad que.. una clave numérica es más eficiente que una clave con letras/)
 *** Tamaño clave del nodo y cluster
    Si  tienen igual tamaño el *cluster* y la *Clave* del nodo hoja => NO habrá *fragmentación interna* (o será mínima) 
    - el *Cluster* es minima unidad lectura/escritura de información en disco
    - la *Clave* es valor del *nodo hoja* del *Btree* (de la tabla de indices del árbol b)
 *** Ejemplo
+    #+BEGIN_QUOTE
     Supongamos que cada fila equivale a un cluster
     
     SAMUELXXXXXXXXXXXXXX <- SAMUEL = 6 Bytes, las X que le siguen que son 12, son espacio libre de 12 Bytes
     PEDROXXXXXXXXXXXXXXX <- PEDRO = 5 Bytes, las trece X equivalen a 13 Bytes
     NAHUELXXXXXXXXXXXXXX <- idem
+    #+END_QUOTE
 ** Conceptos relacionados
 *** Unidad de medida en MP y Disco
     - El *cluster* es la _menor medida de información y asignación en_ *Disco*
     - El *byte* es la _menor medida de información y asignación_ en *Memoria RAM (MP)*
       (/siendo 1 byte equivalente a 8 bits/)
     - las computadoras usan el alfabeto *ascii* (cada caracter ocupa 1 byte)
-*** UNidades
+*** Unidades
     - 1 (B)yte = 8 bits
     - 1 (K)ilobyte = 1000 (B)ytes
 * [TODO] Query plan (Execution plan)
@@ -170,9 +201,9 @@
    - otra con busqueda secuencial
 ** Full index
    accedió sin hacer una busqueda secuencial (hizo un *acceso directo*)
-* Evaluacion Sql Vs Lenguaje C
-  - el motor de sql evalua de izq. a derecha (Ej. declarmos la variable edad en SQL ~edad INTEGER,~)
-  - lenguaje c evalua de derecha a izq. (Ej. En SQL la declaramos al revés ~int edad;~)
+* Evaluación Sql Vs Lenguaje C
+  - El motor de sql evalúa de izq. a derecha (Ej. declaramos la variable edad en SQL ~edad INTEGER~)
+  - El lenguaje C evalúa de derecha a izq. (Ej. En SQL la declaramos al revés ~int edad;~)
 
   Si probamos en lenguaje C las siguientes sentencias, y evaluamos de der. a izq. no arrojan error.
 
@@ -189,7 +220,7 @@
     // (podemos cambiar el valor de 'a', pero no la podemos castear a otro tipo)
     const int a;
   #+END_SRC
-* Tipos de Acceso (Secuencial / Indexado / Directo)
+* [DOING] Tipos de Acceso (Secuencial / Indexado / Directo)
 ** Secuencial
    - Es recorrer un conjunto de datos uno atrás del otro 1,2,3...
    - Los índices evitaran esto, porque es lento
@@ -204,8 +235,8 @@
    #+END_SRC
 ** Secuencial Indexado
    - En función a alguna *clave*
-   - Recorrer secuencialmente los indices
-   - Hace una búsqueda secuencial pero en el índice, es decir en las claves
+   - Recorrer secuencialmente los indices (es más rápido porque están cargados en MP, y la lectura es rápida que en disco)
+   - Hace una búsqueda secuencial pero en el índice, es decir en las claves (PK, FK)
 
    #+BEGIN_SRC sql
      -- Suponiendo que se creó un índice sobre la tabla "alumnos" sobre el campo/columna "legajo"
@@ -292,6 +323,15 @@
 * Cuando usar Constraint Identity
   - El ~constraint~ IDENTITY es valor autonumérico (genera valores númericos de forma incremental)
   - Se utiliza cuando no basta solo con la PK identificar unívocamente a un registro
+  - Se utiliza cuando no se conoce que PK asignar como asegurar la unicidad de cada registro
+
+  #+BEGIN_QUOTE
+  Su mal uso puede provocar la inserción de registros repetidos..
+  
+  Ej. Si lo agregamos para generar la (PK) de una tabla ~Clientes~ por cada nuevo cliente,
+  podriamos insertar el mismo cliente varias veces..
+  ~INSERT INTO Clientes (nombre, edad) VALUES ("carlos", 20), ("carlos", 20), ("perez", 21)~
+  #+END_QUOTE
 
   #+BEGIN_QUOTE
   Supongamos que un Supermercado un cliente compra 4 unidades del mismo producto,
@@ -305,15 +345,15 @@
 * Arbol M-Ario (Arbol Multicamino)
 ** Conceptos
    - Un árbol es m-ario si todos sus nodos tienen al menos ~m~ nodos hijos
-   - Tienen un *grado* mayor ó igual a un *árbol binario* (/si m=2 es un árbol binario/)
-   - Mayor cant. de elementos => menos *niveles* => la busqueda es más rápida
+   - Tienen un *grado* igual ó mayor a un *árbol binario* (/si m=2 es un árbol binario/)
+   - Mayor cant. de elementos => menos *niveles* (menos accesos a disco) => la búsqueda es más rápida
 
    *Observaciones:*
    - Un árbol m-ario no necesariamente es *completo* (puede haber un nodo que no tiene grado ~m~)
    - Un árbol m-ario no necesariamente es *balanceado* (un sub-árbol con más peso que otro, cant. de nodos hijos)
 ** Propiedades
-   - Un árbol m-ario es completo si.. cada nodo interno tiene grado=m
-   - Un árbol m-ario de altura ~h~ puede tener un máximo de ~m^ĥ~ hojas
+   - Un árbol m-ario es completo <=> cada nodo interno tiene grado=m
+   - Un árbol m-ario de altura ~h~ puede tener un máximo de ~m^h~ hojas
 ** Ejemplos
 *** Ejemplo 1 - Arbol Binario Completo
     Un árbol m-ario con ~m=2~ es un *árbol binario*
@@ -412,10 +452,10 @@
 * Métodos para crear índices
 ** Conceptos
    Para crear *índices* en un (DBMS, Data Base Management System) se utiliza
-   + Tablas de Hashing
+   + _Tablas de Hashing_
      - tienen una *estructura estática* (/es más rápida que una dinámica/)
      - se utilizan en minicomputadores/mainframes (/los recursos se asignan al inicio/)
-   + Arbol B ó Btree
+   + _Arbol B ó Btree_
      - tienen una *estructura dinámica* (/es más lenta que una estática/)
      - se utilizan en pc (/los recursos se asignan en función de como se usan osea on-demand/)
 
@@ -425,24 +465,28 @@
      - DDL es un conjunto de operaciones para definir estructuras de datos para una base de datos
 ** Estructura-Distribución-Asignación (Estática/Dinámica)
 *** Asignación Estática/Dinámica
-    - Una asignación estática de los recursos es más rápida, porque ya los tiene preasignados al inicio
-    - Una asignación dinámica es más lenta, porque se hace on-demand (a medida que se necesita)
+    - Una _asignación estática de los recursos es más rápida_, porque ya los tiene preasignados al inicio
+    - Una _asignación dinámica es más lenta_, porque se hace on-demand (a medida que se necesita)
 *** Estructura Estática/Dinámica
-    - Una estructura estática NO cambia (Ej. un disco con capacidad de 10gb, una ram de 4g, ...)
+    - Una estructura estática NO cambia (Ej. un disco con capacidad de 10gb, una ram de 4gb, ...)
 *** Mainframe Vs. PC
     + Los mainframes/minicomputadores
       - tienen una estructura estática (porque los recursos se asignan al principio, tiene una *asignación estática*)
       - los datos que se almacenan están sectorizados (se sabe donde se guardará)
       - buscar información en los mainframes es más rápido porque están sectorizados, se sabe donde están
     + Las PC
-      - tienen una estructura estática (pero con una *distribución estática* se tiene una *asignación dinámica*)
-      - los recursos se asignan on-demand, en función de como se usan
-      - los datos se almacenan fragmentados (se guardan en distintas partes)
-      - buscar información en las PC es más lento porque la información está fragmentada, y se guarda en distintas partes
+      - tienen una estructura estática (pero con *distribución estática* porque tiene una *asignación dinámica*)
+      - _los recursos se asignan on-demand, en función de como se usan_ (esto es asignación dinámica)
+      - los datos se almacenan fragmentados (/se guardan en distintas partes del disco, por eso luego se debe desfragmentar el disco/)
+      - buscar información en las PC es más lento porque la información está fragmentada, y se guarda en distintas partes del disco
 *** Ejemplo 1
-    - La PC tiene una *estructura estática* porque sus recursos ó componentes físicos son limitados
-      (/Ej. Si tenemos un disco de 10GB éste no va a crecer más/)
-    - Si la PC tiene *distribución estática* de los recursos se puede tener una *asignación dinámica*
+    #+BEGIN_QUOTE
+    La PC tiene una *estructura estática* porque sus recursos ó componentes físicos son limitados
+    Ej. Si tenemos un disco de 10GB éste no va a crecer más
+      
+    Apesar de que la PC tiene *distribución estática* de los recursos,
+    se puede tener una *asignación dinámica* a medida que los va necesitando.
+    #+END_QUOTE
 ** [TODO] Ejemplos
 *** [TODO] Ejemplo 1 - Acceso al SIGA UTN
     - El acceso al SIGA es mediante el *número de legajo* del alumno
@@ -452,14 +496,15 @@
 
     *Observaciones:*
     1. La tabla del índice es una estructura en MP, por eso su velocidad de acceso es mayor
-       (/a diferencia del acceso a disco que es más lento, suponiendo que NO es un disco de estado sólido/)
+       (/a diferencia del acceso a disco que es más lento, suponiendo que NO es un disco de estado sólido porque estos no son mecánicos/)
     2. Cuando creamos un índice sobre un campo
-       - La DB debe guardar los datos en dos estructuras (la del índice y la de los datos)
-       - La velocidad de escritura es más lenta
-       - La estructura de los datos está en disco
+       - La DB debe guardar los datos en dos estructuras (la tabla del índice y la tabla de los datos) <-- *FUNDAMENTAL*
+       - La velocidad de escritura es más lenta (/por escribir en dos lugares, MP y disco/)
+       - La velocidad de lectura es más rápida (/por estar cargada en MP/)
+       - La estructura de los datos está en disco (siendo más precisos en el archivo ~.bak~ que la DB lo maneja como un disco)
        - La estructura del índice está en MP
     3. Cuando creamos un índice, estamos creando una estructura adicional que contiene
-       - la *clave* de la tabla del indice, campo por el cual está ordenado
+       - la *clave* de la tabla del índice, campo por el cual está ordenado
        - la *posición relativa* a la tabla que contiene los datos (puede estar en desorden)
     
     #+BEGIN_SRC sql
@@ -468,8 +513,11 @@
       -- que es la PK, Primary Key de la tabla..
       -- La consulta a la DB podría demorar 30 segundos ó más
       SELECT nombre, apellido FROM alumnos;
-
+      
       -- Si creamos el índice sobre la PK, y repetimos la instrucción
+      --> 1. alumno_legajo: es el nombre del índice
+      --> 2. alumnos: es la tabla donde está la columna de la que se crea el índice
+      --> 3. legajo: es la columna de la que se crea el índice
       CREATE INDEX alumno_legajo
         ON alumnos (legajo);
       -- esta consulta podría demorar sólo 1 ó 2 segundos a lo mucho
@@ -491,7 +539,7 @@
     - A partir de un algoritmo genera un valor ó código hash
 
     *Observación:*
-    El motor de DB elige la *función de hash* según el *dominio de entrada*
+    - El motor de DB elige la *función de hash* según el *dominio de entrada*
 *** Cualidades
 **** Evita Colisiones
      + Si devuelve un *conjunto de salida* diferente al *conjunto de entrada*
@@ -518,7 +566,7 @@
 *** Dominio de Salida
     - Son las *posiciones relativas* en donde se van a guardar esas *claves*
     - Es el retorno de la función de hash
-    - Es un valor numérico entero (posición relativa)
+    - Es un valor numérico entero (la posición relativa)
 ** Código Hash
    - Se utilizan como *indices* para las *tablas hash*
    - Sirven como *control de integridad* (para datos ó archivos)
@@ -529,7 +577,7 @@
    - En general el *dominio de entrada* es mayor
 ** Colisiones
     - Cuando *función de hash* ante una *clave*, devuelve una *posición* ya ocupada en la tabla
-    - Surje cuando para un mismo valor de entrada devuelve la misma posición
+    - Surje cuando para un _mismo valor de entrada devuelve la misma posición relativa_ donde guardar el dato
 
     *Observación:*
     - La función de hash recibe como entrada una clave
@@ -548,13 +596,13 @@
      - Mantiene el concepto de *secuencialidad indexada*
        (/sirve para acceso directo, mantiene un orden/)
 **** Desventajas
-     - Ocupa más espacio (/por la estructura adicional de lisas enlazadas/)
+     - Ocupa más espacio (/por la estructura adicional de listas enlazadas/)
 *** Direccionamiento Abierto
 **** Conceptos       
      - Se busca otra *posición* dentro de la tabla
      - Evita agregar *estructuras* adicionales de encadenamiento
-       (/esto aplica para los tres métodos/)
-**** Metodo - Sondeo lineal
+       (/esto aplica para los tres métodos de direccionamiento abierto/)
+**** Método - Sondeo lineal
      + Es el método más simple, busca en pequeñas distancias
      + Busca *secuencialmente* en la tabla, hasta encontrar una *posición* vacía
      + Si llega al final de la tabla => vuelve a la primera posición y retoma la búsqueda
@@ -565,37 +613,47 @@
      + Deriva de la fórmula ~F(i)=i^²~
      + Si se llega a una posición ocupada => cambia la fórmula del cálculo de la posición
        (de esta manera ~H+1^¹, H+2^², H+3^²,...,H+i^²~ donde la ~H~ es la posición
-       y el ~i^²~ es el desvío
+       y el ~i^²~ es el desvío)
 **** Método - Hashing Doble
-    + Aplica la *función de hash* dos veces
-    + La entrada sería la *posición* que devolvió la primera vez que se aplicó
-    + La 2da *función de hash* (secundaria)
-      - Debe ser distinta a la primaria
-      - Usa el resultado como tamaño de salto (posible posición de la clave)
-      - Si NO es mayor a cero => NO se produce el salto ó se produce un *bucle infinito*
+     Aplica la *función de hash* dos veces
+     1. La 1ra *función de hash* (primaria) retorna una posición, que será la entrada de la 2da función
+     2. La 2da *función de hash* (secundaria)
+        - Debe ser distinta a la primaria
+        - Usa el resultado como tamaño de salto (la posible Posición Relativa donde se guardará la Clave)
+        - Si NO es mayor a cero => NO se produce el salto ó se produce un *bucle infinito*
 **** Desventajas
-     - No tiene *secuencialidad indexada*
+     - No tiene *secuencialidad indexada* (/por tanto NO es tan rápido/)
 **** Ventajas
      - No ocupa espacio extra, al no generar estructuras adicionales
+       (/nos referimos a las listas enlazadas que genera la técnica de encadenamiento/)
 * Método - Arbol B (Btree)
 ** Conceptos
    + Es un tipo de *árbol M-ario* su grado ronda entre 50 y 2000 pero su valor suele ser ~200~
-   + Arma un arbol *completo* y *balanceado* (/Para cumplir con ~log(n)~./)
-   + Tiene una *estructura vectorial* (/si grado del árbol es 200, cada nodo tendrá un vector [0,1,2,..,199] osea 200 hijos/)
+   + Arma un árbol *completo* y *balanceado* (/Para cumplir con ~log(n)~./)
+   + Tiene una *estructura vectorial* (/si el grado del árbol es 200, cada nodo tendrá un vector [0,1,2,..,199] osea 200 hijos/)
    + Crea *índices físicos* para el _acceso a la información_
    + Según el tipo de árbol el primer nodo puede ser
-     - _nodo raíz_ (/si es un árbol común/)
-     - _nodo hoja_ y _nodo raíz_ (/Ej. se cumple si es un árbol-b, donde temporalmente es nodo raíz/)
+     - _Nodo raíz_ (/si es un árbol común/)
+     - _Nodo hoja_ y _Nodo raíz_ ambos al mismo tiempo (/Ej. se cumple si es un árbol-b, donde temporalmente es nodo raíz/)
    + Tiene dos tipos de *nodos* diferentes
      1. Un nodo hoja
      2. Un nodo rama
 
+   #+BEGIN_QUOTE
+   Toda búsqueda computacional es *secuencial* la abstracción de un árbol sólo reduce número de búsquedas
+   
+   Cuanto mayor *grado* tenga el árbol
+   1. Mayor es el número elementos en menos niveles (/podríamos pensar como que se ensancha/)
+   2. Menor es el número de niveles, se accede a los elementos con menos preguntas (/menos accesos de lectura a disco/)
+
+   Esto resulta de la fórmula ~grado^niveles - 1~ donde cada nivel sería cada piso del árbol
+
+   Por ejemplo en un árbol binario/ternario con 3 niveles
+   1. Si tiene un grado=2 (binario)  y tiene 3 niveles => tiene (2^³)-1 = 8-1  = 7 nodos en cada nivel
+   2. Si tiene un grado=3 (ternario) y tiene 3 niveles => tiene (3^³)-1 = 27-1 = 26 nodos por nivel
+   #+END_QUOTE
+        
    *Observaciones:*
-   + Toda búsqueda computacional es *secuencial* un árbol sólo reduce número de búsquedas
-     - Cuanto mayor *grado* tenga el árbol => más elementos en menos niveles => se accede a los elementos con menos preguntas
-       (/resulta de hacer ~grado^niveles - 1~ donde cada nivel sería cada piso del árbol/)
-     - Si tiene un grado=2 (binario)  y tiene 3 niveles => tiene (2^³)-1 = 8-1  = 7 nodos en cada nivel
-     - Si tiene un grado=3 (ternario) y tiene 3 niveles => tiene (3^³)-1 = 27-1 = 26 nodos por nivel
    + La _(MP) Memoria Principal_ se considera
      - un dispositivo de almacenamiento principal
      - de acceso rápido a los datos
@@ -606,9 +664,9 @@
    + con mucho espacio de almacenamiento
      - los indices reducen el numero de accesos a disco
 ** Crecimiento
-   + Se crea al revés de un árbol normal (no parte de la raíz)
+   + Se crea al revés de un árbol normal (/porque no parte de la raíz, la raíz en realidad es un nodo-hoja/)
      - Se parte de un *nodo hoja* que temporalmente actúa de nodo raíz
-     - Cuando el árbol crece *nodo hoja* deja de ser raíz
+     - Cuando el árbol crece, el *nodo hoja* deja de ser raíz
    + El primer nodo que se crea es un *nodo hoja* porque
      - porque necesitamos guardar las *claves* y decir su *posición relativa* (de donde está)
      - si fuese un *nodo rama* el puntero NO tendría ningún *nodo hoja* donde apuntar
@@ -621,12 +679,12 @@
    + Minimiza las operaciones de entrada/salida a disco (dispositivo de almacenamiento secundario)
 
    Tiene como *desventajas*:
-   + Es más lento que una *tabla de hashing* (/porque debe hacer búsqueda/)
+   + Es más lento que una *tabla de hashing* (/porque debe hacer búsqueda, y esta otra tiene un acceso directo/)
 ** Condición de Balanceado
-   - Garantiza que se realize en un tiempo ~O(logn)~ (orden de complejidad logarítmico)
-     - la búsqueda
-     - la inserción
-     - la eliminación
+   Garantiza que se realize en un tiempo ~O(logn)~ (orden de complejidad logarítmico)
+    - la búsqueda
+    - la inserción
+    - la eliminación
 
    *Observaciones:*
    - Si el *orden de complejidad* es ~O(logn)~ => el algoritmo es eficiente (se realizará rápido)
@@ -648,8 +706,8 @@
     - Es el primer nodo que se crea en un árbol *btree*
       (temporalmente actúa como raíz, cuando crece el árbol, deja de ser raíz)
     - Está formado por dos *componentes*
-      1. Un componente de dato (la clave)
-      2. Un componente puntero (posición relativa de la clave)
+      1. Un _componente de dato_ (la clave)
+      2. Un _componente puntero_ (posición relativa de la clave)
 
     *Observación:*
     - El _nodo hoja_ es equivalente a la *tabla de hashing* porque tiene las *claves* y una *posición relativa*
@@ -669,7 +727,7 @@
     tiene la *componente de dato* (la clave).
 
     |----------+-----+---------+------|
-    | Posicion | ID  | Nombre  | Edad |
+    | Posición | ID  | Nombre  | Edad |
     |----------+-----+---------+------|
     |    0     | 10  | Carlos  |  15  |
     |   ~1~    | ~2~ | Mariano |  19  |
@@ -688,8 +746,8 @@
 
     *Observación:*
     - El grado de un árbol, es la cant. max. de nodos hijos/subarboles que puede tener cada nodo
-     (/Ej. Un árbol binario tiene grado 2, porque cada nodo puede tener o mas de 2 nodos hijos/)
-** Nodo - Raiz/Rama
+     (/Ej. Un árbol binario tiene grado 2, porque cada nodo puede tener ó más de 2 nodos hijos/)
+** Nodo - Raíz/Rama
 *** Conceptos
     - Puede apuntar a otro *nodo raíz* ó a un *nodo hoja*
     - También está formado por dos *componentes*
@@ -815,26 +873,29 @@
      (/Cuando encuentra la clave, usa el valor de _componente puntero_ para ir a un _nodo hoja_ ó a la _posición relativa_./)
    - La *búsqueda* en un *árbol b* es similar al de un (ABB) *Arbol Binario de Búsqueda*
    - Se busca desde la *raíz* hacia las *hojas*
-   - Se tienen *decisiones multicamino* en base al número de hijos del nodo
+   - Se tienen *decisiones multicamino* en base al número de hijos del nodo, por ser un árbol m-ario
+     (/A diferencia de un árbol de decisión, que es un árbol binario que tiene decisiones binarias/)
 
-   *Obsevaciones:*
+   *Observaciones:*
+   - El único que tiene un _acceso directo_ natural es el *hashing*
    - Si hay camino => existe una trayectoria (sucesión de aristas) para llegar de 
      un extremo al otro (vértices unidos por un conjunto de aristas)
    - En un (ABB) *árbol binario de búsqueda* se tienen *decisiones binarias*
      (por ser de grado=2, max. cant de hijos/subarboles que puede tener cada nodo)
-   - El único que tiene un _acceso directo_ natural es el *hashing*
 ** Inserción
    - Ocurre el proceso [[Split Page]] cuando no hay espacio en un nodo hoja para insertar elementos
    - Aparece el concepto de [[Fill Factor]] (factor de ocupamiento)
    - Asumiendo que el elemento a insertar es ~x~ y no existe en el árbol aún
      1. Se comienza a buscar por la *raíz*
-     2. Se llega hasta a un *nodo hoja* (si no encontrara el elemento ~x~)
+     2. Se llega hasta un *nodo hoja* (si no encontrara el elemento ~x~)
      3. Se inserta el elemento ~x~ en ese nodo hoja
 
-   *Observación:*
-   Recorda el criterio de ordenamiento (a nivel nodo/arbol).. Parte de la raiz, pero el algoritmo evalúa el 
-   valor de la clave del nodo para saber que camino tomar, es decir selecciona aquellos nodos donde la clave
-   sea menor o igual al valor de la clave a insertar.
+   #+BEGIN_QUOTE
+   Recorda el *criterio de ordenamiento* (a nivel nodo/arbol)..
+   
+   Primero parte de la raíz, pero _el algoritmo evalúa el valor de la clave del nodo_ para saber que camino tomar,
+   es decir _selecciona aquellos nodos donde la clave sea menor o igual al valor de la clave_ a insertar.
+   #+END_QUOTE
 ** Eliminación
    - Ocurre el proceso [[Fusión]] cuando al eliminar un *elemento*, un *nodo* queda vacío, este debe eliminarse.
      (/esto afecta a los nodos padres, porque este pierde una referencia donde apuntaba/)
@@ -891,7 +952,7 @@
 ** Conceptos de SISOP
 *** Compactación
     Cuando se desplazan los segmentos en memoria
-    - Cuando se consolidan particiones (procesos en ejecución) separadas por huecos (particiones libres, por pocesos que finalizaron) en una patición
+    - Cuando se consolidan particiones (procesos en ejecución) separadas por huecos (particiones libres, por pocesos que finalizaron) en una partición
     - Soluciona el problema de la *fragmentación externa* (huecos entre particiones con procesos activos)
 
     *Observación:*
@@ -931,10 +992,10 @@
     + Se fusionan _nodos que estén al mismo nivel_
     + Cuando al eliminar un *elemento* de un *nodo hoja*, este _nodo queda vacío y se debe eliminar_
     + Al eliminar el *nodo hoja* se podria generar una baja de los *nodos* que le anteceden (nodos padres)
-      - porque el arbol queda *desbalanceado* y al corregir el *balanceo* ocurre eso
+      - porque el árbol queda *desbalanceado* y al corregir el *balanceo* ocurre eso
       - porque se pierde la referencia a donde apuntaba el nodo padre (referencia del nodo eliminado)
 *** Ejemplo 1 - Antes de eliminar nodo
-    En este ejemplo si eliminamos algun nodo de nivel 2, el arbol queda desbalanceado.
+    En este ejemplo si eliminamos algún nodo de nivel 2, el árbol queda desbalanceado.
     Al corregir el balanceo, se eliminan los nodos del nivel 1, para que todos los nodos
     tengan la mitad de elementos.
 
@@ -1008,10 +1069,11 @@
 
     #+RESULTS:
     [[file:img/btree-fusion.png]]
-*** Ejemplo 1 - Despues de eliminar el nodo
+*** Ejemplo 1 - Después de eliminar el nodo
     Luego de eliminar uno de los nodos del nivel 2, al corregir el balanceo
     se tuvo que borrar los nodos del nivel 1.
-    Es necesario corregir el balanceo para que la velocidad de busqueda/inserción/eliminación
+    
+    Es necesario corregir el balanceo para que la velocidad de búsqueda/inserción/eliminación
     sea de ~O(logn)~ osea que el *orden de complejidad* del algoritmo rápido.
 
     #+BEGIN_SRC plantuml :file img/btree-fusion2.png :exports results
