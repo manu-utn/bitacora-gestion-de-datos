@@ -7,7 +7,7 @@
    - Es el *Data Base Management System* (un gestor para db)
    - Gestiona los datos de la Base de Datos
    - Proporciona mecanismos para acceder a los datos
-* [TODO] Propiedades - Siglas ACID (reforzar con lo de zaffa)
+* [TODO] Propiedades - Siglas ACID
 ** Conceptos
    La siglas ACID nombra 4 propiedades de todo motor de base de datos que debe tener
 ** (A)tomicidad
@@ -171,11 +171,16 @@
     2. Lo recibe la *capa de usuario* (para revisar los roles, permisos, etc..)
     3. Se lo pasa a la *capa lógica/conceptual*
        1. analiza la *sintáxis* (/chequea que la sintáxis de la instrucción SQL esté OK/)
-       2. analiza la *semántica* (/chequea que exista la tabla clientes, que exita el campo id_cliente en esa tabla, si id_cliente es integer,../)
+       2. analiza la *semántica* (/chequea que exista la tabla clientes, que exista el campo id_cliente en esa tabla, si id_cliente es integer,../)
     4. busca los datos en la *FAT* (/la FAT actúa como índice de páginas, así como el footer offset actúa como índice de los renglones de página/)
        - chequea en que número de *página* están los datos (supongamos que devuelve la página N)
     5. El *file manager* se comunica con el *disk manager* y le pide de la información de la ~página N~ y ~posición X~
     6. Luego *disk manager* busca la información en la ~página N~, ~posición X~
+
+    #+BEGIN_QUOTE
+    La *FAT* significa *File Allocation Table* que quiere decir *tabla de asignación de archivos* que aparece al principio
+    del volumen que se haya formateado como *FAT* (/en esta segunda mención nos referimos al filesystem, el sistema de archivos/)
+    #+END_QUOTE
 * Componentes de un DBMS
 ** IPL
    - Las siglas son de *Initial Program Loader*
@@ -190,18 +195,18 @@
    mientras que la *seguridad horizontal* es poder crear o no esquemas
    #+END_QUOTE
 ** File Manager
+   - Permite la creación/eliminación/acceso a los archivos  (el ~.bak~)
    - Gestiona la lógica de almacenamiento de los archivos del DBMS
    - Se encarga de acceder a los archivos/información del motor
    - Se encarga de acceder a la ~FAT~ que refiere a *File Allocation Table* 
      (/El motor tiene su propia FAT, al igual que un SO/)
    - Una DB es un SO pero sin el manejo de periféricos (dispositivos de E/S)
      (/Ej. no imprime en pantalla, no usa el disco, .../)
-   - Pemite la creación/eliminación/acceso a los archivos
 ** Disk Manager
    - *Gestiona el espacio físico* del DBMS (/los archivos lógicos del File Manager/)
    - Se comunica con el SO para el acceso a disco
-   - El motor gestiona/administra su propio disco (Ej. el archivo ~.bak~ representa la DB)
-** Ejemplo
+   - El motor gestiona/administra su propio disco (Ej. sería el archivo ~.bak~ que representa la DB)
+** Ejemplo de comunicación entre los Componentes de un DBMS
    Cuando creamos una tabla...
    1. el motor le pide al SO un espacio en disco, éste le responde con la posición en disco
    2. el *Disk manager* gestiona el espacio y le comunica al *file manager*
@@ -281,10 +286,6 @@
     #+END_QUOTE
 ** Fragmentación
 *** Conceptos
-    #+BEGIN_COMMENT
-      <<DUDA>>: en un momento dice que una página NO puede estar fragmentada, y luego que si (?)
-    #+END_COMMENT
-
     - Un archivo fragmentado está separado en varios fragmentos (/pueden estar esparcidos en varias partes del disco/)
     - Se utiliza el concepto de *página* para evitar la *fragmentación* porque esta NO puede estar fragmentada por ser de tamaño fijo
 
@@ -294,9 +295,13 @@
 
     #+BEGIN_QUOTE
     En Windows cuando se utiliza el desfragmentador, éste une los fragmentos de un archivo
-    que están disperso en distintas partes del disco, y repite lo mismo para el resto de los archivos.
+    que están dispersos en distintas partes del disco, y repite lo mismo para el resto de los archivos.
     Por eso luego lee más rápido el archivo
     #+END_QUOTE
+
+    #+BEGIN_COMMENT
+    <<DUDA>>: en un momento dice que una página NO puede estar fragmentada, y luego que si (?)
+    #+END_COMMENT
 
     *Observación:*
     - El SO lee en tamaño de *cluster* (/porque es la menor unidad de medida lectura/escritura en disco/)
@@ -308,17 +313,16 @@
     - El *cluster* es la _menor unidad de medida de información_ para lectura/escritura en *Disco*
 *** Fragmentación interna
     - se da por la distancia entre los *clusters* (/huecos, sobrante de bytes/)
-    #+BEGIN_COMMENT
-    <<DUDA>>: los huecos/espacio entre los cluster es en bytes? no era la menor unidad de medida?
-    <<DUDA>>: NO es que cuando la página no tiene más renglones, el motor pide una nueva página?
-    #+END_COMMENT
-
-    - Hay fragmentación interna => Cuando se trata de grabar algo más chico que un *cluster*
+    - Hay *fragmentación interna* => Cuando se trata de grabar algo más chico que un *cluster*
       (/al grabar algo más chico, al cluster le queda espacio sobrante/disponible/)
-    - Hay fragmentación interna => Cuando se tata de grabar algo más grande que la página
+    - Hay *fragmentación interna* => Cuando se tata de grabar algo más grande que la página
       (/se graba una parte de la página en un cluster, y lo que falta en otro cluster, éste último le queda espacio sobrante/)
     - Cuando la _longitud de la fila_ es menor que la _longitud del renglón_
       (/porque ocupa tan poco espacio, que queda espacio sin ocupar/)
+
+    #+BEGIN_COMMENT
+    <<DUDA>>: NO es que cuando la página no tiene más renglones, el motor pide una nueva página?
+    #+END_COMMENT
 
     #+BEGIN_QUOTE
     El contenido de las *filas* se guarda en los *renglones* del *cuerpo* de las *páginas*.
@@ -436,7 +440,7 @@
    Con las técnicas de
    1. Segmentar
    2. Paginar
-** Almacenamiento Lógica
+** Almacenamiento Lógico
    Con la técnica de Clustering con
    1. Intra file
    2. Inter file
@@ -470,7 +474,7 @@
 
    #+BEGIN_SRC sql
      -- En esta query el motor va a priorizar la "pertenencia" del conjunto
-     -- solo me va a traer los elementos de de la tabla "clientes"
+     -- solo me va a traer los elementos de la tabla "clientes"
      SELECT * FROM clientes
    #+END_SRC
 ** Inter file
@@ -489,8 +493,8 @@
    Supongamos que tenemos las tablas: alumnos, materias
 
    El *inter file* va a contener un *árbol-b* con la *claves* y *posiciones relativas*
-   de las tablas anteriores, y le adiciona un puntero más (una ~FK~) que apunta
-   apunta a una *tabla de hashing* que tiene todas las relaciones de ese alumno (ej. materias_x_alumnos)
+   de las tablas anteriores, y le adiciona a la estructura del árbol-b un puntero extra (una ~FK~) que apunta
+   a una *tabla de hashing* que tiene todas las relaciones de ese alumno (ej. materias_x_alumnos)
 
    Los índices se guardan *inter file* porque
    1. en una página se guarda la ~PK~ y todas las ~FK~ que tenga relacionada esa ~PK~
@@ -498,7 +502,7 @@
    3. guarda *tablas de hashing* duplicando la información
       - _la información se duplica_ porque por c/nodo del árbol-b se guarda una *tabla de hashing* con
         todas las _posiciones relativas_ de todas las FK que tenga relacionada
-      - esas *tablas de hasing* evitan las *busquedas secuenciales* (permite *acceso directo*)
+      - esas *tablas de hashing* evitan las *busquedas secuenciales* (permite *acceso directo*)
    4. luego de buscar/encontrar en el *árbol-b* un elemento por su clave
       - usa el *puntero* (la ~FK~) para pedirle al *disk manager* que traiga de que *página* (a la que apunta la FK)
         tomar la *posición relativa* del nodo encontrado antes   
@@ -509,26 +513,26 @@
    está formado por un _conjunto de caracteres ASCII_
    #+END_QUOTE
 ** Header
-   - Es un _conjunto de caracteres_ que se agrega al inicio de archivo (/para saber como leer/)
+   - Es un _conjunto de caracteres_ que se agrega al inicio del archivo (/para saber como se debe leer/)
    - Define el contenido del archivo
-   - Es la estructuracion del archivo y del tipo de archivo
-   - El motor de DB necesita un *header* para cada *tabla*
-     - para saber cuantas columnas tiene
-     - para saber que tipos de datos son cada columna
+   - Es la estructuración del archivo y del tipo de archivo
+   - El motor de una DB necesita un *header* para cada *tabla*
+     - para saber _cuantas columnas_ tiene
+     - para saber _que tipos de datos_ son cada columna
 ** Extensión
    - Dice que tipo de *header* tiene (/para que el motor ó programa sepa como leer el archivo/)
    - de la misma manera se comporta un motor de DB
 
    Algunos ejemplos son
 
-   |-----------------+------------------+----------|
-   | Tipo de Archivo | Cabecera         | en ASCII |
-   |-----------------+------------------+----------|
-   | .zip            | 50 4B 03 04      | PK       |
-   | .rar            | 52 61 72 21      | Rar!     |
-   | .pdf            | 25 50 44 46      | %PDF     |
-   | .jpeg           | FF D8 FF E0 / FE | JFIF     |
-   |-----------------+------------------+----------|
+   |----------------------+------------------+----------|
+   | Extensión de Archivo | Cabecera         | en ASCII |
+   |----------------------+------------------+----------|
+   | .zip                 | 50 4B 03 04      | PK       |
+   | .rar                 | 52 61 72 21      | Rar!     |
+   | .pdf                 | 25 50 44 46      | %PDF     |
+   | .jpeg                | FF D8 FF E0 / FE | JFIF     |
+   |----------------------+------------------+----------|
 ** Header de tablas
    El motor va a guardar 
    - Cuantas tablas, filas, columnas
@@ -538,7 +542,7 @@
      (Ej. Al tener ~char nombre[256]~ el ~for~ que itere, solo leerá hasta 256 caracteres)
    - El _tamaño de una fila es cuanto ocupa todos los campos/columnas_
      (/Ej. cada fila de un resultado de una consulta sql, está formada por varias columnas,
-      los campos que definimos al crea la tabla/)
+      los campos que definimos al crear la tabla/)
 
    #+BEGIN_SRC c
      // El DBMS crea un header para identificar las tablas
