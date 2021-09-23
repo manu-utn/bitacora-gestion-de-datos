@@ -64,7 +64,7 @@
     - El criterio de ordenar de forma descendente (/de mayor a menor/) de izq. a der. es según la cant. de veces que se repiten los caracteres
     - se da prioridad a los que más se repitan
 
-    El siguiente vector es la *tabla de frecuencia* donde los caracteres están ordenados descendentemente por cant. de repetición
+    Si la cadena fuese ~EN NEUQUEN~ el siguiente vector sería la *tabla de frecuencia* donde los caracteres están ordenados descendentemente por cant. de repetición
 
     #+NAME: vector-tabla-de-frecuencia
     |---+---+---+---+---|
@@ -90,6 +90,10 @@
       y aquellos que menos se repitan mayor será su representación en ~bits~)
       #+END_QUOTE
 
+      Este sería el árbol binario desbalanceado si la cadena fuese ~EN NEUQUEN~
+      
+      [[./img/huffman-arbol-2.png]]
+   
       *Observaciones:*
       - El binario resultante se completa con ~0~ ó ~1~ para llegar al tamaño de *byte*
       - Por convención la lectura del árbol a izq. se representa con ~0~ y a der. con ~1~
@@ -104,7 +108,7 @@
 
     En la *tabla de frecuencia* que está representada por un vector, que se guarda físicamente en el archivo comprimido, tenemos
     - 1 Byte por cada caracter (por ser de tipo ~char~)
-    - 4 Bytes de cada cant. de repetición de cada caracter (/suponiendo que es de tipo ~long~./)
+    - 4 Bytes por cada repetición de cada caracter (/suponiendo que es de tipo ~long~./)
     - el tamaño del vector es ~5 * 1Byte + (3+3+2+1+1) * 4 Bytes = 45 Bytes~
 
     Observamos como al intentar comprimir un archivo muy pequeño, la *tabla de frecuencia* (el vector) pesa más que 
@@ -118,7 +122,7 @@
     |---+---+---+---+---|
     | 3 | 3 | 2 | 1 | 1 |
     |---+---+---+---+---|
-** Ejemplos de Compresión
+** [WAITING] Ejemplos de Compresión
 *** Ejemplo 1 - Caso hipotético
     Partamos que en realidad este archivo quizás NO lo comprimirá (por tener poco texto), es solo a modo de ejemplo
 
@@ -147,9 +151,9 @@
     que contiene 3 caracteres, y que en binario es ~[00011100][10010111][10000100]~ (/separamos con corchetes para diferenciar/)
     
     *Observaciones:*
-    - Al comprimir el archivo se lee veces el archivo (dos accesos a disco)
-    - la primera lectura para generar la *tabla de frecuencia*
-    - la segunda lectura para generar el *árbol* (para su recodificacion a binario)
+    - Al comprimir el archivo se lee dos veces el archivo (dos accesos a disco)
+      1. la primera lectura para generar la *tabla de frecuencia*
+      2. la segunda lectura para generar la abstracción del *árbol binario desbalanceado* (para su recodificacion a binario)
     - en el barrido del árbol recordamos que
       - el ~0~ indica una lectura a izquierda
       - el ~1~ indica una lectura a derecha
@@ -171,8 +175,13 @@
     |---+---+---+---+---|
     | 3 | 3 | 2 | 1 | 1 |
     |---+---+---+---+---|
-*** Ejemplo 2 - Basado en el ejemplo (1)
-    Probamos el mismo texto del ejemplo anterior en un generador online con el *algoritmo de huffman*,
+
+    Y lo siguiente sería el árbol binario desbalanceado que es la forma en que se lee al vector que se guarda en el archivo,
+    y se usa al momento de comprimir/descomprimir los datos, para que la lectura del vector sea más rápida.
+    
+    [[./img/huffman-arbol-2.png]]
+*** [WAITING] Ejemplo 2 - Basado en el ejemplo (1)
+    Probamos el mismo texto del ejemplo anterior con un generador online con el *algoritmo de huffman*,
     donde la única diferencia es que el *subárbol derecho* contiene los caracteres ~e~ y ~n~ 
     en vez del *subarbol izquierdo*. Por eso veremos que el binario empieza con ~10 11~ en vez de ~00 01~
 
@@ -279,8 +288,8 @@
    | 3 | 3 | 2 | 1 | 1 |
    |---+---+---+---+---|
 
-   y los siguiente la representación computacional de nuevo alfabeto codificado en binario
-   (/éste binario le fatan 2 bytes al final para ser múltiplo de 8 bits/)
+   y lo siguiente la representación computacional de nuevo alfabeto codificado en binario
+   (/a éste binario le fatan 2 bytes al final para ser múltiplo de 8 bits/)
 
    #+NAME: representacion-computacional
    |--------------------+----+----+-----+----+----+----+-----+----+----+----|
@@ -288,11 +297,21 @@
    |--------------------+----+----+-----+----+----+----+-----+----+----+----|
    | caracter leido     |  E |  N |     |  N |  E |  U |   Q |  U |  E |  N |
    |--------------------+----+----+-----+----+----+----+-----+----+----+----|
+
+   [[./img/huffman-arbol-2.png]]
 ** Condiciones a tener en cuenta
    - Se debe guardar el vector (/la tabla de frecuencia/) en el archivo comprimido
    - Determinar donde finaliza el vector (/se determina por la cant. de repeticiones de los caracteres/)
    - Identificar los caracteres *EOF* (ó *end of file* que es un ~short~ de ~2 Bytes~)
 
+   *Observaciones:*
+   - Al comprimir el archivo se
+     1. Crea/guarda la tabla de frecuencia (que es un vector)
+     2. Se arma el binario usando como referencia la tabla de frecuencia, que resulta ser el archivo compilado
+   - Al descomprimir el archivo se lee como un árbol binario usando
+     1. la *tabla de frecuencia*
+     2. el binario que representación del archivo comprimido, se recodificó a binario
+   
    #+BEGIN_QUOTE
    Si al comprimir un archivo se trata de leer el archivo hasta un *EOF* se puede llegar a tener problemas,
    porque estos son un conjunto de caracteres y en archivos grandes se pueden llegar a generar varios *EOF*.
@@ -302,7 +321,7 @@
 ** Conceptos de AyED (por EOF)
 *** Archivos - Modo de lectura/escritura
     - Existe sólo un tipo de archivo, cuando lo abrimos solo indicamos de que manera lo vamos a leer
-    - Cuando en ~C~ abrimos un archivo con ~fopen~ sólo indicamos el "COMO" lo abrimos, pero NO el tipo del archivo
+    - Cuando en ~C~ abrimos un archivo con ~fopen~ sólo indicamos el "COMO" lo leeremos, pero NO el tipo del archivo
       - ~rb~ para leerlo en modo binario
       - ~r~ para leerlo modo de texto plano
 *** Secuencia de Escape
@@ -326,13 +345,13 @@
   - Se modifica su *codificación*
   - Se _recodifica la codificación_ de la *resolución* ó *definición* (/bajando la calidad/)
     - *Resolución:* es la _cantidad de pixeles activos_ en resolución gráfica
-    - *Definicion:* es la _cantidad de colores para representar los pixeles activos_
+    - *Definición:* es la _cantidad de colores para representar los pixeles activos_
 * Tiempo de Compresión Vs. Descompresión
-  La compresión tarda más que la descompresión, porque al comprimir lee el archivo 2 veces
+  La compresión tarda más que la descompresión, porque _al comprimir lee el archivo 2 veces_
 
   _Al comprimir_: (/hace dos lecturas de disco/) 
   1. Lee el archivo para armar el vector (/la tabla de frecuencia/)
-  2. Lee de nuevo el archivo para comprimir (/genera una abstracción de un árbol binario para generar la codificación en binario/)
+  2. Lee de nuevo el archivo para comprimir (/genera una abstracción de un árbol binario desbalanceado para generar la codificación en binario/)
 
   _Al descomprimir_:
   1. Lee del archivo comprimido la *codificación en binario* usando de referencia la *tabla de frecuencia* y graba el descomprimido
