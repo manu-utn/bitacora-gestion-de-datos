@@ -29,7 +29,7 @@
      - Cuando el valor a reemplazar _depende de una *clave* elegida por el usuario_
 
      *Observación:*
-     En estos caso para poder *desencriptar* el archivo, se necesita de la *clave*
+     En estos casos para poder *desencriptar* el archivo, se necesita de la *clave*
      que eligió el usuario
 *** Mixto
     - Se aplican ambas formas de *encriptación* en cualquier orden
@@ -109,7 +109,7 @@
 ** CRC - Integridad
 *** Conceptos
     - CRC significa *control de redundancia cíclica*
-    - NO controla caracter a caracter poque haria un polinomio muy grande
+    - NO controla caracter a caracter porque haria un polinomio muy grande
     - El tamaño del *CRC* tiende a variar entre ~32 bits~ a ~128 bits~
     - Si el ~CRC~ es de ~32 bits~ => agarró ~4 caracteres~ => partió el archivo en ~4 ciclos~
     - Más caracteres agarra
@@ -119,7 +119,7 @@
       - mayor es el *polinomio*
 *** Validar CRC
     - El *CRC* está incluido en el archivo generado
-    - Dos archivos archivos son distintos => si difiere el *número de control* de ambos
+    - Dos archivos archivos son distintos <=> si difiere el *número de control* de ambos
 *** Ciclos
     - El *CRC* controla por *ciclos*
     - En cada ciclo pueden tomarse caracteres al azar que estén en cualquier posición (/al principio, al final, .../)
@@ -142,5 +142,4 @@
     Por ejemplo, si NO se hubiesen mandado los primeros 2 bits quedaría
     ~100010 01110101 01100101~ que en ASCII es ~"ue~ el contenido cambiaría totalmente
     #+END_QUOTE
-
-
+    
