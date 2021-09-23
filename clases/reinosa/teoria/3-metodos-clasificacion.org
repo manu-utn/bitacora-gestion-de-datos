@@ -1,4 +1,5 @@
 #+TITLE: Clase 03 - Métodos de Clasificación
+#+STARTUP: inlineimages
 
 #+BEGIN_COMMENT
 Dudas:
@@ -10,11 +11,12 @@ y la *complejidad NP* como un *arbol de decisión* (porque lo resuelve una maqui
 #+END_COMMENT
 
 * Relación con SQL
-  El ordenamiento con ~ORDER BY~ está relacionado con los *métodos de clasificación*
+  - El ordenamiento con ~ORDER BY~ está relacionado con los *métodos de clasificación*
+  - Es el motor de DB quien elegirá cual *método de clasificación* se usará en una *query* a la db
 * Objetivo
   + Objetivo principal es *ordenar* elementos
   + Dado un conjunto desordenado, la idea es devolverlo ordenado
-  + Dada una secuencia de entrada {3,4,1} se deberia retornar una secuencia {1,3,4}
+  + Dada una secuencia de entrada {3,4,1} se debería retornar una secuencia {1,3,4}
 * Registros (Clave / Datos Satélites)
 ** Conceptos
   Están conformados por
@@ -30,29 +32,43 @@ y la *complejidad NP* como un *arbol de decisión* (porque lo resuelve una maqui
 ** Datos Satélites
    Es todo lo que no sea la clave
 * Estabilidad
-** Orden estable
-  - Orden Estable => Si se mantiene el *orden relativo* original para registros con misma *clave*
-  - Orden Estable => Si dos elementos con igual clave mantienen el mismo orden que al principio
-** Ejemplo
-  Por ejemplo si tenemos un conjunto de registros con {clave, valor}
-  ~{2,A}~, {1,B}, ~{2,C}~, {5,F} <- registros {clave, valor}
+** Conceptos
+   Según si mantienen o no el orden relativo de los valores de elementos iguales (misma clave) se dividen en
+   - Algoritmos de Orden Estable
+   - Algoritmos de Orden NO estable
 
-  Vemos que los registros que tienen clave=2, mantienen el mismo orden que tenian al principio
-  {1,B}, ~{2,A}, {2,C}~, {5,F}   <- *Orden estable*
- 
-  En este otro caso el orden de los registros de igual clave,
-  NO mantienen el orden, aparece primero el que contiene C y luego el de A
-  {1,B}, ~{2,C}, {2,A}~, {5,F}   <- *Orden NO estable*
+   #+BEGIN_QUOTE
+   Los *algoritmos de clasificación* se dividen según si mantienen o no el *orden relativo*
+   de los valores de los elementos iguales (misma clave) a ordenar
+   #+END_QUOTE
+
+   [[./img/orden-estabilidad.jpg]]
+** Orden estable
+   Los algoritmos de clasificación son de orden estable si
+   1. Si se mantiene el *orden relativo* original para registros con misma *clave*
+   2. Si dos elementos con igual clave mantienen el mismo orden que al principio
+** Ejemplo
+   #+BEGIN_QUOTE
+   Por ejemplo si tenemos un conjunto de registros con {clave, valor}
+   ~{2,A}~, {1,B}, ~{2,C}~, {5,F} <- registros {clave, valor}
+   
+   Vemos que los registros que tienen clave=2, mantienen el mismo orden que tenian al principio
+   {1,B}, ~{2,A}, {2,C}~, {5,F}   <- *Orden estable*
+   
+   En este otro caso el orden de los registros de igual clave,
+   NO mantienen el orden, aparece primero el que contiene C y luego el de A
+   {1,B}, ~{2,C}, {2,A}~, {5,F}   <- *Orden NO estable*
+   #+END_QUOTE
 * Métodos In Situ
 ** Conceptos
-  - Permiten la optimización de algoritmos
+  - Permiten la *optimización de algoritmos*
 ** Estructura - Entradas/Salidas
    + Utilizan mismas estructuras, NO crean nuevas estructuras
      (Ej. NO crean un arreglo como estructura auxiliar, para guardar valores)
    + _Transforman la entrada_ sin una *estructura de datos auxiliar*
    + Sobreescriben la *entrada* por la *salida* durante la ejecución del algoritmo
 ** Memoria Extra
-  - Utilizan una cantidad extra memoria (minima y constante)
+  - Utilizan una cantidad extra memoria (mínima y constante)
   - Para el almacenamiento en *variables auxiliares* (en vez de estructuras del tipo arrays)
 ** Ejemplo
    #+BEGIN_SRC C
@@ -109,9 +125,11 @@ y la *complejidad NP* como un *arbol de decisión* (porque lo resuelve una maqui
    - Pueden ser resueltos por una *máquina determinista*
    - Se pueden resolver en *tiempo polinómico*
 
-   *Observación:*
-   Algo que es *determinístico* se conoce como empieza, termina, se conoce los cambios entre transiciones.
+   #+BEGIN_QUOTE
+   Algo que es *determinístico* se conoce como empieza/termina y se conoce los cambios entre transiciones.
+   
    Es decir se conoce sus entradas, su comportamiento, y el resultado final.
+   #+END_QUOTE
 ** Clase de Complejidad NP (Non-Deterministic Polynomial Time)
    - Las siglas *NP* significan *tiempo polinomial NO determinista*
    - Conjunto de *problemas de decisión*
@@ -141,7 +159,18 @@ y la *complejidad NP* como un *arbol de decisión* (porque lo resuelve una maqui
 
    por tanto su *orden de complejidad* es  ~O(n/2)~
    #+END_QUOTE
-* [TODO] Métodos a analizar (Algoritmos)
+* [TODO] Métodos/Algoritmos de Clasificación
+** Tabla Comparativa
+   |----------------+------------+-----------+--------------------+------------------------------+--------------------------+------------------------|
+   | Algoritmo      | Mejor caso | Peor caso | Método             | Velocidad                    | Implementación           | Requiere memoria Extra |
+   |----------------+------------+-----------+--------------------+------------------------------+--------------------------+------------------------|
+   | bubble sort    | O(n^²)     | O(n^²)    | Intercambio        | LENTO (muchas comparaciones) | Sencilla                 | NO                     |
+   | selection sort | O(n2)      | O(n^²)    |                    | LENTO (muchas comparaciones) | Sencilla                 | NO                     |
+   | insertion sort | O(n^²)     | O(n^²)    | Inserción          | LENTO (muchas comparaciones) | Sencilla                 | SI, un poco            |
+   | heap sort      | O(n*logn)  | O(n*logn) | Selección          |                              | Compleja (Arbol Binario) |                        |
+   | quick sort     | O(n*logn)  | O(n^²)    | Partición/División | RAPIDO                       | Compleja (Recursividad)  | No                     |
+   | shell sort     | O(n*logn)  | O(nlog2n) | Inserción          | BUENO (conjuntos chicos)     | Compleja                 | No                     |
+   |----------------+------------+-----------+--------------------+------------------------------+--------------------------+------------------------|
 ** bubble sort
    - compara de a dos
    - sabe que el ultimo es el mas grande
@@ -173,7 +202,6 @@ y la *complejidad NP* como un *arbol de decisión* (porque lo resuelve una maqui
    - su nivel de dificultad es mayor si el conjunto ya está ordenado
 *** Variantes
 **** bsort
-     
 **** meansort
 ** heap sort
    - ordenar a traves de monticulo (heap)
@@ -187,3 +215,5 @@ y la *complejidad NP* como un *arbol de decisión* (porque lo resuelve una maqui
   2. http://www.cs.uns.edu.ar/~prf/teaching/AyC17/downloads/Teoria/Complejidad-1x1.pdf
   3. http://exa.unne.edu.ar/informatica/programacion1/public_html/archivos/tema10_algoritmos.pdf
   4. https://www.utm.mx/~jahdezp/archivos%20estructuras/DESICION.pdf
+  5. https://programmerclick.com/article/13481047784/
+     
