@@ -45,7 +45,7 @@ DUDAS Resueltas
    Datos -> Información -> Conocimiento
 
    Es el conjunto de metodologías/heramientas/estructuras de almacenamiento
-   que permiten agrupar/depuar/transformar los *datos* en *información*.
+   que permiten agrupar/depurar/transformar los *datos* en *información*.
   
    Información que se pueda analizar/convertir en *conocimiento*
    para mejorar el proceso de *toma de decisiones*
@@ -54,7 +54,7 @@ DUDAS Resueltas
 *** Conceptos
      - Son valores absolutos/puros que toman un valor especifico (/Ej. una fecha, un nombre, un número, .../)
      - Son la *mínima unidad semántica* de la *información*
-     - Ofrecen *información* útil => si son *vinculados con alguna relación*
+     - Ofrecen *información* útil <=> si son *vinculados con alguna relación*
      - NO aportan a la *toma de decisiones*
        (/porque necesitan estar vinculados con alguna relación y pasar por un proceso de análisis/)
 *** Origenes
@@ -92,6 +92,47 @@ DUDAS Resueltas
     La *información* se transforma en *conocimiento* si..
     1. Si se compara con otros elementos
     2. Si se comunica con otros portadores de conocimiento
+* [WAITING] OLAP Vs. OLTP
+  |------------------------------------------------+-------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------|
+  |                                                | OLAP (modelo relacional)                                                      | OLTP (modelo transaccional)                                                                |
+  |------------------------------------------------+-------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------|
+  | DB utilizadas                                  | DB Multidimensionales                                                         | DB Relacionales                                                                            |
+  | % de sistemas que lo utilizan                  | 1%                                                                            | 99%                                                                                        |
+  | Su nombre se refiere de                        | Procesar/Analizar la información y relacionar                                 | Ejecutar un conjunto de transacciones (c/transacción es un conjunto acciones ante eventos) |
+  | Objetivo                                       | Pensar/procesar/analizar información y generar conocimiento                   | Ejecutar operaciones                                                                       |
+  | Requiere conocimiento técnico (SQL, DB,..)     | NO (lo usa el sector directivo)                                               | SI (lo usa el sector operativo)                                                            |
+  | Almacena datos precalculados y desnormalizados | SI (queries simples, rápidas)                                                 | NO                                                                                         |
+  | Está orientado a                               | sujetos/objetos (dimensiones, patrones de interés, Ej. el tiempo)             | funcionalidades/procesos                                                                   |
+  | Se utiliza en el Modelo Estrella               | SI                                                                            | SI                                                                                         |
+  | Se utiliza en DW y DataMarts                   | SI                                                                            | Maso (la idea es pasarlo al modelo OLAP)                                                   |
+  | Datos persistencia y volatilidad               | Son NO volátiles (todo se persiste, se tiene un histórico de años anteriores) | Es volátil (permite operaciones UPDATE/DELETE/INSERT)                                      |
+  | Mantenimiento/Construcción                     | Compleja (por tener multiples fuentes con distintas arquitecturas)            |                                                                                            |
+  | Nivel de detalle de la información             | Para la *toma de decisiones* requiere poco detalle (se resume)                | Los *datos operacionales* tienen gran nivel de detalle                                     |
+  |------------------------------------------------+-------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------|
+* [WAITING] Data Warehouse Vs. Data Marts
+  |----------------------------+------------------------------------------------------------------------+-----------------------------------------------------------------------|
+  |                            | Data Warehouse                                                         | Data Marts                                                            |
+  |----------------------------+------------------------------------------------------------------------+-----------------------------------------------------------------------|
+  | Información, scope/alcance | Es global, de toda la organización                                     | Segmentada, de un sector de la organización (Ej. compras, ventas, ..) |
+  | Información, uso           | Para toma de decisiones estratégicas                                   |                                                                       |
+  | Objetivo 1                 | Acumular gran cant. de información (OLAPs y/ó técnicas de Data Mining) |                                                                       |
+  | Objetivo 2                 | Pasar un Modelo OLTP (transaccional) a Modelo OLAP (relacional)        |                                                                       |
+  | Modelo que aplica          | OLAP (relacional)                                                      |                                                                       |
+  | Permite Modificaciones     | NO (porque se guarda un histórico, permite cargar/leer)                |                                                                       |
+  |----------------------------+------------------------------------------------------------------------+-----------------------------------------------------------------------|
+* Hipercubo Vs. Multicubo
+  |-----------------+-----------+-----------|
+  |                 | Hipercubo | Multicubo |
+  |-----------------+-----------+-----------|
+  | Tamaño del cubo | Grande    | Pequeño   |
+  |-----------------+-----------+-----------|
+* Multidimensional DBMs Vs. Relational DBMs
+  |----------------------------------------+----------------------+------------------------------------|
+  |                                        | DBM Multidimensional | DBM Relacional                     |
+  |----------------------------------------+----------------------+------------------------------------|
+  | Modelo que aplica                      | OLAP (relacional)    |                                    |
+  | Se puede implementar un DW ó DataMarts | SI                   | SI (Un DW, con el Modelo Estrella) |
+  |----------------------------------------+----------------------+------------------------------------|
 * Tecnologías OLAP/OLTP
 ** Conceptos
    El modelo de desarrollo de un Sistema desde el punto de vista conceptual está formado por 
@@ -141,21 +182,21 @@ DUDAS Resueltas
     Se conoce también por Modelo Relacional, porque a medida que procesa la información
     y la va analizando, también la relaciona con el resto de la información.
     Ej. Cuando un profesor evalúa un curso, revisa las notas de cada alumno, la compara con
-    otras cursadas anteriores, ver si los alumnos participaron en clase,...
+    otras cursadas anteriores, ve si los alumnos participaron en clase,...
     #+END_EXAMPLE
 *** Características
     + Su ejecución se basa en el *análisis*
       (/se analiza la información y se sacan conclusiones/)
     + Son sistemas que generan *conocimiento* para la *toma de decisiones*
     + Procesan *información* persistente/no volátil
-       (/porque trabaja con información que ya pasó/)
+       (/porque trabaja con información histórica, osea que ya pasó pero está persistida/)
     + La información se almacena *desnormalizada* 
       (/para poder agrupar y relacionar/)
     + Son de fácil uso, pero es compleja su construcción/mantenimiento
 
     *Observación:*
-    La información se prefiere que quede *desnormalizada* para poder agrupar y relacionar.
-    Si estuviese *normalizada* la estaríamos separando y se perdería la relación.
+    - La información se prefiere que quede *desnormalizada* para poder agrupar y relacionar.
+    - Si estuviese *normalizada* la estaríamos separando y se perdería la relación.
 
     #+BEGIN_QUOTE
     Registran información global por *dimensiones* conocidos como *patrones de interés*,
@@ -213,14 +254,14 @@ DUDAS Resueltas
      Supongamos que tenemos registradas las notas los alumnos/as de cada materia,
      y del alumnado tenemos como dato el sexo, si es femenino/masculino.
 
-     Para un sistema OLTP no interesaría el sexo del alumnado, sólo se registaría
+     Para un *sistema OLTP* no interesaría el sexo del alumnado, sólo se registaría
      la nota según su evaluación y punto.
 
-     Mientras que en un sistema OLAP puede ser de interés el sexo del alumnado,
+     Mientras que en un *sistema OLAP* puede ser de interés el sexo del alumnado,
      para relacionar quienes sacaron mejores notas, quienes peores, en que materias
      se anotaron más y en cuales menos.
      El procesar dicha información analizandola, y relacionandola comparando los valores,
-     se puede sacar una conclusión que sirva que se podria modificar/ajustar en las materias
+     se puede sacar una conclusión que sirva y que se podria modificar/ajustar en las materias
      con el análisis hecho.
      #+END_QUOTE
 **** [TODO] Actualización/Consistencia de datos
@@ -246,11 +287,11 @@ DUDAS Resueltas
      para que puedan ser utilizados en la DB del modelo OLAP
      #+END_QUOTE
 **** Distintas perspectivas ó vistas
-     La *toma de decisiones* NO requiere a visión tan estructurada ó con tanto detalle
+     La *toma de decisiones* NO requiere una visión tan estructurada ó con tanto detalle
      por tanto se debe ajustar la información al nivel de resumen/visión que se necesite
      
      *Observación:*
-     A diferencia de la *toma de decisiones*, los *datos operacionales* necesitan un gran nivel de detalle
+     A diferencia de la *toma de decisiones* donde los *datos operacionales* necesitan un gran nivel de detalle
      y esos datos operacionales son utilizados en los niveles bajos de la organización.
 **** [TODO] Actualización de datos
      - Si la aplicación tiene varias *entradas de datos* => se debe separar la DB de OLAP
@@ -283,7 +324,6 @@ DUDAS Resueltas
 
     Como son creadas/actualizadas por muchos usuarios => las DB OLTP se optimizan para las actualizaciones de las transacciones
     #+END_QUOTE
-** Tabla Comparativa entre OLAP/OLTP
 * Base de Datos Multidimensionales
 ** Conceptos
    - La información almacenada se presenta como *variables*
@@ -302,15 +342,17 @@ DUDAS Resueltas
 
    Si cortamos el cubo multidimensional por alguna de las dimensiones
    obtenemos una perspectiva/vista de esa dimensión.
+   
    Ej. Si hacemos un corte por la dimensión de Materia, podríamos obtener
    todas las notas de todos los alumnos
-   Si hacemos un corte por la dimensión Alumno, podriamos sacar 
-   todas las notas de ese alumno 
+   
+   Ej. Si hacemos un corte por la dimensión Alumno, podriamos sacar 
+   todas las notas de ese alumno especificamente
    #+END_EXAMPLE
 * Dispersión de Datos
 ** Conceptos
    - Si se agregan dimensiones a la DB Multidimensional => el número de *celdas* crece
-   - En la práctica la mayoria de las DB tienen un 95% de *celdas vacías*
+   - En la práctica la mayoría de las DB tienen un 95% de *celdas vacías*
      (/a eso se llama "dispersión de datos"/)
 
    #+BEGIN_QUOTE
@@ -321,8 +363,8 @@ DUDAS Resueltas
    Otro ejemplo sería, si tenemos una base de datos de los alumnos desde el año 2010
    suponiendo que estamos en el 2021. Al agregar alumnos recientes, éstos tendrían
    valores en null sobre los años anteriores al 2021, quedando *celdas vacías*.
-   Esto se debe a que en una DB Multidimensional la información se obtiene por la
-   intersección de las dimensiones, en este caso serían Alumno/Materia/Año
+   Esto se debe a que _en una DB Multidimensional la información se obtiene por la
+   intersección de las dimensiones_, en este caso serían Alumno/Materia/Año
    
    En conclusión queda espacio de sobra que no se utiliza, ocupando espacio innecesario.
    #+END_QUOTE
@@ -344,7 +386,7 @@ DUDAS Resueltas
    #+END_QUOTE
 ** Multicubo
    - La infomación se guarda dividiendo los datos en *Objetos Multidimensionales* (/grupos pequeños y densos/)
-   - La DB Multidimensional está formado por *objetos* separados con diferentes *dimensiones*
+   - Una DB Multidimensional está formada por *objetos* separados con diferentes *dimensiones*
 
    *Observación:*
    A diferencia del *hipercubo* que es un gran cubo, éste lo particiona en pequeños cubos,
@@ -607,7 +649,7 @@ DUDAS Resueltas
     - Puede haber más de un modelo estrella
 
     #+BEGIN_QUOTE
-    En el *Modelo Multidimensional* trabaja sobre la intersección de las dimensiones,
+    En el *Modelo Multidimensional* _se trabaja sobre la intersección de las dimensiones_,
     donde cada dimensión está vinculada a un sujeto/objeto al cual se orienta el sistema DW.
     Sólo se definen las *dimensiones*, defino lo "que" voy a guardar en la *intersección de las dimensiones*
     del *cubo de las dimensiones*
@@ -622,11 +664,11 @@ DUDAS Resueltas
 *** Tabla de Hechos (Fact Table)
     - Sería como el núcleo del modelo estrella
     - Representa la información, sería el *cubo* del *modelo relacional*
-    - Está formado por las *dimensiones* (/La PK es una clave compuesta por las PK de las tablas dimensionales/)
+    - Está formado por las *dimensiones* (/La PK será una "clave compuesta" formada por las PK de las tablas dimensionales/)
     - Tienden a representar
       1. Valores numéricos
       2. Datos asociados al evento específico
-      3. FK que referencian a tablas de datos Dimensionales
+      3. (FK) que referencian a tablas de datos Dimensionales
     - Contienen detalles con gran nivel de granularidad/atomicidad
     - Tiene los hechos que pueden ocurrir
     - Registra medidas/métricas de un evento específico
@@ -668,7 +710,6 @@ DUDAS Resueltas
   - Utilizan *técnicas algorítmicas* para encontrar *patrones de interés ocultos*
   - Los *patrones de interés ocultos* anticipan futuros acontecimientos
 ** Características
-   
 * Big data
 * Data science
 * Machine learning
