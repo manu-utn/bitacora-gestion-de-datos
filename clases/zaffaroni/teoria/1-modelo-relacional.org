@@ -231,7 +231,7 @@
       |-----------------+----------+--------|
 **** Minimalidad
      - Promete que será mínima la combinación de atributos que cumplan unicidad
-     - El cada subconjunto de atributos debe cumplir con unicidad
+     - Que cada subconjunto de atributos debe cumplir con unicidad
      - Si al sacar un atributo del conjunto, y sigue cumpliendo con *unicidad*
        entonces ese conjunto no cumplía con *minimalidad*,
        porque *la combinación de atributos* debe cumplir con *unicidad*
@@ -338,9 +338,9 @@
      Se debe evaluar si la *clave foránea* acepta nulos
 
      #+BEGIN_EXAMPLE
-     Un ejemplo de una "clave foránea" que acepta nulos.
+     Un ejemplo de una "clave foránea" que acepta nulos sería
 
-     Una entidad Materia, que aún no tiene un profesor asignado,
+     una entidad Materia, que aún no tiene un profesor asignado,
      por tanto su "numero de legajo" no aparece en la tupla
      (MATERIA_COD, MATERIA_NOMBRE, PROF_LEGAJO)
      
@@ -456,9 +456,10 @@
 
     #+BEGIN_QUOTE
     Digamos que tenemos una aplicación que es un *buscador de alumnos*
- 
-    si en la DB agregamos nuevos atributos {~edad~, ~fecha de nac~, ..} la tabla *alumnos* 
-    que son cambios que no requiere la aplicación aún, este cambio no debería afectar la aplicación
+    si en la DB agregamos nuevos atributos {~edad~, ~fecha de nac~, ..} en la tabla *Alumnos*.
+    
+    Estos son cambios que no requiere la aplicación aún,
+    por tanto este cambio no debería afectar la aplicación
     #+END_QUOTE
 
     *Observación:*
