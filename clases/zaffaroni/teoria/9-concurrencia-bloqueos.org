@@ -50,12 +50,12 @@
    *Observaciones:*
    1. Cada vez que abrimos una pestaña de queries, se abre una nueva conexion 
    2. Si al crear una tabla usamos doble numeral ~##~ se crean a nivel sesion
-** Mayor aislamiento implícita
+** Mayor aislamiento implíca
    Mayor aislamiento implíca que habrá
    1. Mayor cant. de bloqueos => Menor velocidad (/habrán transacciones que deben esperar que terminen otras transacciones/)
    2. Baja la performance a nivel de usuario (/los usuarios deberán esperar más/)
    3. Aumenta la seguridad de que no habrá información *inconsistente* (/porque se verá datos que fueron confirmados y persisten en disco/)
-** Menor aislamiento implícita
+** Menor aislamiento implíca
    1. Menor cant. de bloqueos => Mayor velocidad para el sistema (/habrán transacciones que no deban esperar tanto para ejecutarse/)
    2. Aumenta la probabilidad de información *inconsistente* en distintos instantes de tiempo (/porque está en caché y puede variar/)
 ** SET TRANSACTION ISOLATION LEVEL
@@ -70,11 +70,45 @@
    |----------------------+---------------+-------------------+---------------|
    | Nivel de Aislamiento | Lectura Sucia | Lectura repetible | Dato fantasma |
    |----------------------+---------------+-------------------+---------------|
-   | READ UNCOMMITTED     |       X       |                   |       X       |
+   | READ UNCOMMITTED     |       X       |         X         |       X       |
    | READ COMMITED        |               |                   |       X       |
    | REPEATABLE READ      |               |         X         |       X       |
    | SERIALIZABLE         |               |         X         |               |
    |----------------------+---------------+-------------------+---------------|
+
+   |--------+------------------------------------------------------------------------|
+   | tiempo | Dato fantasma                                                          |
+   |--------+------------------------------------------------------------------------|
+   | t=1    | aparecen 10 registros (una transacción A, hizo INSERT de 5 registros)  |
+   | t=2    | aparecen 5 registros  (una transacción B lee, pero la A hizo ROLLBACK) |
+   |--------+------------------------------------------------------------------------|
+
+   |--------+----------------------------------------------------------------------------------------------|
+   | tiempo | Lectura sucia                                                                                |
+   |--------+----------------------------------------------------------------------------------------------|
+   | t=1    | en un registro aparece con nombre='carlos' (una transacción A, hizo UPDATE)                  |
+   | t=2    | el mismo registro aparece con nombre='perez' (otra transacción lee, pero la A hizo ROLLBACK) |
+   |--------+----------------------------------------------------------------------------------------------|
+
+   |--------+------------------|
+   | tiempo | Lectura repetida |
+   |--------+------------------|
+   | t=1    |                  |
+   | t=2    |                  |
+   |--------+------------------|
+
+   |--------------------------------+-----------+--------------------------------------------------------------------+------------------+----------------------------------------------------------------------|
+   | Nivel de Aislamiento           | Lee de    | Aplica bloqueos                                                    | Permisivo        | Lecturas                                                             |
+   |--------------------------------+-----------+--------------------------------------------------------------------+------------------+----------------------------------------------------------------------|
+   | READ UNCOMMITTED               | La caché  | En ninguna instrucción                                             | El más permisivo | Sucias, Fantasmas, NO asegura Repetidas                              |
+   |--------------------------------+-----------+--------------------------------------------------------------------+------------------+----------------------------------------------------------------------|
+   | READ COMMITED (default en sql) | Del disco | En ninguna instrucción                                             |                  | Fantasmas, NO asegura Repetidas                                      |
+   |--------------------------------+-----------+--------------------------------------------------------------------+------------------+----------------------------------------------------------------------|
+   | REPEATABLE READ                |           | A nivel filas (en un rango, las que se estén leyendo con ~SELECT~) |                  | Fantasmas                                                            |
+   |                                |           | En las instrucciones ~UPDATE/DELETE~ de las que se estén leyendo   |                  | SI asegura repetibles (el resultado se mantiene, ante varios SELECT) |
+   |--------------------------------+-----------+--------------------------------------------------------------------+------------------+----------------------------------------------------------------------|
+   | SERIALIZABLE                   |           |                                                                    |                  |                                                                      |
+   |--------------------------------+-----------+--------------------------------------------------------------------+------------------+----------------------------------------------------------------------|
 ** Tipos de Niveles de Aislamiento
 *** Read uncommitted - Lectura no confirmada
     - Es el mas permisivo de los niveles
