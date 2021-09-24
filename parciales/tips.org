@@ -1,42 +1,198 @@
 #+TITLE: Parciales-TIPS
 * Preguntas V/F
-** Pregunta (1)
-   #+BEGIN_QUOTE
-   Un árbol B es la técnica de creación de índices que debe utilizarse
-   cuando NO se tiene información del archivo a mantener ordenado
-   #+END_QUOTE
+** Grafos
+*** Pregunta (1)
+    #+BEGIN_QUOTE
+    Los grafos irrestrictos pueden o no ser asimétricos
+    #+END_QUOTE
 
-   *Respuesta:* Verdadero
-** Pregunta (2)
-   #+BEGIN_QUOTE
-   Un constraint de tipo ~CHECK~ puede ser reemplazado por un ~trigger~
-   #+END_QUOTE
+    *Respuesta:*  Verdadero
+*** Pregunta (2)
+    #+BEGIN_QUOTE
+    Cuando un grafo NO es unívoco, debe ser categorizado como un grafo irrestricto
+    #+END_QUOTE
+
+    *Respuesta:* Verdadero
+*** Pregunta (3)
+    #+BEGIN_QUOTE
+    Un grafo irrestricto solo puede representarse a través de una representación dinámica
+    #+END_QUOTE
+
+    *Respuesta:* Falso
+*** Pregunta (4)
+    #+BEGIN_QUOTE
+    Un grafo es biunívoco cuando tiene un solo predecesor y un solo sucesor
+    #+END_QUOTE
+
+    *Respuesta:* Verdadero (es la definición de la unicidad doble)
+** Arboles, Tablas de Hash
+*** Pregunta (1)
+    #+BEGIN_QUOTE
+    Un árbol B es la técnica de creación de índices que debe utilizarse
+    cuando NO se tiene información del archivo a mantener ordenado
+    #+END_QUOTE
+
+    *Respuesta:* Verdadero
+*** Pregunta (2)
+    #+BEGIN_QUOTE
+    La cantidad de nodos de un *árbol de expresión* siempre es par
+    #+END_QUOTE
+
+    *Respuesta:* Falso
+*** Pregunta (3)
+    #+BEGIN_QUOTE
+    El método de hashing es menos performante que el método del Arbol B para el manejo de claves duplicadas
+    #+END_QUOTE
+
+    *Respuesta:*  Verdadero
+*** Pregunta (4)
+    #+BEGIN_QUOTE
+    Cualquier árbol puede ser representado computacionalmente mediante un vector
+    #+END_QUOTE
+
+    *Respuesta:*  Verdadero
+*** Pregunta (5)
+    #+BEGIN_QUOTE
+    La implementación de un hash permite obtener a partir de una entrada "X"
+    una salida "Y" única y reversible
+    #+END_QUOTE
+
+    *Respuesta:* Falso (/porque puede haber colisiones y dar un valor repetido/)
+*** Pregunta (6)
+    #+BEGIN_QUOTE
+    Si un árbol binario es completo, entonces la cantidad de nodos que posee es impar
+    #+END_QUOTE
+
+    *Respuesta:* Verdadero (/por el nodo raíz/)
+*** Pregunta (7)
+    #+BEGIN_QUOTE
+    Si una función de hash NO posee una buena dispersión, se van a  producir muchas colisiones
+    #+END_QUOTE
+
+    *Respuesta:* Verdadero
+** Algoritmos
+*** Pregunta (1)
+    #+BEGIN_QUOTE
+    El algoritmo de HUffman obtiene los códigos comprimidos parseando un árbol balanceado
+    #+END_QUOTE
+
+    *Respuesta:* Falso
+*** Pregunta (2)
+    #+BEGIN_QUOTE
+    La reexpresión de caracteres al aplicar Huffman implíca la disminución de 8 bits para la expresión
+    de todos los caracteres
+    #+END_QUOTE
+
+    *Respuesta:* Falso
+*** Pregunta (3)
+    #+BEGIN_QUOTE
+    El algoritmo del *Quicksort* siempre es mejor que el *método de la burbuja*
+    para clasificar un conjunto de datos
+    #+END_QUOTE
+
+    *Respuesta:* Verdadero
+** Inteligencia de Negocios
+*** Pregunta (1)
+    #+BEGIN_QUOTE
+    Un *Data Marts* es un *Data Warehouse* afectado a un departamento ó sector de la empresa
+    #+END_QUOTE
+
+    *Respuesta:* Verdadero
+*** Pregunta (2)
+    #+BEGIN_QUOTE
+    En el *modelo estrella* primero se deben cargar las *tablas de dimensiones*
+    y luego la *tabla de hechos*
+    #+END_QUOTE
+
+    *Respuesta:* Verdadero, porque sino se producirían errores de (FK)
+*** Pregunta (3)
+    #+BEGIN_QUOTE
+    Un modelo *OLAP*, es aquel que integra datos generados en uno ó más modelos equivalentes transaccionales
+    denominados *OLTP*
+    #+END_QUOTE
+
+    *Respuesta:*  Verdadero
+*** Pregunta (4)
+    #+BEGIN_QUOTE
+    Los Hypercubos y Multicubos, son distintas técnicas para alamacenar información en las Base de Datos Multidimensionales
+    #+END_QUOTE
+
+    *Respuesta:*  Verdadero
+*** Pregunta (5)
+    #+BEGIN_QUOTE
+    #+END_QUOTE
+
+    *Respuesta:* 
+*** Pregunta (6)
+    #+BEGIN_QUOTE
+    EL objetivo de un Datawarehouse es aglutinar información de diferentes origenes de datos
+    para obtener información en la toma de decisiones
+    #+END_QUOTE
+
+    *Respuesta:* Verdadero
+** DB
+*** Pregunta (3)
+    #+BEGIN_QUOTE
+    En una base de datos relacional, los índices garantizan la unicidad de claves
+    #+END_QUOTE
+
+    *Respuesta:* Falso (/los índices garantizan un acceso rápido, la PK garantiza la unicidad/)
+** SQL
+*** Pregunta (1)
+    #+BEGIN_QUOTE
+    Un constraint de tipo ~CHECK~ puede ser reemplazado por un ~trigger~
+    #+END_QUOTE
    
-   *Respuesta:* Verdadero
-** Pregunta (3)
-   #+BEGIN_QUOTE
-   El algoritmo de HUffman obtiene los códigos comprimidos parseando un árbol balanceado
-   #+END_QUOTE
+    *Respuesta:* Verdadero
+*** Pregunta (2)
+    #+BEGIN_QUOTE
+    Si se desea que NO se puedan eliminar registros de una tabla de auditoría,
+    una opción es crear un *trigger* que lo impida
+    #+END_QUOTE
 
-   *Respuesta:* Falso
-** Pregunta (4)
-   #+BEGIN_QUOTE
-   EL uso de ~LIKE~ no es recomendable si se tiene que realizar consultas intensivas por texto
-   #+END_QUOTE
+    *Respuesta:* Verdadero
+*** Pregunta (3)
+    #+BEGIN_QUOTE
+    EL uso de ~LIKE~ no es recomendable si se tiene que realizar consultas intensivas por texto
+    #+END_QUOTE
 
-   *Respuesta:* Verdadero
-** Pregunta (5)
-   #+BEGIN_QUOTE
-   La cantidad de nodos de un *árbo de expresión* siempre es par
-   #+END_QUOTE
+    *Respuesta:* Verdadero
+*** Pregunta (4)
+    #+BEGIN_QUOTE
+    Dada la tablas clientes con el campo clie_codigo definido como primary key
+    ~select count(*) C1 ,count(clie_codigo)C2 ,count(distinct clie_codigo)C3 from cliente~
+    Indique cual sería el resultado
+    
+    Seleccione una:
+    1. C1=C2=C3
+    2. Ninguna de las anteriores
+    3. C1=C2 y C3<>C2
+    4. C1>=C2 y C2>=C3
+    5. C1>C2 y C2>=C3
+    6. C1>C2 y C2>C3
+    #+END_QUOTE
 
-   *Respuesta:* Falso
-** Pregunta (6)
-   #+BEGIN_QUOTE
-   Un *Data Marts* es un *Data Warehouse* afectado a un departamento ó sector de la empresa
-   #+END_QUOTE
+    *Respuesta:* 
+     - C1=C2=C3
+*** Pregunta (5)
+    #+BEGIN_QUOTE
+    NUNCA es posible ejecutar la operación de INSERT sobre una vista
+    #+END_QUOTE
 
-   *Respuesta:* Verdadero
+    *Respuesta:* Falso
+*** Pregunta (6)
+    #+BEGIN_QUOTE
+    Si una columna posee la constraint ~UNIQUE~ entonces una sola fila como máximo
+    puede contener ~NULL~ en dicha columna.
+    #+END_QUOTE
+
+    *Respuesta:* Verdadero (/considera al NULL como un valor más/)
+*** Pregunta (7)
+    #+BEGIN_QUOTE
+    La ejecución sin filas de resultado de una query dentro de un trigger genera la cancelación de la transacción
+    #+END_QUOTE
+
+    *Respuesta:* Falso
 * Preguntas a desarrollar
 ** Pregunta (1)
    #+BEGIN_QUOTE
@@ -58,7 +214,7 @@
    *Respuesta:*
    Un árbol de expresión representa una expresión matemática, donde 
    - los valores son hojas
-   - los operadores son...
+   - los operadores son ramas/raíz
    Éste tipo de árbol permite recorrer la expresión matemática y resolverla.
    
    Ej. si tenemos la sig. expresión ~3+5*8-4*2~
@@ -80,3 +236,176 @@
    #+BEGIN_QUOTE
    Cual es el objetivo de crear la *tabla de frecuencias* en el *algoritmo de huffman* y porque su importancia
    #+END_QUOTE
+* Consultas SQL V/F
+** Pregunta (1)
+   #+BEGIN_QUOTE
+   La primer tabla contiene todos los usuarios de un aplicativo, la segunda los logueos al mismo,
+   el campo ~Fecha~ NO contiene hora por lo cual si un usuario ingresa más de una vez en el día
+   sólo se isnerta un registro en la tabla. La tabla usuarios no acepta borrado de datos.
+
+   Laempresa solicita que se cree una vista que obtenga el último ingreso al aplicativo
+   de cada suario mostrando nobre, apellido y la fecha, en caso de que un usuario nunca hay accedido
+   debe mostrarse la fecha de alta del usuario como último ingreso.
+
+   Seleccione la respuesta correcta, según las tablas dadas y el código que realizó el programador
+   1. La vista se crea pero da error al consultarla
+   2. La vista se crea pero al consultarla NO devuelve lo solicitado
+   3. La vista NO puede crearse
+   4. La vista es correcta y devuelve exactamente lo solicitado
+   #+END_QUOTE
+
+   |-----------------------------+---------------------|
+   | Usuarios                    | Ingresos            |
+   |-----------------------------+---------------------|
+   | IdUsuario INT (PK)          | IdUsuario INT (FK)  |
+   | Nombre CHAR(100) NOT NULL   | Fecha DATE NOT NULL |
+   | Apellido CHAR(100) NOT NULL |                     |
+   | FechaAlta DATE NOT NULL     |                     |
+   |-----------------------------+---------------------|
+   
+   #+BEGIN_SRC sql
+     -- el programador lo resuelve de la siguiente manera
+     CREATE VIEW vw_final (nombre, apellido, ultimoIngreso) as
+       SELECT nombre, apellido, max(fecha) FROM ingresos i, usuarios
+        WHERE i.IdUsuario = usuarios.IdUsuario
+        GROUP BY usuarios.IdUsuario, apellido, nombre
+                 UNION
+       SELECT Nombre, apellido, fechaAlta FROM usuarios
+        WHERE NOT EXISTS (SELECT 1 FROM ingresos WHERE idUsuario=usuarios.idUsuario);
+   #+END_SRC
+
+   *Respuesta:* 
+   - La vista es correcta y devuelve exactamente lo solicitado
+** Pregunta (2)
+   #+BEGIN_QUOTE
+   Dado el siguiente modelo de datos resuelva
+   Dtermine cual de las siguientes opciones coincide con el resultado que arrojaría
+   la consulta, en caso de no ser ninguna de estas explique claramente cual sería el resultado
+   #+END_QUOTE
+
+   #+BEGIN_SRC sql
+     SELECT pa.IDPAIS, SUM(ISNULL(pro.HABITANTES,0)), COUNT(pro.IDPAIS)
+       FROM pais pa LEFT OUTER JOIN provincias pro ON pa.IDPAIS=pro.IDPAIS
+      GROUP BY pa.IDPAIS;
+   #+END_SRC
+
+   |--------+-------+-----------+-----------+-----------|
+   | Opción | Filas | Columna 1 | Columna 2 | Columna 3 |
+   |--------+-------+-----------+-----------+-----------|
+   | A      |       |           |           |           |
+   | B      |       |           |           |           |
+   | C      |       |           |           |           |
+   | D      |       |           |           |           |
+   |--------+-------+-----------+-----------+-----------|
+
+   *Respuesta:* Opción B
+* Consultas SQL a desarrollar
+** Pregunta (1)
+   #+BEGIN_QUOTE
+   Cree el/los objetos de base de datos que permiten implementar una relación NO identificativa
+   entre Entrenador y Especialidad y se garantice la *integridad referencial*, sin crear restricciones
+   del tipo *foreign key*
+   #+END_QUOTE
+
+   |------------------------------|
+   | Entrenador                   |
+   |------------------------------|
+   | entr_id CHAR(10)             |
+   | entr_nombre CHAR(50)         |
+   | entr_apellido CHAR(100)      |
+   | entr_especialidad_id INTEGER |
+   |------------------------------|
+   
+   |------------------------|
+   | Especialidad           |
+   |------------------------|
+   | espe_id INTEGER        |
+   | espe_detalle CHAR(150) |
+   |------------------------|
+
+   *Respuesta:* 
+** Pregunta (2)
+   #+BEGIN_QUOTE
+   El cliente solicita que los usuarios puedan guardar más de una dirección, y también que se pueda
+   agregar una descripción NO obligatoria de no más de 100 caracteres, para cada domicilio que se almacene.
+   Codifique los cambios necesarios que deberían aplicarse para cumplir este requerimiento.
+   #+END_QUOTE
+
+   La relación entre las entidades es ~Usuario >o--|| Direccion~
+   
+   |---------------------|
+   | Usuarios            |
+   |---------------------|
+   | usua_nombre         |
+   | usua_apellido       |
+   | usua_direccion (FK) |
+   |---------------------|
+
+   |---------------|
+   | Dirección     |
+   |---------------|
+   | dir_calle     |
+   | dir_numero    |
+   | dir_localidad |
+   | dir_piso      |
+   | dir_depto     |
+   |---------------|
+
+   
+   *Respuesta:* 
+* Preguntas de Coloquio
+** Pregunta (1)
+   #+BEGIN_QUOTE
+   Comparar índices hashing Vs Arbol-B
+   #+END_QUOTE
+
+   *Respuesta:* 
+** Pregunta (2)
+   #+BEGIN_QUOTE
+   Que es una transacción
+   #+END_QUOTE
+
+   *Respuesta:* 
+** Pregunta (3)
+   #+BEGIN_QUOTE
+   Niveles de aislamiento de una transacción
+   #+END_QUOTE
+
+   *Respuesta:* 
+** Pregunta (4)
+   #+BEGIN_QUOTE
+   Comparar una función con un sotred procedure
+   #+END_QUOTE
+
+   *Respuesta:* 
+** Pregunta (5)
+   #+BEGIN_QUOTE
+   Que tipo de compresión otorga huffman, para que archivos sirve, porque, como funciona
+   #+END_QUOTE
+
+   *Respuesta:* 
+** Pregunta (6)
+   #+BEGIN_QUOTE
+   Como se mantiene la integridad de una base de datos
+   #+END_QUOTE
+
+   *Respuesta:* 
+** Pregunta (7)
+   #+BEGIN_QUOTE
+   Mencione los Algoritmos de búsqueda
+   #+END_QUOTE
+
+   *Respuesta:* 
+** Pregunta (8)
+   #+BEGIN_QUOTE
+   Diferencia entre Integridad y Consistencia
+   #+END_QUOTE
+
+   *Respuesta:* 
+** Pregunta (9)
+   #+BEGIN_QUOTE
+   Mencione los constraints de una DB relacional
+   #+END_QUOTE
+
+   *Respuesta:* 
+
