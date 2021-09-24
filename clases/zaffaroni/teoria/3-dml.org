@@ -716,7 +716,7 @@
     FROM productos as p
     ORDER BY 1; -- ordena por la primera columna (osea columna llamada numero)
   #+END_SRC
-* Funciones Agregadas
+* Funciones de Agregación
 *** Conceptos
     - Son funciones que dado un conjunto de datos (uno o más registros)
       realizan *operaciones agregadas*
@@ -758,8 +758,8 @@
        FROM clientes;
    #+END_SRC
 * Cláusula GROUP BY
-  - Se suelen complementar con las [[Funciones Agregadas][funciones agregadas]]
-  - La [[Cláusula Having][cláusula HAVING]] actúa como el where con el select
+  - Se suelen complementar con las [[Funciones Agregadas][funciones de agregación]]
+  - La [[Cláusula Having][cláusula HAVING]] actúa como el ~WHERE~ con el ~SELECT~
 
   #+BEGIN_SRC sql
     SELECT p.numero_pedido, count(*) as cantidad

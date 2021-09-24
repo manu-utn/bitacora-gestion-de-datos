@@ -14,7 +14,7 @@
     llamada ~IDENTITY~
   - Las columnas con este objeto NO se puede modificar con ~INSERT~
 ** Identity
-    - al hace un ~insert~ no se deben agregar las columnas  que tengan
+    - al hacer un ~insert~ no se deben agregar las columnas  que tengan
       la propiedad ~identity~ en la definición  de la tabla
     - es un autonumerador constante
     - está relacionado con las *secuencias*
@@ -95,7 +95,7 @@
    - almacenar resultados intermedios en una aplicación
 *** Almacenamiento intermedio de consultas MUY grandes
     - Para dividir una consulta grande en pequeñas consultas
-    - Es poco *perfomante* una consulta de gran tamaño
+    - Es poco *performante* una consulta de gran tamaño
     - Es muy *costoso* una consulta con muchos ~JOIN~
 *** Optimizar accesos
     - Para evitar realizar varias veces consultas que demoran mucho en ejecutarse
@@ -115,7 +115,7 @@
     - visibles para *cualquier usuario*
     - visibles para cualquier sesón
 ** Tipos de Creacion
-*** Explicita
+*** Explícita
     + Mediante la instrucción ~CREATE~
     + Se debe definir
       * el nombre

@@ -5,7 +5,7 @@
   - Llevar al modelo acorde al *Modelo Relacional*
   - Reducir la *redundancia* de datos (repetición) y las *inconsistencias*
   - Facilitar el *mantenimiento* de los datos
-  - Evitar que se violen las *reglas de integridad*
+  - Evitar que se violen las *reglas de integridad* (/de las entidades, y la referencial/)
   - Reduce la *perfomance* (/cuando se trata de grandes volumenes de datos/) pero... aumenta la *robustez*
 ** Que NO es Normalizar
    - Referirse al *tipo de dato* de los *atributos*, ni a su longitud

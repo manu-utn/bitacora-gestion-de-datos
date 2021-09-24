@@ -73,7 +73,6 @@
    - Nombres (de columna)
    - Tipos (de datos de las columnas/atributos/campo)
    - Constraints (restricciones)
-
 *** Tipo de datos
     |-----------------------------|
     | Tipo de dato                |
@@ -229,11 +228,10 @@
 
     #+RESULTS:
     [[file:img/tabla-transaccional.png]]
-
 *** Tabla Paramétrica
 **** Conceptos
      - Es una *tabla maestra* que sirve para paramétrizar *tablas maestras*
-     - Son tablas que *permiten parametrizar atibutos* de otras tablas
+     - Son tablas que *permiten parametrizar atributos* de otras tablas
 **** Ejemplo - Descriptivo
      #+BEGIN_QUOTE
      Supongamos que tenemos la tabla *PRODUCTO* que tiene como atributos
@@ -345,10 +343,10 @@
    Por lo general el proceso de creación de tablas mediante scripts, es
    1. crear las tablas sin PK, ni FK
    2. luego se agregan las PK
-   3. luego se crearn las FK haciendo referencia a las PK
+   3. luego se crean las FK haciendo referencia a las PK
 
    Si llegamos a hacer el paso (2) (3) de forma inversa, lanzaria una excepción
-   porque estaríamos rompiendo las reglas de integridad referencial
+   porque estaríamos rompiendo la regla de integridad referencial
    al asociar una FK que NO existe
    #+END_QUOTE
 ** (PK) Primary Key Constraint
@@ -364,7 +362,7 @@
    Cuando se crea una tabla, y se le define una (PK), el motor crea un *índice*
    que es una *estructura adicional* para tener un acceso rápido por esa columna/s
 
-   entonces por cada ~INSERT~ de un nuevo registro, el motor hace *dos acceso a disco para escritura*
+   entonces por cada ~INSERT~ de un nuevo registro, el motor hace *dos accesos a disco para escritura*
    1. un acceso a disco para la *tabla inicial* donde se definió la (PK)
    2. un segundo acceso a disco para la *estructura del índice*
    #+END_QUOTE
@@ -532,7 +530,7 @@
     Un ejemplo de ciclic referential constraint, sería:
     Cliente -> Facturas
     Pedido -> Productos
-    Factua -> Renglones
+    Factura -> Renglones
 
     Ejemplos con una self referential constraint, serían:
     Empleados->Empleados (por subordinados)

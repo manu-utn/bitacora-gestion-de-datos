@@ -25,14 +25,14 @@ y se utiliza para los sistemas q usan intime
    La diferencia entre ellos es la estructura en como se guardan
 ** Btree Index
    Es el más utilizada (para índices relacionales)
-    
-   <<DUDA 1>>: mongodb lo usa dijo en clase ? me suena raro porque no es no-relacional?
 ** Btree +
 ** Btree Cluster Index
    - _Ordena fisicamente la tabla_ (los datos) en el momento que se crea
    - Solo puede haber 1 por tabla
 
+   #+BEGIN_COMMENT
    <<DUDA 2>>: También ordena el índice??
+   #+END_COMMENT
 ** Bitmap Index (Oracle)
    + Arma un mapa de bit
    + Cada *bit* en el *bitmap* representa una fila (con valor 0 ó 1)
@@ -40,8 +40,6 @@ y se utiliza para los sistemas q usan intime
    + Están implementados en *tablas de hash*
    + Se basan en otros índices *Btree*
    + Es la _manera más rápida de ejecutar consultas a una tabla, si está cargada en memoria_
-   <<DUDA 3>>: En una clase posterior habia mencionado algo más acerca
-   cuando las tablas se cargan en memoria?
 ** Functional Index / function based index
    La *clave* de estos indices, derivan del resultado de una *función*
    (suelen ser _funciones que son definidas por el usuario_)  
@@ -125,18 +123,6 @@ y se utiliza para los sistemas q usan intime
     - las filas se guardan en Bloques Contiguos permitiendo
       1. facilitar el acceso
       2. reduci la cant. de accesos (/porque se recuperan en menos páginas los mismos datos/)
-
-    #+BEGIN_COMMENT
-    <<DUDA 5>>
-    Como sería lo de *Búsqueda de clave parcial* ? (pag. 12, 30-DML..pdf)
-    
-    El apunte dice:
-    Tratar de usar índices compuestos para incrementar los valores únicos
-    Tener en cuenta que si una o más columnas intervienen en un índice
-    compuesto el optimizador podría decidir acceder a través de ese índice
-    aunque sea solo para la búsqueda de los datos de una columna, esto se
-    denomina “partial key search
-    #+END_COMMENT
 * [TODO] Construccion de Indices en Paralelo
   - Se sugiere _migrar sin los índices_ y luego recrearlos
 
