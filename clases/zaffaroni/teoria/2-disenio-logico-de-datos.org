@@ -4,9 +4,9 @@
    - Entender mejor los *requerimientos*
    - Evitar *redundancia* de datos
 * Que es Diseñar
-  Es encontrar *componentes*
-    - Darles *responsabilidad*
-    - Encontrar las *relaciones* con otras partes/componentes
+  - Es encontrar *componentes*
+    1. Darles *responsabilidad*
+    2. Encontrar las *relaciones* con otras partes/componentes
 * Modelo Conceptual
   - Define las entidades y sus relaciones en base a las *reglas del negocio*
   - Es independiente de la tecnología
